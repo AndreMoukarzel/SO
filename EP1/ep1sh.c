@@ -57,7 +57,6 @@ void createProcess(char *domain, char *command, char *argument) {
 		wait(NULL); /* espera processo filho acabar (deveria?) */
 	else { /* processo filho */
 		execl(domain, domain, command, argument);
-		/*execl(domain, process (ultima string do domain), comand, argument); */
 		return;
 	}
 }
@@ -99,7 +98,7 @@ int main(int argc, char **argv) {
 	while(1){
 		/* exibe o prompt e aguardo por input do usuário */
 		char *line = readline(prompt); /* essa func faz o malloc p/ line */
-		char *bar_pos, *dot_pos, **strings;
+		char *bar_pos, *dot_pos, **strings, *command;
 		int str_num;
 
 		if (strcmp(line, "")) { /* linha não é uma string vazia */
@@ -118,11 +117,16 @@ int main(int argc, char **argv) {
 				bar_pos = strchr(line, '/');
 				dot_pos = strchr(line, '.');
 
-				if ((bar_pos - line) == 0) { /* é chamada de processo (?), começa com '/' */
-					createProcess(strings[0], catCommand(strings, str_num), strings[str_num - 1]);
-					/* catCommand(strings, str_num); */
+				if ((bar_pos - line) == 0) { /* é chamada de processo, começa com '/' */
+					command = catCommand(strings, str_num);
+
+					if (command == NULL)
+						createProcess(strings[0], strings[str_num - 1], NULL);
+					else
+						createProcess(strings[0], catCommand(strings, str_num), strings[str_num - 1]);
+
 				}
-				else if((bar_pos - line) == 1 && (dot_pos - line) == 0) {
+				else if((bar_pos - line) == 1 && (dot_pos - line) == 0) { /* Executável, começa com "./" */
 					printf("É UM EXECUTÁVEL\n");
 				}
 				else 
