@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
 	while(1){
 		/* exibe o prompt e aguardo por input do usuário */
 		char *line = readline(prompt); /* essa func faz o malloc p/ line */
-		char *bar_pos, *dot_pos, **strings, *command;
+		char *bar_pos, *dot_pos, **strings;
 		int str_num;
 
 		if (strcmp(line, "")) { /* linha não é uma string vazia */
@@ -118,8 +118,6 @@ int main(int argc, char **argv) {
 				dot_pos = strchr(line, '.');
 
 				if ((bar_pos - line) == 0) { /* é chamada de processo, começa com '/' */
-					command = catCommand(strings, str_num);
-
 					if (str_num < 2) {
 						createProcess(strings[0], NULL, NULL);
 					}
@@ -128,7 +126,6 @@ int main(int argc, char **argv) {
 					}
 					else {
 						createProcess(strings[0], catCommand(strings, str_num), strings[str_num - 1]);
-						free(command);
 					}
 
 				}
