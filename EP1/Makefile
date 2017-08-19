@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-ansi -Wall -pedantic -O2 -lreadline -ltermcap
-OBJECTS=ep1sh.c
+OBJECTS=ep1sh.c stringReader.o
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<

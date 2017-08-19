@@ -8,36 +8,55 @@
 ///////////////////////////////////////////////////////////////////*/
 
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <time.h>
+#include "stringReader.h"
 
 #define MAX_LENGTH 1024
 
 
-char *getDomain(char *line) {
-	char *domain, *pch = strchr(line, ' ');
-	int size = pch - line;
+/* Cria uma única string de todas as strings que não das
+// extremidades. Caso não haja nenhuma, devolve NULL
+*/
+char *catCommand(char **strings, int str_num) {
+	int length = 0, i;
+	char *buffer;
 
-	domain = malloc(size * sizeof(char));
-	strncpy(domain, line, size);
-	strcat(domain, "\0");
+	if (str_num < 3)
+		return NULL;
+	if (str_num == 3)
+		return strings[1];
 
-	return domain;
+	for (i = 1; i < str_num - 1; i++)
+		length += strlen(strings[i]);
+
+	/* Espaço para todas as strings, espaços e '\0' no final */
+	buffer = malloc((length + (str_num - 2) + 1) * sizeof(char));
+
+	length = 0;
+	for (i = 1; i < str_num - 1; i++) {
+		strcat(buffer, strings[i]);
+		length += strlen(strings[i]);
+		buffer[length] = ' ';
+		length++; /* devido ao ' ' extra */
+	}
+	buffer[length - 1] = '\0';
+
+	return buffer;
 }
 
 
-void createProcess(char *domain, char *comand, char *argument) {
+void createProcess(char *domain, char *command, char *argument) {
 	int pid = fork();
 
 	if (pid != 0) /* processo pai */
 		wait(NULL); /* espera processo filho acabar (deveria?) */
 	else { /* processo filho */
-		execl(domain, domain, "-c 2 ", "www.google.com.br");
+		execl(domain, domain, command, argument);
 		/*execl(domain, process (ultima string do domain), comand, argument); */
 		return;
 	}
@@ -49,7 +68,7 @@ void runExecutable(char *name) {
 }
 
 
-void date(void) {
+void date() {
 	char buffer[32];
 	struct tm *currentDate;
 	size_t last;
@@ -63,6 +82,12 @@ void date(void) {
 }
 
 
+void myChown() {
+
+}
+
+
+
 int main(int argc, char **argv) {
 	/* pega o diretorio atual e gera o prompt */
 	char prompt[MAX_LENGTH];
@@ -74,33 +99,37 @@ int main(int argc, char **argv) {
 	while(1){
 		/* exibe o prompt e aguardo por input do usuário */
 		char *line = readline(prompt); /* essa func faz o malloc p/ line */
-		char *bar_pos;
+		char *bar_pos, *dot_pos, **strings;
+		int str_num;
 
-		if (strcmp(line, "")) {
-			/* adiciona o comando ao hitorico se nao for uma string vazia */
+		if (strcmp(line, "")) { /* linha não é uma string vazia */
 			add_history(line);
-		}
 
-		if (!strcmp(line, "date")) {
-			date();
-		}
-		else if(!(strcmp(line, "exit"))) {
-			/* fecha o programa */
-			free(line);
-			return EXIT_SUCCESS;
-		}
-		else {
-			bar_pos = strchr(line, '/');
-
-			if (bar_pos - line == 0) { /* é chamada de processo (?), começa com '/' */
-				test = getDomain(line);
-				printf("domain size: %d\n", (int) strlen(test));
-				free(test);
+			if (!strcmp(line, "date")) {
+				date();
 			}
-			else 
-				printf("%s: comando não encontrado\n", line);
-			/* createProcess("", "", ""); */
+			else if(!(strcmp(line, "exit"))) {
+				/* fecha o programa */
+				free(line);
+				return EXIT_SUCCESS;
+			}
+			else {
+				strings = leLinha(line, &str_num);
+				bar_pos = strchr(line, '/');
+				dot_pos = strchr(line, '.');
+
+				if ((bar_pos - line) == 0) { /* é chamada de processo (?), começa com '/' */
+					createProcess(strings[0], catCommand(strings, str_num), strings[str_num - 1]);
+					/* catCommand(strings, str_num); */
+				}
+				else if((bar_pos - line) == 1 && (dot_pos - line) == 0) {
+					printf("É UM EXECUTÁVEL\n");
+				}
+				else 
+					printf("%s: comando não encontrado\n", line);
+			}
 		}
+
 		free(line);
 	}
 }
