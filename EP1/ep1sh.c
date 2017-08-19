@@ -17,7 +17,21 @@
 
 #define MAX_LENGTH 1024
 
-int main(int argc, char **argv){
+
+void createProcess(char *domain, char *processName, char *argument) {
+	int pid = fork();
+
+	if (pid != 0) /* processo pai */
+		wait(NULL); /* espera processo filho acabar (deveria?) */
+	if (pid == 0) { /* processo filho */
+		execl("/bin/echo", "echo", "XABLAU", NULL);
+		/* execl(domain, processName, argumento, NULL); */
+		return;
+	}
+}
+
+
+int main(int argc, char **argv) {
 	/* pega o diretorio atual e gera o prompt */
 	char prompt[MAX_LENGTH];
 	char cwd[MAX_LENGTH];
@@ -35,6 +49,7 @@ int main(int argc, char **argv){
 		}
 
 		if (!strcmp(line, "date")) {
+			/* pode fazer isso? system() usa execl */
 			int date = system("date");
 			printf("%d\n", date);
 		}
@@ -42,6 +57,9 @@ int main(int argc, char **argv){
 			/* fecha o programa */
 			free(line);
 			return EXIT_SUCCESS;
+		}
+		else if(!(strcmp(line, "bleb"))) {
+			createProcess("", "");
 		}
 		else
 			printf("%s: comando não encontrado\n", line);
