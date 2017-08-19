@@ -36,7 +36,7 @@ void createProcess(char *domain, char *comand, char *argument) {
 	if (pid != 0) /* processo pai */
 		wait(NULL); /* espera processo filho acabar (deveria?) */
 	else { /* processo filho */
-		execl(domain, domain, "-c 2", "www.google.com.br");
+		execl(domain, domain, "-c 2 ", "www.google.com.br");
 		/*execl(domain, process (ultima string do domain), comand, argument); */
 		return;
 	}
