@@ -3,7 +3,7 @@
 // Nome: Henrique Cerquinho								NUSP: ???????
 ////////////////////////// COMO RODAR ///////////////////////////////
 //
-// compila com -lreadline -termcap
+// compila com -lreadline -ltermcap
 //
 ///////////////////////////////////////////////////////////////////*/
 
@@ -18,16 +18,46 @@
 #define MAX_LENGTH 1024
 
 
-void createProcess(char *domain, char *processName, char *argument) {
+char *getDomain(char *line) {
+	char *domain, *pch = strchr(line, ' ');
+	int size = pch - line;
+
+	domain = malloc(size * sizeof(char));
+	strncpy(domain, line, size + 1);
+	strcat(domain, "\0");
+
+	return domain;
+}
+
+
+char *getProcess(char *domain) {
+	char *process, *pch = strrchr(domain, '/');
+	int pos = pch - domain;
+	int size = strlen(domain) - pos;
+
+	process = malloc((size * sizeof(char)));
+	strncpy(process, domain + pos, size);
+	strcat(process, "\0");
+
+	return process;
+}
+
+
+void createProcess(char *domain, char *comand, char *argument) {
 	int pid = fork();
 
 	if (pid != 0) /* processo pai */
 		wait(NULL); /* espera processo filho acabar (deveria?) */
-	if (pid == 0) { /* processo filho */
-		execl("/bin/echo", "echo", "XABLAU", NULL);
-		/* execl(domain, processName, argumento, NULL); */
+	else { /* processo filho */
+		execl(domain, getProcess(domain), "-c 2", "www.google.com.br");
+		/*execl(domain, process (ultima string do domain), comand, argument); */
 		return;
 	}
+}
+
+
+void runExecutable(char *name) {
+	/* num sei qual exec seria melhor */
 }
 
 
@@ -42,6 +72,8 @@ int main(int argc, char **argv) {
 	while(1){
 		/* exibe o prompt e aguardo por input do usuário */
 		char *line = readline(prompt); /* essa func faz o malloc p/ line */
+		char *bar_pos;
+		char *test;
 
 		if (strcmp(line, "")) {
 			/* adiciona o comando ao hitorico se nao for uma string vazia */
@@ -58,11 +90,18 @@ int main(int argc, char **argv) {
 			free(line);
 			return EXIT_SUCCESS;
 		}
-		else if(!(strcmp(line, "bleb"))) {
-			createProcess("", "");
+		else {
+			bar_pos = strchr(line, '/');
+
+			if (bar_pos - line == 0) { /* é chamada de processo (?), começa com '/' */
+				test = getDomain(line);
+				printf("domain size: %d\n", (int) strlen(test));
+				printf("%s %s\n", test, getProcess(test));
+			}
+			else 
+				printf("%s: comando não encontrado\n", line);
+			/* createProcess("", "", ""); */
 		}
-		else
-			printf("%s: comando não encontrado\n", line);
 		free(line);
 	}
 }
