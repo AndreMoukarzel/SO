@@ -1,6 +1,6 @@
 /* //////////////////////////////////////////////////////////////////
 // Nome: André Ferrari Moukarzel						NUSP: 9298166
-// Nome: Henrique Cerquinho								NUSP: ???????
+// Nome: Henrique Cerquinho								NUSP: 9793700
 ////////////////////////// COMO RODAR ///////////////////////////////
 //
 // compila com -lreadline -ltermcap
@@ -14,6 +14,7 @@
 #include <sys/wait.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <time.h>
 
 #define MAX_LENGTH 1024
 
@@ -30,26 +31,13 @@ char *getDomain(char *line) {
 }
 
 
-char *getProcess(char *domain) {
-	char *process, *pch = strrchr(domain, '/');
-	int pos = pch - domain;
-	int size = strlen(domain) - pos;
-
-	process = malloc((size * sizeof(char)));
-	strncpy(process, domain + pos, size);
-	strcat(process, "\0");
-
-	return process;
-}
-
-
 void createProcess(char *domain, char *comand, char *argument) {
 	int pid = fork();
 
 	if (pid != 0) /* processo pai */
 		wait(NULL); /* espera processo filho acabar (deveria?) */
 	else { /* processo filho */
-		execl(domain, getProcess(domain), "-c 2", "www.google.com.br");
+		execl(domain, domain, "-c 2", "www.google.com.br");
 		/*execl(domain, process (ultima string do domain), comand, argument); */
 		return;
 	}
@@ -58,6 +46,20 @@ void createProcess(char *domain, char *comand, char *argument) {
 
 void runExecutable(char *name) {
 	/* num sei qual exec seria melhor */
+}
+
+
+void date(void) {
+	char buffer[32];
+	struct tm *currentDate;
+	size_t last;
+	time_t timestamp = time(NULL);
+
+	currentDate = localtime(&timestamp);
+	last = strftime(buffer, 32, "%c", currentDate);
+	buffer[last] = '\0';
+
+	printf("%s\n", buffer);
 }
 
 
@@ -81,9 +83,7 @@ int main(int argc, char **argv) {
 		}
 
 		if (!strcmp(line, "date")) {
-			/* pode fazer isso? system() usa execl */
-			int date = system("date");
-			printf("%d\n", date);
+			date();
 		}
 		else if(!(strcmp(line, "exit"))) {
 			/* fecha o programa */
@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
 			if (bar_pos - line == 0) { /* é chamada de processo (?), começa com '/' */
 				test = getDomain(line);
 				printf("domain size: %d\n", (int) strlen(test));
-				printf("%s %s\n", test, getProcess(test));
+				free(test);
 			}
 			else 
 				printf("%s: comando não encontrado\n", line);
