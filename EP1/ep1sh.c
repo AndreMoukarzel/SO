@@ -62,8 +62,15 @@ void createProcess(char *domain, char *command, char *argument) {
 }
 
 
-void runExecutable(char *name) {
-	/* num sei qual exec seria melhor */
+void runExecutable(char *name, char **argv) {
+	int pid = fork();
+
+	if (pid != 0) /* processo pai */
+		wait(NULL); /* espera processo filho acabar (deveria?) */
+	else { /* processo filho */
+		execvp(name, argv);
+		return;
+	}
 }
 
 
@@ -130,7 +137,7 @@ int main(int argc, char **argv) {
 
 				}
 				else if((bar_pos - line) == 1 && (dot_pos - line) == 0) { /* Executável, começa com "./" */
-					printf("É UM EXECUTÁVEL\n");
+					runExecutable(strings[0], strings);
 				}
 				else 
 					printf("%s: comando não encontrado\n", line);
