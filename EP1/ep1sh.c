@@ -23,23 +23,10 @@ char *getDomain(char *line) {
 	int size = pch - line;
 
 	domain = malloc(size * sizeof(char));
-	strncpy(domain, line, size + 1);
+	strncpy(domain, line, size);
 	strcat(domain, "\0");
 
 	return domain;
-}
-
-
-char *getProcess(char *domain) {
-	char *process, *pch = strrchr(domain, '/');
-	int pos = pch - domain;
-	int size = strlen(domain) - pos;
-
-	process = malloc((size * sizeof(char)));
-	strncpy(process, domain + pos, size);
-	strcat(process, "\0");
-
-	return process;
 }
 
 
@@ -49,7 +36,7 @@ void createProcess(char *domain, char *comand, char *argument) {
 	if (pid != 0) /* processo pai */
 		wait(NULL); /* espera processo filho acabar (deveria?) */
 	else { /* processo filho */
-		execl(domain, getProcess(domain), "-c 2", "www.google.com.br");
+		execl(domain, domain, "-c 2", "www.google.com.br");
 		/*execl(domain, process (ultima string do domain), comand, argument); */
 		return;
 	}
@@ -73,7 +60,6 @@ int main(int argc, char **argv) {
 		/* exibe o prompt e aguardo por input do usuário */
 		char *line = readline(prompt); /* essa func faz o malloc p/ line */
 		char *bar_pos;
-		char *test;
 
 		if (strcmp(line, "")) {
 			/* adiciona o comando ao hitorico se nao for uma string vazia */
@@ -94,9 +80,7 @@ int main(int argc, char **argv) {
 			bar_pos = strchr(line, '/');
 
 			if (bar_pos - line == 0) { /* é chamada de processo (?), começa com '/' */
-				test = getDomain(line);
-				printf("domain size: %d\n", (int) strlen(test));
-				printf("%s %s\n", test, getProcess(test));
+				createProcess(getDomain(line), "", "");
 			}
 			else 
 				printf("%s: comando não encontrado\n", line);
