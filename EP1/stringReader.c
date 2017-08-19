@@ -50,3 +50,12 @@ char *leString(char *line, int init) {
 
 	return buffer;
 }
+
+
+/* Libera uma matriz de lin linhas */
+void freeMatrix(char **matrix, int lin) {
+	int i;
+	for (i = 0; i < lin; i++)
+		free(matrix[i]);
+	free(matrix);
+}

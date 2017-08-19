@@ -17,4 +17,8 @@ char **leLinha(char *line, int *lin);
 char *leString(char *line, int init);
 
 
+/* Libera uma matriz de lin linhas */
+void freeMatrix(char **matrix, int lin);
+
+
 #endif

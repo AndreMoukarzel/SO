@@ -91,7 +91,6 @@ int main(int argc, char **argv) {
 	/* pega o diretorio atual e gera o prompt */
 	char prompt[MAX_LENGTH];
 	char cwd[MAX_LENGTH];
-	int i;
 	strcpy(prompt, "[");
 	strcat(prompt, getcwd(cwd, sizeof(cwd)));
 	strcat(prompt, "]$ ");
@@ -121,9 +120,13 @@ int main(int argc, char **argv) {
 				if ((bar_pos - line) == 0) { /* é chamada de processo, começa com '/' */
 					command = catCommand(strings, str_num);
 
-					if (command == NULL)
+					if (str_num < 2) {
+						createProcess(strings[0], NULL, NULL);
+					}
+					else if (str_num < 3) {
 						createProcess(strings[0], strings[str_num - 1], NULL);
-					else{
+					}
+					else {
 						createProcess(strings[0], catCommand(strings, str_num), strings[str_num - 1]);
 						free(command);
 					}
@@ -134,9 +137,8 @@ int main(int argc, char **argv) {
 				}
 				else 
 					printf("%s: comando não encontrado\n", line);
-				for (i = 0; i < str_num; i++)
-					free(strings[i]);
-				free(strings);
+
+				freeMatrix(strings, str_num);
 			}
 		}
 
