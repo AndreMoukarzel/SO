@@ -1,6 +1,6 @@
 /* //////////////////////////////////////////////////////////////////
 // Nome: André Ferrari Moukarzel						NUSP: 9298166
-// Nome: Henrique Cerquinho								NUSP: ???????
+// Nome: Henrique Cerquinho								NUSP: 9793700
 ////////////////////////// COMO RODAR ///////////////////////////////
 //
 // compila com -lreadline -ltermcap
@@ -14,6 +14,7 @@
 #include <sys/wait.h>
 #include <readline/readline.h>
 #include <readline/history.h>
+#include <time.h>
 
 #define MAX_LENGTH 1024
 
@@ -48,6 +49,20 @@ void runExecutable(char *name) {
 }
 
 
+void date(void) {
+	char buffer[32];
+	struct tm *currentDate;
+	size_t last;
+	time_t timestamp = time(NULL);
+
+	currentDate = localtime(&timestamp);
+	last = strftime(buffer, 32, "%c", currentDate);
+	buffer[last] = '\0';
+
+	printf("%s\n", buffer);
+}
+
+
 int main(int argc, char **argv) {
 	/* pega o diretorio atual e gera o prompt */
 	char prompt[MAX_LENGTH];
@@ -67,9 +82,7 @@ int main(int argc, char **argv) {
 		}
 
 		if (!strcmp(line, "date")) {
-			/* pode fazer isso? system() usa execl */
-			int date = system("date");
-			printf("%d\n", date);
+			date();
 		}
 		else if(!(strcmp(line, "exit"))) {
 			/* fecha o programa */
@@ -80,7 +93,9 @@ int main(int argc, char **argv) {
 			bar_pos = strchr(line, '/');
 
 			if (bar_pos - line == 0) { /* é chamada de processo (?), começa com '/' */
-				createProcess(getDomain(line), "", "");
+				test = getDomain(line);
+				printf("domain size: %d\n", (int) strlen(test));
+				free(test);
 			}
 			else 
 				printf("%s: comando não encontrado\n", line);
