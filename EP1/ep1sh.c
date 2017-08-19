@@ -67,7 +67,7 @@ void runExecutable(char *name) {
 }
 
 
-void date() {
+void myDate() {
 	char buffer[32];
 	struct tm *currentDate;
 	size_t last;
@@ -91,6 +91,7 @@ int main(int argc, char **argv) {
 	/* pega o diretorio atual e gera o prompt */
 	char prompt[MAX_LENGTH];
 	char cwd[MAX_LENGTH];
+	int i;
 	strcpy(prompt, "[");
 	strcat(prompt, getcwd(cwd, sizeof(cwd)));
 	strcat(prompt, "]$ ");
@@ -105,7 +106,7 @@ int main(int argc, char **argv) {
 			add_history(line);
 
 			if (!strcmp(line, "date")) {
-				date();
+				myDate();
 			}
 			else if(!(strcmp(line, "exit"))) {
 				/* fecha o programa */
@@ -122,8 +123,10 @@ int main(int argc, char **argv) {
 
 					if (command == NULL)
 						createProcess(strings[0], strings[str_num - 1], NULL);
-					else
+					else{
 						createProcess(strings[0], catCommand(strings, str_num), strings[str_num - 1]);
+						free(command);
+					}
 
 				}
 				else if((bar_pos - line) == 1 && (dot_pos - line) == 0) { /* Executável, começa com "./" */
@@ -131,6 +134,9 @@ int main(int argc, char **argv) {
 				}
 				else 
 					printf("%s: comando não encontrado\n", line);
+				for (i = 0; i < str_num; i++)
+					free(strings[i]);
+				free(strings);
 			}
 		}
 
