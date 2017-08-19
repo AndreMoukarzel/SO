@@ -24,7 +24,7 @@ char *getDomain(char *line) {
 	int size = pch - line;
 
 	domain = malloc(size * sizeof(char));
-	strncpy(domain, line, size + 1);
+	strncpy(domain, line, size);
 	strcat(domain, "\0");
 
 	return domain;
@@ -75,7 +75,6 @@ int main(int argc, char **argv) {
 		/* exibe o prompt e aguardo por input do usuário */
 		char *line = readline(prompt); /* essa func faz o malloc p/ line */
 		char *bar_pos;
-		char *test;
 
 		if (strcmp(line, "")) {
 			/* adiciona o comando ao hitorico se nao for uma string vazia */
