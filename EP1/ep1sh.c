@@ -88,10 +88,22 @@ void myDate() {
 }
 
 
-void myChown() {
+void myChown(char *group, char *filename, char *path) {
+	char *temp_path = malloc((strlen(path) + strlen(filename) + 1)*sizeof(char));
+	char *temp_group = malloc((strlen(group) - 1)*sizeof(char));
 
+	strcpy(temp_path, path);
+	strcat(temp_path, "/");
+	strcat(temp_path, filename);
+
+	strcpy(temp_group, &group[1]); /* remove o ':' do começo da string de grupo */
+
+	/* aqui precisa mandar owner e group como ownerID e groupID, e nao sei como acha isso :C
+	chown(temp_path, owner (acho que NULL?), temp_group); */
+
+	free(temp_path);
+	free(temp_group);
 }
-
 
 
 int main(int argc, char **argv) {
@@ -125,13 +137,13 @@ int main(int argc, char **argv) {
 				dot_pos = strchr(line, '.');
 
 				if ((bar_pos - line) == 0) { /* é chamada de processo, começa com '/' */
-					if (str_num < 2) {
+					if (str_num < 2) { /* um comando e nenhum argumento */
 						createProcess(strings[0], NULL, NULL);
 					}
-					else if (str_num < 3) {
+					else if (str_num < 3) { /* um comando e um argumento */
 						createProcess(strings[0], strings[str_num - 1], NULL);
 					}
-					else {
+					else { /*um comando e dois ou mais argumentos */
 						createProcess(strings[0], catCommand(strings, str_num), strings[str_num - 1]);
 					}
 
@@ -139,6 +151,8 @@ int main(int argc, char **argv) {
 				else if((bar_pos - line) == 1 && (dot_pos - line) == 0) { /* Executável, começa com "./" */
 					runExecutable(strings[0], strings);
 				}
+				else if (!strcmp(strings[0], "chown"))
+					myChown(catCommand(strings, str_num), strings[str_num - 1], cwd);
 				else 
 					printf("%s: comando não encontrado\n", line);
 
