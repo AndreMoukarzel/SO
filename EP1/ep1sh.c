@@ -92,8 +92,10 @@ void myDate() {
 
 int myChown(char *group_name, char *file_name) {
 	struct group *tmpGrp;
-
+	
+	strcpy(group_name, &group_name[1]);
 	tmpGrp = getgrnam(group_name);
+
 	return chown(file_name, -1, tmpGrp->gr_gid);
 }
 
@@ -143,14 +145,9 @@ int main(int argc, char **argv) {
 				else if((bar_pos - line) == 1 && (dot_pos - line) == 0) { /* Executável, começa com "./" */
 					runExecutable(strings[0], strings);
 				}
-<<<<<<< HEAD
 				else if(!(strcmp(strings[0], "chown"))) {
 					myChown(strings[1], strings[2]);
 				}
-=======
-				else if (!strcmp(strings[0], "chown"))
-					myChown(catCommand(strings, str_num), strings[str_num - 1], cwd);
->>>>>>> 903106e375e89d106490ec8b112dc1c704bd429f
 				else 
 					printf("%s: comando não encontrado\n", line);
 
