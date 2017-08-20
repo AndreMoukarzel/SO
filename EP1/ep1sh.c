@@ -11,9 +11,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/types.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <time.h>
+#include <grp.h>
 #include "stringReader.h"
 
 #define MAX_LENGTH 1024
@@ -88,8 +90,11 @@ void myDate() {
 }
 
 
-void myChown() {
+int myChown(char *group_name, char *file_name) {
+	struct group *tmpGrp;
 
+	tmpGrp = getgrnam(group_name);
+	return chown(file_name, -1, tmpGrp->gr_gid);
 }
 
 
@@ -138,6 +143,9 @@ int main(int argc, char **argv) {
 				}
 				else if((bar_pos - line) == 1 && (dot_pos - line) == 0) { /* Executável, começa com "./" */
 					runExecutable(strings[0], strings);
+				}
+				else if(!(strcmp(strings[0], "chown"))) {
+					myChown(strings[1], strings[2]);
 				}
 				else 
 					printf("%s: comando não encontrado\n", line);
