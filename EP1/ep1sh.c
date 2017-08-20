@@ -98,7 +98,6 @@ int myChown(char *group_name, char *file_name) {
 }
 
 
-
 int main(int argc, char **argv) {
 	/* pega o diretorio atual e gera o prompt */
 	char prompt[MAX_LENGTH];
@@ -130,13 +129,13 @@ int main(int argc, char **argv) {
 				dot_pos = strchr(line, '.');
 
 				if ((bar_pos - line) == 0) { /* é chamada de processo, começa com '/' */
-					if (str_num < 2) {
+					if (str_num < 2) { /* um comando e nenhum argumento */
 						createProcess(strings[0], NULL, NULL);
 					}
-					else if (str_num < 3) {
+					else if (str_num < 3) { /* um comando e um argumento */
 						createProcess(strings[0], strings[str_num - 1], NULL);
 					}
-					else {
+					else { /*um comando e dois ou mais argumentos */
 						createProcess(strings[0], catCommand(strings, str_num), strings[str_num - 1]);
 					}
 
@@ -144,9 +143,14 @@ int main(int argc, char **argv) {
 				else if((bar_pos - line) == 1 && (dot_pos - line) == 0) { /* Executável, começa com "./" */
 					runExecutable(strings[0], strings);
 				}
+<<<<<<< HEAD
 				else if(!(strcmp(strings[0], "chown"))) {
 					myChown(strings[1], strings[2]);
 				}
+=======
+				else if (!strcmp(strings[0], "chown"))
+					myChown(catCommand(strings, str_num), strings[str_num - 1], cwd);
+>>>>>>> 903106e375e89d106490ec8b112dc1c704bd429f
 				else 
 					printf("%s: comando não encontrado\n", line);
 
