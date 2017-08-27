@@ -56,7 +56,7 @@ void createProcess(char *domain, char *command, char *argument) {
 	int pid = fork();
 
 	if (pid != 0) /* processo pai */
-		wait(NULL); /* espera processo filho acabar (deveria?) */
+		wait(NULL); /* espera processo filho acabar */
 	else { /* processo filho */
 		execl(domain, domain, command, argument);
 		return;
@@ -68,7 +68,7 @@ void runExecutable(char *name, char **argv) {
 	int pid = fork();
 
 	if (pid != 0) /* processo pai */
-		wait(NULL); /* espera processo filho acabar (deveria?) */
+		wait(NULL); /* espera processo filho acabar */
 	else { /* processo filho */
 		execvp(name, argv);
 		return;
@@ -80,7 +80,7 @@ void myDate() {
 	char buffer[32];
 	struct tm *currentDate;
 	size_t last;
-	time_t timestamp = time(NULL);
+	time_t timestamp = time(NULL); /* ação principal */
 
 	currentDate = localtime(&timestamp);
 	last = strftime(buffer, 32, "%c", currentDate);
@@ -96,7 +96,7 @@ int myChown(char *group_name, char *file_name) {
 	strcpy(group_name, &group_name[1]);
 	tmpGrp = getgrnam(group_name);
 
-	return chown(file_name, -1, tmpGrp->gr_gid);
+	return chown(file_name, -1, tmpGrp->gr_gid); /* ação principal */
 }
 
 
