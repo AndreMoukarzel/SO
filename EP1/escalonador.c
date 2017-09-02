@@ -3,13 +3,14 @@
 #include <pthread.h>
 #include <string.h>
 
-#define MAX_ELEMENT_SIZE 1024
-#define NUMERO_DE_LINHAS 3
+#define MAX_LINE_SIZE 1024
+
+int LINE_COUNT;
 
 typedef struct{
-	int t0;
-	int dt;
-	int deadline;
+	float t0;
+	float dt;
+	float deadline;
 	char *name;
 } line;
 
@@ -21,74 +22,83 @@ line *criaLine(int n){
 	return l;
 }
 
-/* CONVERTE AS STRINGS DE NUMERO PRA INT (precisa ser pr float?) */
+/* Le o arquivo e devolve uma lista de structs de dado com 4 elementos:
+// t0, dt, deadline, nome de cada processo */
 
 line **readFile(char *name){
 	/* elemento da linha que esta sendo lido
-	(1 = t0, 2 = dt, 3 = deadline, 4 = nome) */
+	// (1 = t0, 2 = dt, 3 = deadline, 4 = nome) */
 	int line_element;
 	int i, k;
 	char c;
-	char buf[MAX_ELEMENT_SIZE];
+	char buf[MAX_LINE_SIZE / 4];
 	line **dados;
 
 	/* inicia a lista de dados */
-	dados = malloc(NUMERO_DE_LINHAS*sizeof(line));
-	for (i = 0; i < NUMERO_DE_LINHAS; i++)
-		dados[i] = criaLine(MAX_ELEMENT_SIZE);
+	dados = malloc(sizeof(line*));
+	dados[0] = criaLine(MAX_LINE_SIZE);
 
 	/* abre o arquivo */
 	FILE *file;
 	file = fopen(name, "r");
 
-	if (file)
+	if (file){
 		/* i = current char, k = current line */
 		for (i = 0, line_element = 1, k = 0; (c = getc(file)) != EOF;){
 			if (c == ' '){
 				buf[i] = '\0';
 				/* converte a string pra int */
 				if (line_element == 1)
-					dados[k]->t0 = atof(buf);
+					dados[k]->t0 = strtof(buf, NULL);
 				else if (line_element == 2)
-					dados[k]->dt = atof(buf);
+					dados[k]->dt = strtof(buf, NULL);
 				else /* deadline */
-					dados[k]->deadline = atof(buf);
-				/* limpa o buffer e passa para o proximo elemento da linha */
+					dados[k]->deadline = strtof(buf, NULL);
+
+				/* limpa o buffer e passa para
+				// o proximo elemento da linha */
 				line_element++;
 				i = 0;
 			}
 			else if (c == '\n'){
+				/* chegou no final da linha, passa o nome
+				// pro dado atual, reseta i e line_element*/
 				buf[i] = '\0';
-				/* chegou no final da linha, passa o nome pro dado atual,
-				reseta o buffer, i e line_element*/
 				strcpy(dados[k]->name, buf);
 				i = 0;
 				line_element = 1;
 				k++;
+				dados = realloc(dados, (k+1)*sizeof(line));
+				dados[k] = criaLine(MAX_LINE_SIZE / 4);
 			}
 			else{
 				buf[i] = c;
 				i++;
 			}
 		}
-		/* copia o nome da ultima linha, pois nao tem \n no final do atquivo*/
+		/* copia o nome da ultima linha, pois nao
+		// tem \n no final do arquivo*/
 		buf[i] = '\0';
 		strcpy(dados[k]->name, buf);
+		fclose(file);
+		LINE_COUNT = k+1;
+	}	
 
 	return dados;
 }
 
 int main(int argc, char **argv){
-	/* le o arquivo dado como primeiro argumento e printa os elementos
-	de cada linha dele *dabs* */
+	/* le o arquivo dado como primeiro argumento e
+	// printa os elementos de cada linha dele */
 	line **dados = readFile(argv[1]);
-	for (int i = 0; i<NUMERO_DE_LINHAS; i++){
-		printf("%d\n", dados[i]->t0);
-		printf("%d\n", dados[i]->dt);
-		printf("%d\n", dados[i]->deadline);
+	for (int i = 0; i < LINE_COUNT; i++){
+		printf("%f\n", dados[i]->t0);
+		printf("%f\n", dados[i]->dt);
+		printf("%f\n", dados[i]->deadline);
 		printf("%s\n", dados[i]->name);
 	}
-	for (int i = 0; i < NUMERO_DE_LINHAS; i++)
+	for (int i = 0; i < LINE_COUNT; i++)
 		free(dados[i]);
+	free(dados);
 	return 0;
 }
