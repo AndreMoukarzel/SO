@@ -4,13 +4,20 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 #include <string.h>
 
 #define MAX_LINE_SIZE 1024
 
+pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
+
+
 int LINE_COUNT;
+time_t starting_time;
+suseconds_t starting_utime;
 
 typedef struct{
 	float t0;
@@ -25,6 +32,13 @@ line *criaLine(int n){
 	/* n = tamanho maximo dos nomes */
 	l->name = malloc(n*sizeof(char));
 	return l;
+}
+
+/* pega o tempo de execucao atual (precisa pegar os milisegundos tmb D:< ) */
+long int get_time(){
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	return tv.tv_sec - starting_time;
 }
 
 /* Le o arquivo e devolve uma lista de structs de dado com 4 elementos:
@@ -87,20 +101,21 @@ line **readFile(char *name){
 		strcpy(dados[k]->name, buf);
 		fclose(file);
 		LINE_COUNT = k+1;
-	}	
+	}
 
 	return dados;
 }
 
-void runProcess(char *name){
+void runProcess(line *dado){
 	char process[512];
 	strcpy(process, "/usr/bin/");
-	strcat(process, name);
+	strcat(process, dado->name);
 	int exec;
 	int pid = fork();
 
-	if (pid != 0) /* processo pai */
+	if (pid != 0){ /* processo pai */
 		wait(NULL); /* espera processo filho acabar */
+	}
 	else { /* processo filho */
 		if (!(exec = execl(process, process, NULL, NULL)))
 			/* nao sei se o valor de retorno é de erro ou nao D: */
@@ -109,23 +124,70 @@ void runProcess(char *name){
 	}
 }
 
-void simulador(line **dados, int tipo){
+void shortestJobFirst(line **dados){
 	int i, th;
+	/* o dt do ultimo processo recebido */
+	float last_dt = 0.0;
+	long int start_times[LINE_COUNT];
 	pthread_t threads[LINE_COUNT];
-	for (i = 0; i < LINE_COUNT; i++){
-		if ((th = pthread_create(&threads[i], NULL, (void *) runProcess, dados[i]->name)))
-			printf("failed to create thread: %d\n", th);
+	long int cur_time;
+
+	for (i = 0; i < LINE_COUNT - 1;){
+		/* atualiza o tempo */
+		cur_time = get_time();
+		/* cria a thread no t0 do processo */
+		if (cur_time >= dados[i]->t0){
+			/* caso o novo processo seja mais rapido, executa ele antes */
+			if (i > 0 && dados[i]->dt < last_dt){
+				/* passa a preferencia pro processo mais curto */
+			}
+			if ((th = pthread_create(&threads[i], NULL, (void *) runProcess, dados[i])))
+				printf("failed to create thread: %d\n", th);
+			else{
+				start_times[i] = get_time();
+				last_dt = dados[i]->dt;
+				i++;
+			}
+		}
 	}
-	for (i = 0; i < LINE_COUNT; i++)
+
+	/* espera as threads terminarem de processar */
+	for (i = 0; i < LINE_COUNT - 1; i++) {
 		pthread_join(threads[i], NULL);
+	}
+}
+
+void simulador(line **dados, int tipo){
+
+	/* Shortest Job First */
+	if (tipo == 1){
+		shortestJobFirst(dados);
+	}
+
+	/* Round Robin */
+	else if (tipo == 2){
+
+	}
+
+	/* Escalonamento com Prioridade */
+	else{
+
+	}
 }
 
 
 int main(int argc, char **argv){
 	/* le o arquivo dado como primeiro argumento e
 	// printa os elementos de cada linha dele */
+	struct timeval tv;
+	/* momento que a execucao do programa comecou */
+	gettimeofday(&tv, NULL);
+	starting_time = tv.tv_sec;
+	starting_utime = tv.tv_usec;
 
-	simulador(readFile(argv[1]), 0);
+	simulador(readFile(argv[1]), 1);
+
+	gettimeofday(&tv, NULL);
 
 	/*line **dados = readFile(argv[1]);
 	for (int i = 0; i < LINE_COUNT; i++){
