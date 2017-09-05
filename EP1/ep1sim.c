@@ -1,3 +1,8 @@
+/* //////////////////////////////////////////////////////////////////
+// Nome: André Ferrari Moukarzel						NUSP: 9298166
+// Nome: Henrique Cerquinho								NUSP: 9793700
+////////////////////////// COMO RODAR /////////////////////////////*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -14,7 +19,6 @@
 pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
 
-
 int LINE_COUNT;
 time_t starting_time;
 suseconds_t starting_utime;
@@ -26,6 +30,7 @@ typedef struct{
 	char *name;
 } line;
 
+
 line *criaLine(int n){
 	line *l;
 	l = malloc(sizeof(line));
@@ -34,31 +39,31 @@ line *criaLine(int n){
 	return l;
 }
 
-/* pega o tempo de execucao atual (precisa pegar os milisegundos tmb D:< ) */
+
+/* Pega o tempo de execucao atual (precisa pegar os milisegundos tmb D:< ) */
 long int get_time(){
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
+	/* oq acontece se usarmos tv.tv_usec ? */
 	return tv.tv_sec - starting_time;
 }
 
-/* Le o arquivo e devolve uma lista de structs de dado com 4 elementos:
-// t0, dt, deadline, nome de cada processo */
 
+/* Lê o arquivo e devolve uma lista de structs de dado com 4 elementos:
+// t0, dt, deadline, nome de cada processo */
 line **readFile(char *name){
-	/* elemento da linha que esta sendo lido
-	// (1 = t0, 2 = dt, 3 = deadline, 4 = nome) */
-	int line_element;
+	int line_element; /* (1 = t0, 2 = dt, 3 = deadline, 4 = nome) */
 	int i, k;
 	char c;
 	char buf[MAX_LINE_SIZE / 4];
 	line **dados;
+	FILE *file;
 
 	/* inicia a lista de dados */
 	dados = malloc(sizeof(line*));
 	dados[0] = criaLine(MAX_LINE_SIZE);
 
 	/* abre o arquivo */
-	FILE *file;
 	file = fopen(name, "r");
 
 	if (file){
@@ -106,12 +111,13 @@ line **readFile(char *name){
 	return dados;
 }
 
+
 void runProcess(line *dado){
 	char process[512];
+	int exec, pid;
 	strcpy(process, "/usr/bin/");
 	strcat(process, dado->name);
-	int exec;
-	int pid = fork();
+	pid = fork();
 
 	if (pid != 0){ /* processo pai */
 		wait(NULL); /* espera processo filho acabar */
@@ -123,6 +129,7 @@ void runProcess(line *dado){
 		return;
 	}
 }
+
 
 void shortestJobFirst(line **dados){
 	int i, th;
@@ -157,6 +164,17 @@ void shortestJobFirst(line **dados){
 	}
 }
 
+
+void roundRobin(line **dados) {
+
+}
+
+
+void priorityEscalonator(line **dados) {
+	
+}
+
+
 void simulador(line **dados, int tipo){
 
 	/* Shortest Job First */
@@ -166,12 +184,12 @@ void simulador(line **dados, int tipo){
 
 	/* Round Robin */
 	else if (tipo == 2){
-
+		roundRobin(dados);
 	}
 
 	/* Escalonamento com Prioridade */
 	else{
-
+		priorityEscalonator(dados);
 	}
 }
 
