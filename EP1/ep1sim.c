@@ -3,8 +3,6 @@
 // Nome: Henrique Cerquinho								NUSP: 9793700
 ////////////////////////// COMO RODAR /////////////////////////////*/
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -12,9 +10,7 @@
 #include <sys/time.h>
 #include <readline/readline.h>
 #include <readline/history.h>
-#include <string.h>
-
-#define MAX_LINE_SIZE 1024
+#include "fileReader.h"
 
 pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
@@ -23,22 +19,6 @@ int LINE_COUNT;
 time_t starting_time;
 suseconds_t starting_utime;
 
-typedef struct{
-	float t0;
-	float dt;
-	float deadline;
-	char *name;
-} line;
-
-
-line *criaLine(int n){
-	line *l;
-	l = malloc(sizeof(line));
-	/* n = tamanho maximo dos nomes */
-	l->name = malloc(n*sizeof(char));
-	return l;
-}
-
 
 /* Pega o tempo de execucao atual (precisa pegar os milisegundos tmb D:< ) */
 long int get_time(){
@@ -46,69 +26,6 @@ long int get_time(){
 	gettimeofday(&tv, NULL);
 	/* oq acontece se usarmos tv.tv_usec ? */
 	return tv.tv_sec - starting_time;
-}
-
-
-/* Lê o arquivo e devolve uma lista de structs de dado com 4 elementos:
-// t0, dt, deadline, nome de cada processo */
-line **readFile(char *name){
-	int line_element; /* (1 = t0, 2 = dt, 3 = deadline, 4 = nome) */
-	int i, k;
-	char c;
-	char buf[MAX_LINE_SIZE / 4];
-	line **dados;
-	FILE *file;
-
-	/* inicia a lista de dados */
-	dados = malloc(sizeof(line*));
-	dados[0] = criaLine(MAX_LINE_SIZE);
-
-	/* abre o arquivo */
-	file = fopen(name, "r");
-
-	if (file){
-		/* i = current char, k = current line */
-		for (i = 0, line_element = 1, k = 0; (c = getc(file)) != EOF;){
-			if (c == ' '){
-				buf[i] = '\0';
-				/* converte a string pra int */
-				if (line_element == 1)
-					dados[k]->t0 = strtof(buf, NULL);
-				else if (line_element == 2)
-					dados[k]->dt = strtof(buf, NULL);
-				else /* deadline */
-					dados[k]->deadline = strtof(buf, NULL);
-
-				/* limpa o buffer e passa para
-				// o proximo elemento da linha */
-				line_element++;
-				i = 0;
-			}
-			else if (c == '\n'){
-				/* chegou no final da linha, passa o nome
-				// pro dado atual, reseta i e line_element*/
-				buf[i] = '\0';
-				strcpy(dados[k]->name, buf);
-				i = 0;
-				line_element = 1;
-				k++;
-				dados = realloc(dados, (k+1)*sizeof(line));
-				dados[k] = criaLine(MAX_LINE_SIZE / 4);
-			}
-			else{
-				buf[i] = c;
-				i++;
-			}
-		}
-		/* copia o nome da ultima linha, pois nao
-		// tem \n no final do arquivo*/
-		buf[i] = '\0';
-		strcpy(dados[k]->name, buf);
-		fclose(file);
-		LINE_COUNT = k+1;
-	}
-
-	return dados;
 }
 
 
@@ -203,7 +120,7 @@ int main(int argc, char **argv){
 	starting_time = tv.tv_sec;
 	starting_utime = tv.tv_usec;
 
-	simulador(readFile(argv[1]), 1);
+	simulador(readFile(argv[1], &LINE_COUNT), 1);
 
 	gettimeofday(&tv, NULL);
 

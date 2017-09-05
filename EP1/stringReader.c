@@ -1,8 +1,6 @@
 #include "stringReader.h"
 
 
-
-
 /* Lê linha e devolve um vetor de strings contendo
 // as strings de linha. Devolve o número de linhas
 // da matriz em lin
