@@ -20,7 +20,7 @@ struct timeval starting_time;
 
 
 /* Retorna o valor em float com 2 casas decimais (praying hand emoji) */
-float get_time() {
+float get_time(){
 	struct timeval tv, temp;
 
 	gettimeofday(&tv, NULL);
@@ -30,12 +30,12 @@ float get_time() {
 	tv.tv_usec /= 10000;
 
 	tv.tv_sec -= temp.tv_sec;
-	tv.tv_usec -= temp.tv_usec;
-	if (tv.tv_usec < 0) {
-		tv.tv_usec = -tv.tv_usec;
-	}
+	if (tv.tv_usec > temp.tv_usec)
+		tv.tv_usec -= temp.tv_usec;
+	else
+		tv.tv_usec += 1 - temp.tv_usec;
 
-	return (float)(tv.tv_sec + tv.tv_usec/100.0);
+	return (float)(tv.tv_sec + (tv.tv_usec/100.0) - 0.01);
 }
 
 
@@ -61,7 +61,6 @@ void shortestJobFirst(line **dados){
 	while (i < LINE_COUNT - 1) {
 		/* atualiza o tempo */
 		cur_time = get_time();
-		printf("Time = %f\n", cur_time);
 
 		/* cria a thread no t0 do processo */
 		if (cur_time >= dados[i]->t0) {
@@ -119,16 +118,16 @@ int main(int argc, char **argv){
 	starting_time = tv;
 
 	/*
-	while(1)
+	while (1)
 	printf("%f\n", get_time());
 	*/
-
 
 	dados = readFile(argv[1], &LINE_COUNT);
 	printf("Arquivo lido\n");
 	simulador(dados, 1);
 
 	gettimeofday(&tv, NULL);
+	printf("%d\n", LINE_COUNT);
 
 	for (i = 0; i < LINE_COUNT; i++)
 		free(dados[i]);
