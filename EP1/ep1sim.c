@@ -11,13 +11,18 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "fileReader.h"
-#include "threads.h"
 
 pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
 
-int LINE_COUNT;
+int LINE_COUNT, interupt = 0, context_changes = 0;
 struct timeval starting_time;
+
+typedef struct{
+	float dt; /* Tempo real necessário */
+	float et; /* Tempo que o processo foi executado */
+	char *name;
+} process;
 
 
 /* Retorna o valor em float com 2 casas decimais (praying hand emoji) */
@@ -37,6 +42,45 @@ float get_time(){
 		tv.tv_usec += 1 - temp.tv_usec;
 
 	return (float)(tv.tv_sec + (tv.tv_usec/100.0) - 0.01);
+}
+
+
+void *newThread(void* arg) {
+	process *p;
+	clock_t t0, t1;
+
+	p = (process *) arg;
+	t0 = t1 = clock();
+
+	printf("Inicio da thread %s\n", p->name);
+
+	while (p->et < p->dt) {
+		if (interupt) {
+			/* Seção crítica */
+			context_changes++;
+			/*****************/
+			return NULL;
+		}
+		t1 = clock();
+		p->et += (double)(t1 - t0) / (double)CLOCKS_PER_SEC;
+		t0 = t1;
+	}
+
+	printf("Finalização da thread %s\n", p->name);
+
+	return NULL;
+}
+
+
+/* Cria novo process baseado na line l */
+process *lineToProcess(line *l) {
+	process *p = malloc(sizeof(process));;
+
+	p->dt = l->dt;
+	p->et = 0.0;
+	p->name = l->name;
+
+	return p;
 }
 
 
@@ -119,5 +163,6 @@ int main(int argc, char **argv){
 	for (i = 0; i < LINE_COUNT; i++)
 		free(dados[i]);
 	free(dados);
+
 	return 0;
 }
