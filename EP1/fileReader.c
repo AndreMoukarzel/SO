@@ -13,7 +13,7 @@ line *criaLine(int n) {
 // line_count */
 line **readFile(char *filename, int *line_count) {
 	int line_element = 1; /* (1 = t0, 2 = dt, 3 = deadline, 4 = nome) */
-	int i, k; 
+	int i, k;
 	char c;
 	char buf[MAX_LINE_SIZE / 4];
 	line **dados;
@@ -30,7 +30,7 @@ line **readFile(char *filename, int *line_count) {
 		printf("ERROR!INVALID FILE!\n");
 		return NULL;
 	}
-	
+
 	i = k = 0; /* i = current char, k = current line */
 
 	while( (c = getc(file)) != EOF ) {
@@ -69,7 +69,7 @@ line **readFile(char *filename, int *line_count) {
 	strcpy(dados[k]->name, buf);
 	fclose(file);
 	k++;
-	*line_count = k+1;
+	*line_count = k;
 
 	return dados;
 }

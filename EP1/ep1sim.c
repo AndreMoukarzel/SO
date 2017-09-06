@@ -12,6 +12,7 @@
 #include <readline/history.h>
 #include "fileReader.h"
 #include "threads.h"
+#include "pilha.h"
 
 pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
@@ -42,9 +43,14 @@ float get_time(){
 
 void shortestJobFirst(line **dados){
 	int i = 0, th;
+	float cur_time;
+	pthread_t *threads;
+	/* processo com a prioridade estara sempre no topo da pilha */
+	pilha *job_order;
+	job_order = criaPilha(LINE_COUNT);
+
 	/* o dt do ultimo processo recebido */
-	float last_dt = 0.0, cur_time;
-	pthread_t *threads = malloc(LINE_COUNT * sizeof(pthread_t));
+	threads = malloc(LINE_COUNT * sizeof(pthread_t));
 
 	while (i < LINE_COUNT - 1) {
 		/* atualiza o tempo */
@@ -55,7 +61,6 @@ void shortestJobFirst(line **dados){
 			if ((th = pthread_create(&threads[i], NULL, newThread, (void *) lineToProcess(dados[i]))))
 				printf("Failed to create thread %d\n", th);
 			else {
-				last_dt = dados[i]->dt;
 				i++;
 			}
 		}
@@ -65,6 +70,8 @@ void shortestJobFirst(line **dados){
 	for (i = 0; i < LINE_COUNT - 1; i++) {
 		pthread_join(threads[i], NULL);
 	}
+
+	destroiPilha(job_order);
 }
 
 
@@ -102,6 +109,7 @@ int main(int argc, char **argv){
 	int i;
 	line **dados;
 
+
 	gettimeofday(&tv, NULL);
 	starting_time = tv;
 
@@ -111,6 +119,14 @@ int main(int argc, char **argv){
 	*/
 
 	dados = readFile(argv[1], &LINE_COUNT);
+	/*
+	pilha *jobs;
+	jobs = criaPilha(LINE_COUNT);
+	for (i = 0; i < LINE_COUNT - 1; i++)
+		insereOrdenado(jobs, dados[i]);
+	printPilha(jobs);
+	printf("%f\n", dados[0]->dt);
+	*/
 	simulador(dados, 1);
 
 	gettimeofday(&tv, NULL);
