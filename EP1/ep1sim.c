@@ -46,7 +46,7 @@ void shortestJobFirst(line **dados){
 	float last_dt = 0.0, cur_time;
 	pthread_t *threads = malloc(LINE_COUNT * sizeof(pthread_t));
 
-	while (i < LINE_COUNT - 1) {
+	while (i < LINE_COUNT) {
 		/* atualiza o tempo */
 		cur_time = get_time();
 
@@ -62,7 +62,7 @@ void shortestJobFirst(line **dados){
 	}
 
 	/* espera as threads terminarem de processar */
-	for (i = 0; i < LINE_COUNT - 1; i++) {
+	for (i = 0; i < LINE_COUNT; i++) {
 		pthread_join(threads[i], NULL);
 	}
 }
@@ -107,7 +107,7 @@ int main(int argc, char **argv){
 
 	/*
 	while (1)
-	printf("%f\n", get_time());
+		printf("%f\n", get_time());
 	*/
 
 	dados = readFile(argv[1], &LINE_COUNT);

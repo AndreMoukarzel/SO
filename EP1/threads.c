@@ -8,10 +8,14 @@ void *newThread(void* arg) {
 	p = (process *) arg;
 	t0 = t = clock();
 
+	printf("Inicio da thread %s\n", p->name);
+
 	while (real_time < p->dt) {
 		t = clock();
 		real_time = (double)(t - t0) / (double)CLOCKS_PER_SEC;
 	}
+
+	printf("Finalização da thread %s\n", p->name);
 
 	return NULL;
 }

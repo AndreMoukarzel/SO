@@ -69,7 +69,7 @@ line **readFile(char *filename, int *line_count) {
 	strcpy(dados[k]->name, buf);
 	fclose(file);
 	k++;
-	*line_count = k+1;
+	*line_count = k;
 
 	return dados;
 }
