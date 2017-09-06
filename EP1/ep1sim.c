@@ -16,16 +16,28 @@ pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
 
 int LINE_COUNT;
-time_t starting_time;
-suseconds_t starting_utime;
+struct timeval starting_time;
 
 
-/* Pega o tempo de execucao atual (precisa pegar os milisegundos tmb D:< ) */
+/* Retorna o valor em float com 2 casas decimais (praying hand emoji) */
 float get_time(){
-	struct timeval tv;
+	struct timeval tv, temp;
+
 	gettimeofday(&tv, NULL);
-	/* oq acontece se usarmos tv.tv_usec ? */
-	return tv.tv_sec - starting_time;
+
+	temp = starting_time;
+	tv.tv_sec -= temp.tv_sec;
+	temp.tv_usec /= 10000;
+	tv.tv_usec /= 10000;
+
+	if (tv.tv_usec > temp.tv_usec)
+		tv.tv_usec -= temp.tv_usec;
+	else {
+		tv.tv_usec += 1 - temp.tv_usec;
+		tv.tv_sec -= 1
+	}
+
+	return (float)(tv.tv_sec + tv.tv_usec/100.0);
 }
 
 
@@ -52,13 +64,13 @@ void runProcess(line *dado){
 void shortestJobFirst(line **dados){
 	int i = 0, th;
 	/* o dt do ultimo processo recebido */
-	float last_dt = 0.0, *start_times = malloc(LINE_COUNT * sizeof(float));
+	float last_dt = 0.0, cur_time, *start_times = malloc(LINE_COUNT * sizeof(float));
 	pthread_t *threads = malloc(LINE_COUNT * sizeof(pthread_t));
-	float cur_time;
 
 	while (i < LINE_COUNT) {
 		/* atualiza o tempo */
 		cur_time = get_time();
+
 		/* cria a thread no t0 do processo */
 		if (cur_time >= dados[i]->t0) {
 			/* caso o novo processo seja mais rapido, executa ele antes */
@@ -68,7 +80,6 @@ void shortestJobFirst(line **dados){
 			if ((th = pthread_create(&threads[i], NULL, runProcess, dados[i])))
 				printf("failed to create thread: %d\n", th);
 			else {
-				start_times[i] = get_time();
 				last_dt = dados[i]->dt;
 				i++;
 			}
@@ -88,7 +99,7 @@ void roundRobin(line **dados) {
 
 
 void priorityEscalonator(line **dados) {
-	
+
 }
 
 
@@ -113,12 +124,18 @@ void simulador(line **dados, int tipo){
 
 int main(int argc, char **argv){
 	struct timeval tv;
+	int i;
 
 	gettimeofday(&tv, NULL);
-	starting_time = tv.tv_sec;
-	starting_utime = tv.tv_usec;
+	starting_time = tv;
 
-	simulador(readFile(argv[1], &LINE_COUNT), 1);
+	while(1)
+	printf("%f\n", get_time());
+
+
+	line **dados = readFile(argv[1], &LINE_COUNT);
+
+	simulador(dados, 1);
 
 	gettimeofday(&tv, NULL);
 
@@ -128,9 +145,9 @@ int main(int argc, char **argv){
 		printf("%f\n", dados[i]->dt);
 		printf("%f\n", dados[i]->deadline);
 		printf("%s\n", dados[i]->name);
-	}
-	for (int i = 0; i < LINE_COUNT; i++)
+	}*/
+	for (i = 0; i < LINE_COUNT; i++)
 		free(dados[i]);
-	free(dados);*/
+	free(dados);
 	return 0;
 }
