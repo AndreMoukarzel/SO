@@ -13,7 +13,7 @@
 #include "fileReader.h"
 #include "pilha.h"
 
-pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
 
 int LINE_COUNT, interupt = 0, context_changes = 0;
@@ -47,22 +47,25 @@ void *newThread(void* arg) {
 	p = (process *) arg;
 	t0 = t1 = clock();
 
-	printf("Inicio da thread %s\n", p->name);
+	printf("Inicio da thread %s em: %f\n", p->name, get_time());
+	p->et = p->dt;
 
-	while (p->et < p->dt) {
+	while (p->et > 0) {
 		if (interupt) {
 			printf("Thread %s interrompida\n", p->name);
 			/* Seção crítica */
+			pthread_mutex_lock(&mutex);
 			context_changes++;
+			pthread_mutex_unlock(&mutex);
 			/*****************/
 			return NULL;
 		}
 		t1 = clock();
-		p->et += (double)(t1 - t0) / (double)CLOCKS_PER_SEC;
+		p->et -= (double)(t1 - t0) / (double)CLOCKS_PER_SEC;
 		t0 = t1;
 	}
 
-	printf("Finalização da thread %s\n", p->name);
+	printf("Finalização da thread %s em: %f\n", p->name, get_time());
 
 	return NULL;
 }
@@ -95,7 +98,7 @@ void shortestJobFirst(line **dados){
 		top_pros = topoPilha(job_order);
 
 		/* Processo mais curto acabou */
-		if (!pilhaVazia(job_order) && top_pros->et >= top_pros->dt) {
+		if (!pilhaVazia(job_order) && top_pros->et <= 0) {
 			printf("Topo finalizou\n");
 			desempilha(job_order);
 
@@ -109,7 +112,7 @@ void shortestJobFirst(line **dados){
 		}
 
 		/* Novo processo recebido */
-		if (cur_time >= dados[i]->t0) { 
+		if (cur_time >= dados[i]->t0) {
 			printf("Novo processo recebido\n");
 			top_pros = topoPilha(job_order);
 			pros[i] = lineToProcess(dados[i], i);
@@ -118,14 +121,14 @@ void shortestJobFirst(line **dados){
 			/* Novo processo é mais curto que o sendo executado (topo da pilha mudou) */
 			if (top_pros != topoPilha(job_order)) {
 				top_pros = topoPilha(job_order);
-				printf("top_pros != topoPilha | Novo processo = %s\n", top_pros->name);
+				printf("moudou o topo! | Novo processo = %s\n", top_pros->name);
 				interupt = 1;
 				if ((th = pthread_create(&threads[i], NULL, newThread, (void *) topoPilha(job_order))))
 					printf("Failed to create thread %d\n", th);
 				else /* Nova thread criada */
 					interupt = 0;
-					i++;
 			}
+			i++;
 		}
 	}
 
@@ -134,8 +137,9 @@ void shortestJobFirst(line **dados){
 	for (i = 0; i < LINE_COUNT; i++) {
 		pthread_join(threads[i], NULL);
 	}
+	printf("cabou a espera\n");
 
-	/* destroiPilha(job_order); */
+	destroiPilha(job_order);
 }
 
 
@@ -194,7 +198,7 @@ int main(int argc, char **argv){
 	simulador(dados, 1);
 
 	gettimeofday(&tv, NULL);
-	printf("%d\n", LINE_COUNT);
+	printf("tempo final de execucao: %f\n", get_time());
 
 	for (i = 0; i < LINE_COUNT; i++)
 		free(dados[i]);

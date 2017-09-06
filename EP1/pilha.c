@@ -75,8 +75,8 @@ void printPilha(pilha *p){
 
 void destroiPilha(pilha *p){
 	while ((p->topo) != 0) {
-        free(p->v[p->topo]);
+        free(p->v[p->topo - 1]);
         (p->topo)--;
-    } 
+    }
 	free(p);
 }
