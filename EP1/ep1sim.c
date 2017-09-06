@@ -21,7 +21,7 @@ suseconds_t starting_utime;
 
 
 /* Pega o tempo de execucao atual (precisa pegar os milisegundos tmb D:< ) */
-long int get_time(){
+float get_time(){
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 	/* oq acontece se usarmos tv.tv_usec ? */
@@ -31,7 +31,8 @@ long int get_time(){
 
 void runProcess(line *dado){
 	char process[512];
-	int exec, pid;
+	int pid;
+
 	strcpy(process, "/usr/bin/");
 	strcat(process, dado->name);
 	pid = fork();
@@ -40,7 +41,7 @@ void runProcess(line *dado){
 		wait(NULL); /* espera processo filho acabar */
 	}
 	else { /* processo filho */
-		if (!(exec = execl(process, process, NULL, NULL)))
+		if (!execl(process, process, NULL, NULL))
 			/* nao sei se o valor de retorno é de erro ou nao D: */
 			printf("deu ruim?\n");
 		return;
@@ -49,25 +50,24 @@ void runProcess(line *dado){
 
 
 void shortestJobFirst(line **dados){
-	int i, th;
+	int i = 0, th;
 	/* o dt do ultimo processo recebido */
-	float last_dt = 0.0;
-	long int start_times[LINE_COUNT];
-	pthread_t threads[LINE_COUNT];
-	long int cur_time;
+	float last_dt = 0.0, *start_times = malloc(LINE_COUNT * sizeof(float));
+	pthread_t *threads = malloc(LINE_COUNT * sizeof(pthread_t));
+	float cur_time;
 
-	for (i = 0; i < LINE_COUNT - 1;){
+	while (i < LINE_COUNT) {
 		/* atualiza o tempo */
 		cur_time = get_time();
 		/* cria a thread no t0 do processo */
-		if (cur_time >= dados[i]->t0){
+		if (cur_time >= dados[i]->t0) {
 			/* caso o novo processo seja mais rapido, executa ele antes */
-			if (i > 0 && dados[i]->dt < last_dt){
+			if (i > 0 && dados[i]->dt < last_dt) {
 				/* passa a preferencia pro processo mais curto */
 			}
-			if ((th = pthread_create(&threads[i], NULL, (void *) runProcess, dados[i])))
+			if ((th = pthread_create(&threads[i], NULL, runProcess, dados[i])))
 				printf("failed to create thread: %d\n", th);
-			else{
+			else {
 				start_times[i] = get_time();
 				last_dt = dados[i]->dt;
 				i++;
@@ -112,10 +112,8 @@ void simulador(line **dados, int tipo){
 
 
 int main(int argc, char **argv){
-	/* le o arquivo dado como primeiro argumento e
-	// printa os elementos de cada linha dele */
 	struct timeval tv;
-	/* momento que a execucao do programa comecou */
+
 	gettimeofday(&tv, NULL);
 	starting_time = tv.tv_sec;
 	starting_utime = tv.tv_usec;
