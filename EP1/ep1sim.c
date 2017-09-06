@@ -20,44 +20,35 @@ struct timeval starting_time;
 
 
 /* Retorna o valor em float com 2 casas decimais (praying hand emoji) */
-float get_time(){
+float get_time() {
 	struct timeval tv, temp;
 
 	gettimeofday(&tv, NULL);
 
 	temp = starting_time;
-	tv.tv_sec -= temp.tv_sec;
 	temp.tv_usec /= 10000;
 	tv.tv_usec /= 10000;
 
-	if (tv.tv_usec > temp.tv_usec)
-		tv.tv_usec -= temp.tv_usec;
-	else {
-		tv.tv_usec += 1 - temp.tv_usec;
-		tv.tv_sec -= 1
+	tv.tv_sec -= temp.tv_sec;
+	tv.tv_usec -= temp.tv_usec;
+	if (tv.tv_usec < 0) {
+		tv.tv_usec = -tv.tv_usec;
 	}
 
 	return (float)(tv.tv_sec + tv.tv_usec/100.0);
 }
 
 
-void runProcess(line *dado){
-	char process[512];
-	int pid;
+void *newThread(void* arg) {
+	int n = 0;
 
-	strcpy(process, "/usr/bin/");
-	strcat(process, dado->name);
-	pid = fork();
+	printf("Criando thread\n");
 
-	if (pid != 0){ /* processo pai */
-		wait(NULL); /* espera processo filho acabar */
-	}
-	else { /* processo filho */
-		if (!execl(process, process, NULL, NULL))
-			/* nao sei se o valor de retorno é de erro ou nao D: */
-			printf("deu ruim?\n");
-		return;
-	}
+	while (n < 100)
+		n++;
+
+	printf("Finalizando thread\n");
+	return NULL;
 }
 
 
@@ -67,17 +58,14 @@ void shortestJobFirst(line **dados){
 	float last_dt = 0.0, cur_time, *start_times = malloc(LINE_COUNT * sizeof(float));
 	pthread_t *threads = malloc(LINE_COUNT * sizeof(pthread_t));
 
-	while (i < LINE_COUNT) {
+	while (i < LINE_COUNT - 1) {
 		/* atualiza o tempo */
 		cur_time = get_time();
+		printf("Time = %f\n", cur_time);
 
 		/* cria a thread no t0 do processo */
 		if (cur_time >= dados[i]->t0) {
-			/* caso o novo processo seja mais rapido, executa ele antes */
-			if (i > 0 && dados[i]->dt < last_dt) {
-				/* passa a preferencia pro processo mais curto */
-			}
-			if ((th = pthread_create(&threads[i], NULL, runProcess, dados[i])))
+			if ((th = pthread_create(&threads[i], NULL, newThread, NULL) ))
 				printf("failed to create thread: %d\n", th);
 			else {
 				last_dt = dados[i]->dt;
@@ -125,27 +113,23 @@ void simulador(line **dados, int tipo){
 int main(int argc, char **argv){
 	struct timeval tv;
 	int i;
+	line **dados;
 
 	gettimeofday(&tv, NULL);
 	starting_time = tv;
 
+	/*
 	while(1)
 	printf("%f\n", get_time());
+	*/
 
 
-	line **dados = readFile(argv[1], &LINE_COUNT);
-
+	dados = readFile(argv[1], &LINE_COUNT);
+	printf("Arquivo lido\n");
 	simulador(dados, 1);
 
 	gettimeofday(&tv, NULL);
 
-	/*line **dados = readFile(argv[1]);
-	for (int i = 0; i < LINE_COUNT; i++){
-		printf("%f\n", dados[i]->t0);
-		printf("%f\n", dados[i]->dt);
-		printf("%f\n", dados[i]->deadline);
-		printf("%s\n", dados[i]->name);
-	}*/
 	for (i = 0; i < LINE_COUNT; i++)
 		free(dados[i]);
 	free(dados);
