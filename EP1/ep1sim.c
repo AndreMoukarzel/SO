@@ -51,6 +51,7 @@ void *newThread(void* arg) {
 
 	while (p->et < p->dt) {
 		if (interupt) {
+			printf("Thread %s interrompida\n", p->name);
 			/* Seção crítica */
 			context_changes++;
 			/*****************/
@@ -68,12 +69,13 @@ void *newThread(void* arg) {
 
 
 /* Cria novo process baseado na line l */
-process *lineToProcess(line *l) {
+process *lineToProcess(line *l, int index) {
 	process *p = malloc(sizeof(process));;
 
 	p->dt = l->dt;
 	p->et = 0.0;
 	p->name = l->name;
+	p->i = index;
 
 	return p;
 }
@@ -83,37 +85,57 @@ void shortestJobFirst(line **dados){
 	int i = 0, th;
 	float cur_time;
 	pthread_t *threads = malloc(LINE_COUNT * sizeof(pthread_t));
-	process **pros = malloc(LINE_COUNT * sizeof(process*));
+	process *top_pros, **pros = malloc(LINE_COUNT * sizeof(process*));
 	pilha *job_order;
 
-	job_order = criaPilha(LINE_COUNT); /* processo com a prioridade estara sempre no topo da pilha */
+	job_order = criaPilha(LINE_COUNT); /* processo mais curto estará sempre no topo da pilha */
 
 	while (i < LINE_COUNT) {
 		cur_time = get_time();
+		top_pros = topoPilha(job_order);
+
+		/* Processo mais curto acabou */
+		if (!pilhaVazia(job_order) && top_pros->et >= top_pros->dt) {
+			printf("Topo finalizou\n");
+			desempilha(job_order);
+
+			if (!pilhaVazia(job_order)) {
+				top_pros = topoPilha(job_order);
+				if ((th = pthread_create(&threads[top_pros->i], NULL, newThread, (void *) top_pros)))
+					printf("Failed to create thread %d\n", th);
+				else /* Nova thread criada */
+					i++;
+			}
+		}
+
 		/* Novo processo recebido */
 		if (cur_time >= dados[i]->t0) { 
-			pros[i] = lineToProcess(dados[i]);
+			printf("Novo processo recebido\n");
+			top_pros = topoPilha(job_order);
+			pros[i] = lineToProcess(dados[i], i);
+			insereOrdenado(job_order, pros[i]);
 
-			/* Novo processo é mais curto que o sendo executado //
-			if (pros[i]->dt < (pros[?]->dt - pros[?]->et)) { // obviamente substituir ? pelo elemento no topo da pilha //
+			/* Novo processo é mais curto que o sendo executado (topo da pilha mudou) */
+			if (top_pros != topoPilha(job_order)) {
+				top_pros = topoPilha(job_order);
+				printf("top_pros != topoPilha | Novo processo = %s\n", top_pros->name);
 				interupt = 1;
-				// modifica a fila e cria thread com processo do topo bla bla bla //
-				pthread_create(&threads[i], NULL, newThread, (void *) pros[i])
+				if ((th = pthread_create(&threads[i], NULL, newThread, (void *) topoPilha(job_order))))
+					printf("Failed to create thread %d\n", th);
+				else /* Nova thread criada */
+					interupt = 0;
+					i++;
 			}
-			*/
-			if ((th = pthread_create(&threads[i], NULL, newThread, (void *) pros[i])))
-				printf("Failed to create thread %d\n", th);
-			else /* Nova thread criada */
-				i++;
 		}
 	}
 
+	printf("Começa a espera\n");
 	/* Espera as threads terminarem de processar */
 	for (i = 0; i < LINE_COUNT; i++) {
 		pthread_join(threads[i], NULL);
 	}
 
-	destroiPilha(job_order);
+	/* destroiPilha(job_order); */
 }
 
 

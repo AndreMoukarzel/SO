@@ -27,7 +27,7 @@ void insereOrdenado(pilha *p, process *x){
     		for (i = 0; i < p->topo && ok == 0; i++) {
                 /* se achar um dt maior, move o resto do vetor
                 // e insere x ordenado */
-                if ( (p->v[i]->dt - p->v[i]->et) > x->dt) {
+                if ( (p->v[i]->dt - p->v[i]->et) < x->dt) {
                     for (j = p->topo; j >= i; j--){
                         p->v[j+1] = p->v[j];
                     }
@@ -51,13 +51,19 @@ void insereOrdenado(pilha *p, process *x){
 
 
 process *desempilha(pilha *p){
-	if (pilhaVazia(p) == 1){
+	if (pilhaVazia(p)){
 		return NULL;
 	}
 	(p->topo)--;
 	return (p->v[ p->topo ]);
 }
 
+
+process *topoPilha(pilha *p) {
+    if (p->topo == 0)
+        return NULL;
+    return p->v[p->topo - 1];
+}
 
 void printPilha(pilha *p){
     int i;

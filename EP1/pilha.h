@@ -8,6 +8,7 @@ typedef struct{
 	float dt; /* Tempo real necessário */
 	float et; /* Tempo que o processo foi executado */
 	char *name;
+	int i;
 } process;
 
 /* Pilha de process */
@@ -16,6 +17,9 @@ typedef struct{
 	int topo, max;
 } pilha;
 
+
+int pilhaVazia(pilha *p);
+
 pilha *criaPilha(int MAX);
 
 /* Insere uma line x na pilha de forma a ficar ordenada pelo
@@ -23,6 +27,8 @@ pilha *criaPilha(int MAX);
 void insereOrdenado(pilha *p, process *x);
 
 process *desempilha(pilha *p);
+
+process *topoPilha(pilha *p);
 
 void printfPilha(pilha *p);
 
