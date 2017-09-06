@@ -87,25 +87,31 @@ process *lineToProcess(line *l) {
 void shortestJobFirst(line **dados){
 	int i = 0, th;
 	/* o dt do ultimo processo recebido */
-	float last_dt = 0.0, cur_time;
+	float cur_time;
 	pthread_t *threads = malloc(LINE_COUNT * sizeof(pthread_t));
+	process **pros = malloc(LINE_COUNT * sizeof(process*));
 
 	while (i < LINE_COUNT) {
-		/* atualiza o tempo */
 		cur_time = get_time();
+		/* Novo processo recebido */
+		if (cur_time >= dados[i]->t0) { 
+			pros[i] = lineToProcess(dados[i]);
 
-		/* cria a thread no t0 do processo */
-		if (cur_time >= dados[i]->t0) {
-			if ((th = pthread_create(&threads[i], NULL, newThread, (void *) lineToProcess(dados[i]))))
-				printf("Failed to create thread %d\n", th);
-			else {
-				last_dt = dados[i]->dt;
-				i++;
+			/* Novo processo é mais curto que o sendo executado //
+			if (pros[i]->dt < (pros[?]->dt - pros[?]->et)) { // obviamente substituir ? pelo elemento no topo da pilha //
+				interupt = 1;
+				// modifica a fila e cria thread com processo do topo bla bla bla //
+				pthread_create(&threads[i], NULL, newThread, (void *) pros[i])
 			}
+			*/
+			if ((th = pthread_create(&threads[i], NULL, newThread, (void *) pros[i])))
+				printf("Failed to create thread %d\n", th);
+			else /* Nova thread criada */
+				i++;
 		}
 	}
 
-	/* espera as threads terminarem de processar */
+	/* Espera as threads terminarem de processar */
 	for (i = 0; i < LINE_COUNT; i++) {
 		pthread_join(threads[i], NULL);
 	}
