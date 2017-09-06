@@ -11,6 +11,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "fileReader.h"
+#include "threads.h"
 
 pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
@@ -33,40 +34,27 @@ float get_time() {
 	tv.tv_usec -= temp.tv_usec;
 	if (tv.tv_usec < 0) {
 		tv.tv_usec = -tv.tv_usec;
+		tv.tv_sec -= 1;
 	}
 
 	return (float)(tv.tv_sec + tv.tv_usec/100.0);
 }
 
 
-void *newThread(void* arg) {
-	int n = 0;
-
-	printf("Criando thread\n");
-
-	while (n < 100)
-		n++;
-
-	printf("Finalizando thread\n");
-	return NULL;
-}
-
-
 void shortestJobFirst(line **dados){
 	int i = 0, th;
 	/* o dt do ultimo processo recebido */
-	float last_dt = 0.0, cur_time, *start_times = malloc(LINE_COUNT * sizeof(float));
+	float last_dt = 0.0, cur_time;
 	pthread_t *threads = malloc(LINE_COUNT * sizeof(pthread_t));
 
 	while (i < LINE_COUNT - 1) {
 		/* atualiza o tempo */
 		cur_time = get_time();
-		printf("Time = %f\n", cur_time);
 
 		/* cria a thread no t0 do processo */
 		if (cur_time >= dados[i]->t0) {
-			if ((th = pthread_create(&threads[i], NULL, newThread, NULL) ))
-				printf("failed to create thread: %d\n", th);
+			if ((th = pthread_create(&threads[i], NULL, newThread, (void *) lineToProcess(dados[i]))))
+				printf("Failed to create thread %d\n", th);
 			else {
 				last_dt = dados[i]->dt;
 				i++;
@@ -125,7 +113,6 @@ int main(int argc, char **argv){
 
 
 	dados = readFile(argv[1], &LINE_COUNT);
-	printf("Arquivo lido\n");
 	simulador(dados, 1);
 
 	gettimeofday(&tv, NULL);
