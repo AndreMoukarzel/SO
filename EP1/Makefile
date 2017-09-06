@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-ansi -Wall -pedantic -O2
 EP1SHELL=ep1sh.c stringReader.o
-EP1SIM = ep1sim.c fileReader.o
+EP1SIM = ep1sim.c fileReader.o pilha.o
 
 all: ep1sh ep1sim clean
 

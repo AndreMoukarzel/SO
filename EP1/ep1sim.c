@@ -11,18 +11,13 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "fileReader.h"
+#include "pilha.h"
 
 pthread_mutex_t count_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
 
 int LINE_COUNT, interupt = 0, context_changes = 0;
 struct timeval starting_time;
-
-typedef struct{
-	float dt; /* Tempo real necessário */
-	float et; /* Tempo que o processo foi executado */
-	char *name;
-} process;
 
 
 /* Retorna o valor em float com 2 casas decimais (praying hand emoji) */
@@ -86,10 +81,12 @@ process *lineToProcess(line *l) {
 
 void shortestJobFirst(line **dados){
 	int i = 0, th;
-	/* o dt do ultimo processo recebido */
 	float cur_time;
 	pthread_t *threads = malloc(LINE_COUNT * sizeof(pthread_t));
 	process **pros = malloc(LINE_COUNT * sizeof(process*));
+	pilha *job_order;
+
+	job_order = criaPilha(LINE_COUNT); /* processo com a prioridade estara sempre no topo da pilha */
 
 	while (i < LINE_COUNT) {
 		cur_time = get_time();
@@ -115,6 +112,8 @@ void shortestJobFirst(line **dados){
 	for (i = 0; i < LINE_COUNT; i++) {
 		pthread_join(threads[i], NULL);
 	}
+
+	destroiPilha(job_order);
 }
 
 
@@ -152,6 +151,7 @@ int main(int argc, char **argv){
 	int i;
 	line **dados;
 
+
 	gettimeofday(&tv, NULL);
 	starting_time = tv;
 
@@ -161,6 +161,14 @@ int main(int argc, char **argv){
 	*/
 
 	dados = readFile(argv[1], &LINE_COUNT);
+	/*
+	pilha *jobs;
+	jobs = criaPilha(LINE_COUNT);
+	for (i = 0; i < LINE_COUNT - 1; i++)
+		insereOrdenado(jobs, dados[i]);
+	printPilha(jobs);
+	printf("%f\n", dados[0]->dt);
+	*/
 	simulador(dados, 1);
 
 	gettimeofday(&tv, NULL);
