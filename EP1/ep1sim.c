@@ -43,17 +43,17 @@ float get_time(){
 
 void *newThread(void* arg) {
 	process *p;
-	clock_t t0, t1;
+	float t0, t1;
 
-	t0 = t1 = clock();
+	t0 = t1 = get_time();
 	p = (process *) arg;
 	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
 	printf("Inicio da thread %s em: %f\n", p->name, get_time());
 
 	while (p->et > 0) {
-		t1 = clock();
-		p->et -= (double)(t1 - t0) / (double)CLOCKS_PER_SEC;
+		t1 = get_time();
+		p->et -= (double)(t1 - t0);
 		t0 = t1;
 	}
 
@@ -65,18 +65,18 @@ void *newThread(void* arg) {
 
 void *newQuantumThread(void* arg) {
 	process *p;
-	clock_t t0, t1, elapsed = 0.0;
+	float t0, t1, elapsed = 0.0;
 
-	t0 = t1 = clock();
+	t0 = t1 = get_time();
 	p = (process *) arg;
 	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
 	/* Passa a execuçao para outra thread se o quantum for cumprido ou
 	// se o processo acabar */
 	while (elapsed < p->quantum && p->et > 0){
-		t1 = clock();
-		elapsed += (double)(t1 - t0) / (double)CLOCKS_PER_SEC;
-		p->et -= (double)(t1 - t0) / (double)CLOCKS_PER_SEC;
+		t1 = get_time();
+		elapsed += t1 - t0;
+		p->et -= t1 - t0;
 		t0 = t1;
 	}
 	/* Saiu por causa do tempo */
@@ -112,7 +112,7 @@ process *lineToProcess(line *l, int index, float quantum) {
 
 
 void shortestJobFirst(line **dados){
-	int i = 0, th;
+	int i = 0, th, new_job;
 	float cur_time;
 	pthread_t *threads = malloc(LINE_COUNT * sizeof(pthread_t));
 	process *top_pros, **pros = malloc(LINE_COUNT * sizeof(process*));
@@ -121,6 +121,7 @@ void shortestJobFirst(line **dados){
 	job_order = criaPilha(LINE_COUNT); /* processo mais curto estará sempre no topo da pilha */
 
 	while (i < LINE_COUNT) {
+		new_job = 0;
 		cur_time = get_time();
 		top_pros = topoPilha(job_order);
 
@@ -140,6 +141,7 @@ void shortestJobFirst(line **dados){
 
 		/* Novo processo recebido */
 		if (cur_time >= dados[i]->t0) {
+			new_job = 1;
 			top_pros = topoPilha(job_order);
 			pros[i] = lineToProcess(dados[i], i, dados[i]->dt + 1); /* Quantum absurdo nunca será atingido */
 			if (top_pros != NULL)
@@ -160,6 +162,10 @@ void shortestJobFirst(line **dados){
 					printf("Failed to create thread %d\n", th);
 			}
 			i++;
+		}
+		if (!new_job){
+			printf("SLEEPY BOYS\n");
+			sleep(1);
 		}
 	}
 
