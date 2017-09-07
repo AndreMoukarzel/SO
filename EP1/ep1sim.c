@@ -119,13 +119,14 @@ void shortestJobFirst(line **dados){
 
 			/* Novo processo é mais curto que o sendo executado (topo da pilha mudou) */
 			if (top_pros != topoPilha(job_order)) {
+				if (top_pros != NULL) { /* Cancela thread que saiu do topo */
+					pthread_cancel(threads[top_pros->i]);
+					printf("Thread %s a ser cancelada\n", top_pros->name);
+				}
 				top_pros = topoPilha(job_order);
 				printf("Mudou o topo! | Novo processo = %s\n", top_pros->name);
-				interupt = 1;
 				if ((th = pthread_create(&threads[i], NULL, newThread, (void *) top_pros)))
 					printf("Failed to create thread %d\n", th);
-				else /* Nova thread criada */
-					interupt = 0;
 			}
 			i++;
 		}
