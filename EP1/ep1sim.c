@@ -72,11 +72,13 @@ void *newThread(void* arg) {
 
 
 /* Cria novo process baseado na line l */
-process *lineToProcess(line *l, int index) {
+process *lineToProcess(line *l, int index, float quantum) {
 	process *p = malloc(sizeof(process));;
 
+	p->t0 = l->t0;
 	p->dt = l->dt;
 	p->et = l->dt;
+	p->quantum = quantum;
 	p->name = l->name;
 	p->i = index;
 
@@ -114,7 +116,9 @@ void shortestJobFirst(line **dados){
 		/* Novo processo recebido */
 		if (cur_time >= dados[i]->t0) {
 			top_pros = topoPilha(job_order);
-			pros[i] = lineToProcess(dados[i], i);
+			pros[i] = lineToProcess(dados[i], i, dados[i]->dt + 1); /* Quantum absurdo nunca será atingido */
+			if (top_pros != NULL)
+				printf("%s et = %f\n", top_pros->name, top_pros->et);
 			insereOrdenado(job_order, pros[i]);
 			printf("Novo processo recebido | Processo = %s\n", pros[i]->name);
 

@@ -27,7 +27,7 @@ void insereOrdenado(pilha *p, process *x){
     		for (i = 0; i < p->topo && ok == 0; i++) {
                 /* se achar um dt maior, move o resto do vetor
                 // e insere x ordenado */
-                if (p->v[i]->et >= x->dt) {
+                if (p->v[i]->et <= x->et) {
                     for (j = p->topo; j >= i; j--){
                         p->v[j+1] = p->v[j];
                     }
