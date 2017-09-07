@@ -1,17 +1,7 @@
 #ifndef PILHA_H
 #define PILHA_H
 
-#include <stdio.h>
-#include <stdlib.h>
-
-typedef struct{
-	float t0; /* Tempo em que processo iniciou */
-	float dt; /* Tempo real necessário */
-	float et; /* Tempo restante de execução necessário */
-	float quantum;
-	char *name;
-	int i;
-} process;
+#include "process.h"
 
 /* Pilha de process */
 typedef struct{
@@ -24,7 +14,7 @@ int pilhaVazia(pilha *p);
 
 pilha *criaPilha(int MAX);
 
-/* Insere uma line x na pilha de forma a ficar ordenada pelo
+/* Insere um process x na pilha de forma a ficar ordenada pelo
 // tempo restante de execução (dt - et)  */
 void insereOrdenado(pilha *p, process *x);
 

@@ -22,13 +22,13 @@ pilha *criaPilha(int MAX){
 void insereOrdenado(pilha *p, process *x){
     int i, j, ok = 0;
 
-	if (p->topo < p->max){
-        if (p->topo != 0){
+	if (p->topo < p->max) {
+        if (p->topo != 0) {
     		for (i = 0; i < p->topo && ok == 0; i++) {
                 /* se achar um dt maior, move o resto do vetor
                 // e insere x ordenado */
                 if (p->v[i]->et <= x->et) {
-                    for (j = p->topo; j >= i; j--){
+                    for (j = p->topo; j >= i; j--) {
                         p->v[j+1] = p->v[j];
                     }
                     p->v[i] = x;
