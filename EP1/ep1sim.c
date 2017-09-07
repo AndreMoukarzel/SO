@@ -16,7 +16,7 @@
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
 
-int LINE_COUNT, interupt = 0, context_changes = 0;
+int LINE_COUNT, context_changes = 0;
 struct timeval starting_time;
 
 
@@ -51,15 +51,6 @@ void *newThread(void* arg) {
 	printf("Inicio da thread %s em: %f\n", p->name, get_time());
 
 	while (p->et > 0) {
-		if (interupt) {
-			printf("Thread %s interrompida em %f\n", p->name, get_time());
-			/* Seção crítica */
-			pthread_mutex_lock(&mutex);
-			context_changes++;
-			pthread_mutex_unlock(&mutex);
-			/*****************/
-			return NULL;
-		}
 		t1 = clock();
 		p->et -= (double)(t1 - t0) / (double)CLOCKS_PER_SEC;
 		t0 = t1;
@@ -123,6 +114,7 @@ void shortestJobFirst(line **dados){
 				if (top_pros != NULL) { /* Cancela thread que saiu do topo */
 					printf("Thread %s a ser cancelada\n", top_pros->name);
 					pthread_cancel(threads[top_pros->i]);
+					context_changes++;
 				}
 				top_pros = topoPilha(job_order);
 				printf("Mudou o topo! | Novo topo = %s\n", top_pros->name);
@@ -183,7 +175,6 @@ int main(int argc, char **argv){
 	int i;
 	line **dados;
 
-
 	gettimeofday(&tv, NULL);
 	starting_time = tv;
 
@@ -204,7 +195,7 @@ int main(int argc, char **argv){
 	simulador(dados, 1);
 
 	gettimeofday(&tv, NULL);
-	printf("tempo final de execucao: %f\n", get_time());
+	printf("context changes: %d\n", context_changes);
 
 	for (i = 0; i < LINE_COUNT; i++)
 		free(dados[i]);
