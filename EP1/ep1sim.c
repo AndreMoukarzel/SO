@@ -122,7 +122,7 @@ void shortestJobFirst(line **dados){
 				top_pros = topoPilha(job_order);
 				printf("Mudou o topo! | Novo processo = %s\n", top_pros->name);
 				interupt = 1;
-				if ((th = pthread_create(&threads[i], NULL, newThread, (void *) topoPilha(job_order))))
+				if ((th = pthread_create(&threads[i], NULL, newThread, (void *) top_pros)))
 					printf("Failed to create thread %d\n", th);
 				else /* Nova thread criada */
 					interupt = 0;
@@ -132,11 +132,22 @@ void shortestJobFirst(line **dados){
 	}
 
 	printf("Começa a espera\n");
-	printPilha(job_order);
+	/* Termina todos os processos restantes na pilha */
+	while (!pilhaVazia(job_order)) {
+		for (i = 0; i < LINE_COUNT; i++) {
+			pthread_join(threads[i], NULL);
+		}
+		desempilha(job_order);
+		if (!pilhaVazia(job_order)) {
+			top_pros = topoPilha(job_order);
+			pthread_create(&threads[top_pros->i], NULL, newThread, (void *) top_pros);
+		}
+	}
 	/* Espera as threads terminarem de processar */
 	for (i = 0; i < LINE_COUNT; i++) {
 		pthread_join(threads[i], NULL);
 	}
+
 	printf("Fim da espera\n");
 
 	destroiPilha(job_order);
