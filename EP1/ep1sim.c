@@ -46,6 +46,7 @@ void *newThread(void* arg) {
 
 	p = (process *) arg;
 	t0 = t1 = clock();
+	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
 	printf("Inicio da thread %s em: %f\n", p->name, get_time());
 
@@ -120,7 +121,7 @@ void shortestJobFirst(line **dados){
 			/* Novo processo é mais curto que o sendo executado (topo da pilha mudou) */
 			if (top_pros != topoPilha(job_order)) {
 				if (top_pros != NULL) { /* Cancela thread que saiu do topo */
-					pthread_cancel(threads[top_pros->i]);
+					printf("Resultado = %d\n", pthread_cancel(threads[top_pros->i]) );
 					printf("Thread %s a ser cancelada\n", top_pros->name);
 				}
 				top_pros = topoPilha(job_order);
