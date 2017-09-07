@@ -5,5 +5,4 @@
 6 2 8 bob
 6 2 8 bob1
 6 2 8 bob2
-6 2 8 bob3
 7 0.1 8 fastbob

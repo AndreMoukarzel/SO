@@ -13,10 +13,11 @@
 #include "fileReader.h"
 #include "pilha.h"
 
-pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex2 = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
 
-int LINE_COUNT, interupt = 0, context_changes = 0;
+int LINE_COUNT, context_changes = 0, TIPO = 1, finished_thread = 0;
 struct timeval starting_time;
 
 
@@ -42,30 +43,43 @@ float get_time(){
 
 void *newThread(void* arg) {
 	process *p;
-	clock_t t0, t1;
+	clock_t t0, t1, elapsed = 0.0;
 
-	p = (process *) arg;
 	t0 = t1 = clock();
+	p = (process *) arg;
 	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
 	printf("Inicio da thread %s em: %f\n", p->name, get_time());
 
-	while (p->et > 0) {
-		if (interupt) {
-			printf("Thread %s interrompida em %f\n", p->name, get_time());
-			/* Seção crítica */
-			pthread_mutex_lock(&mutex);
-			context_changes++;
-			pthread_mutex_unlock(&mutex);
-			/*****************/
-			return NULL;
+	if (TIPO == 1){
+		while (p->et > 0) {
+			t1 = clock();
+			p->et -= (double)(t1 - t0) / (double)CLOCKS_PER_SEC;
+			t0 = t1;
 		}
-		t1 = clock();
-		p->et -= (double)(t1 - t0) / (double)CLOCKS_PER_SEC;
-		t0 = t1;
 	}
 
-	printf("Finalização da thread %s em: %f\n", p->name, get_time());
+	else if (TIPO == 2){
+		/* Passa a execuçao para outra thread se o quantum for cumprido ou
+		// se o processo acabar */
+		while (elapsed < p->quantum && p->et > 0){
+			t1 = clock();
+			elapsed += (double)(t1 - t0) / (double)CLOCKS_PER_SEC;
+			p->et -= (double)(t1 - t0) / (double)CLOCKS_PER_SEC;
+			t0 = t1;
+		}
+		/* Saiu por causa do tempo */
+		if (elapsed >= p->quantum)
+			pthread_mutex_lock(&mutex1);
+			context_changes++;
+			printf("acabou o tempo de %s\n", p->name);
+			pthread_mutex_unlock(&mutex1);
+		/* Saiu porque terminou */
+		if (p->et <= 0){
+			finished_thread = 1;
+			printf("Finalização da thread %s em: %f\n", p->name, get_time());
+		}
+	}
 
 	return NULL;
 }
@@ -80,6 +94,7 @@ process *lineToProcess(line *l, int index, float quantum) {
 	p->et = l->dt;
 	p->quantum = quantum;
 	p->name = l->name;
+	p->quantum = l->dt / 10.0;
 	p->i = index;
 
 	return p;
@@ -127,6 +142,7 @@ void shortestJobFirst(line **dados){
 				if (top_pros != NULL) { /* Cancela thread que saiu do topo */
 					printf("Thread %s a ser cancelada\n", top_pros->name);
 					pthread_cancel(threads[top_pros->i]);
+					context_changes++;
 				}
 				top_pros = topoPilha(job_order);
 				printf("Mudou o topo! | Novo topo = %s\n", top_pros->name);
@@ -149,12 +165,50 @@ void shortestJobFirst(line **dados){
 	}
 	printf("Fim da espera\n");
 
+	free(threads);
+	free(pros);
 	destroiPilha(job_order);
 }
 
 
 void roundRobin(line **dados) {
+	int i = 0, th, cur_pros = 0;
+	float cur_time;
+	pilha *jobs;
+	pthread_t *threads = malloc(LINE_COUNT * sizeof(pthread_t));
 
+	jobs = criaPilha(LINE_COUNT);
+
+	while (i < LINE_COUNT){
+		cur_time = get_time();
+
+		/* Recebeu um novo processo */
+		if (cur_time >= dados[i]->t0){
+			if ((th = pthread_create(&threads[i], NULL, newThread, NULL)))
+				printf("Failed to create thread %d\n", th);
+
+			empilha(jobs, lineToProcess(dados[i], i));
+			printf("empilhou %s\n", dados[i]->name);
+			i++;
+
+		}
+
+		if (!pilhaVazia(jobs)){
+			/* Espera a thread atual acabar */
+			pthread_join(threads[cur_pros], NULL);
+			/* Passa para a proxima thread, caso a ultima nao tenha acabado */
+			if (!finished_thread)
+				cur_pros = (cur_pros + 1)%jobs->topo;
+			/* Caso contrario, remove aquele processo e continua a execuçao */
+			else{
+				printf("processo %s acabou em %f\n", jobs->v[cur_pros]->name, get_time());
+				removePros(jobs, cur_pros);
+			}
+			finished_thread = 0;
+				if ((th = pthread_create(&threads[i], NULL, newThread, NULL)))
+					printf("Failed to create thread %d\n", th);
+		}
+	}
 }
 
 
@@ -166,12 +220,12 @@ void priorityEscalonator(line **dados) {
 void simulador(line **dados, int tipo){
 
 	/* Shortest Job First */
-	if (tipo == 1){
+	if (TIPO == 1){
 		shortestJobFirst(dados);
 	}
 
 	/* Round Robin */
-	else if (tipo == 2){
+	else if (TIPO == 2){
 		roundRobin(dados);
 	}
 
@@ -187,9 +241,9 @@ int main(int argc, char **argv){
 	int i;
 	line **dados;
 
-
 	gettimeofday(&tv, NULL);
 	starting_time = tv;
+ 	TIPO = (int)argv[2];
 
 	/*
 	while (1)
@@ -205,10 +259,10 @@ int main(int argc, char **argv){
 	printPilha(jobs);
 	printf("%f\n", dados[0]->dt);
 	*/
-	simulador(dados, 1);
+	simulador(dados, TIPO);
 
 	gettimeofday(&tv, NULL);
-	printf("tempo final de execucao: %f\n", get_time());
+	printf("context changes: %d\n", context_changes);
 
 	for (i = 0; i < LINE_COUNT; i++)
 		free(dados[i]);

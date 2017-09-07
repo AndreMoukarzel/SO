@@ -50,6 +50,30 @@ void insereOrdenado(pilha *p, process *x){
 }
 
 
+void empilha(pilha *p, process *x){
+	if (p->topo < p->max){
+		p->v[ p->topo ] = x;
+		(p->topo)++;
+	}
+}
+
+process *removePros(pilha *p, int i){
+	if (!pilhaVazia(p)){
+		process *x;
+		int j;
+		x = p->v[i];
+		for (j = i; j < p->topo - 1; j++){
+			p->v[j] = p->v[j + 1];
+		}
+		(p->topo)--;
+		return x;
+	}
+	else
+		printf("pilha vazia!\n");
+	return NULL;
+}
+
+
 process *desempilha(pilha *p){
 	if (pilhaVazia(p)){
 		return NULL;
