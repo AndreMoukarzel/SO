@@ -132,6 +132,7 @@ void shortestJobFirst(line **dados){
 	}
 
 	printf("Começa a espera\n");
+	printPilha(job_order);
 	/* Espera as threads terminarem de processar */
 	for (i = 0; i < LINE_COUNT; i++) {
 		pthread_join(threads[i], NULL);

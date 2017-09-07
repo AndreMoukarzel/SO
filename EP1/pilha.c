@@ -68,7 +68,7 @@ process *topoPilha(pilha *p) {
 void printPilha(pilha *p){
     int i;
     for (i = 0; i < p->topo; i++)
-        printf("%f ", p->v[i]->dt);
+        printf("%s ", p->v[i]->name);
     printf("\n");
 }
 

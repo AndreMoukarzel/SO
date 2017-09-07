@@ -30,7 +30,7 @@ process *desempilha(pilha *p);
 
 process *topoPilha(pilha *p);
 
-void printfPilha(pilha *p);
+void printPilha(pilha *p);
 
 void destroiPilha(pilha *p);
 
