@@ -6,7 +6,7 @@
 
 typedef struct{
 	float dt; /* Tempo real necessário */
-	float et; /* Tempo que o processo foi executado */
+	float et; /* Tempo restante de execução necessário */
 	char *name;
 	int i;
 } process;

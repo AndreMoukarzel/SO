@@ -18,7 +18,7 @@ pilha *criaPilha(int MAX){
 
 
 /* Insere um process x na pilha de forma a ficar ordenada pelo
-// tempo restante de execução (dt - et)  */
+// tempo restante de execução et */
 void insereOrdenado(pilha *p, process *x){
     int i, j, ok = 0;
 
@@ -27,7 +27,7 @@ void insereOrdenado(pilha *p, process *x){
     		for (i = 0; i < p->topo && ok == 0; i++) {
                 /* se achar um dt maior, move o resto do vetor
                 // e insere x ordenado */
-                if ( (p->v[i]->dt - p->v[i]->et) < x->dt) {
+                if (p->v[i]->et > x->dt) {
                     for (j = p->topo; j >= i; j--){
                         p->v[j+1] = p->v[j];
                     }

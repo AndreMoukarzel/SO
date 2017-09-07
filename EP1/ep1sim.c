@@ -48,11 +48,10 @@ void *newThread(void* arg) {
 	t0 = t1 = clock();
 
 	printf("Inicio da thread %s em: %f\n", p->name, get_time());
-	p->et = p->dt;
 
 	while (p->et > 0) {
 		if (interupt) {
-			printf("Thread %s interrompida\n", p->name);
+			printf("Thread %s interrompida em %f\n", p->name, get_time());
 			/* Seção crítica */
 			pthread_mutex_lock(&mutex);
 			context_changes++;
@@ -76,7 +75,7 @@ process *lineToProcess(line *l, int index) {
 	process *p = malloc(sizeof(process));;
 
 	p->dt = l->dt;
-	p->et = 0.0;
+	p->et = l->dt;
 	p->name = l->name;
 	p->i = index;
 
@@ -99,7 +98,7 @@ void shortestJobFirst(line **dados){
 
 		/* Processo mais curto acabou */
 		if (!pilhaVazia(job_order) && top_pros->et <= 0) {
-			printf("Topo finalizou\n");
+			printf("Topo finalizou. Topo = %s\n", top_pros->name);
 			desempilha(job_order);
 
 			if (!pilhaVazia(job_order)) {
@@ -121,7 +120,7 @@ void shortestJobFirst(line **dados){
 			/* Novo processo é mais curto que o sendo executado (topo da pilha mudou) */
 			if (top_pros != topoPilha(job_order)) {
 				top_pros = topoPilha(job_order);
-				printf("moudou o topo! | Novo processo = %s\n", top_pros->name);
+				printf("Mudou o topo! | Novo processo = %s\n", top_pros->name);
 				interupt = 1;
 				if ((th = pthread_create(&threads[i], NULL, newThread, (void *) topoPilha(job_order))))
 					printf("Failed to create thread %d\n", th);
@@ -137,7 +136,7 @@ void shortestJobFirst(line **dados){
 	for (i = 0; i < LINE_COUNT; i++) {
 		pthread_join(threads[i], NULL);
 	}
-	printf("cabou a espera\n");
+	printf("Fim da espera\n");
 
 	destroiPilha(job_order);
 }
