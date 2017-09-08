@@ -113,7 +113,7 @@ process *lineToProcess(line *l, int index, float quantum) {
 
 
 void shortestJobFirst(line **dados){
-	int i = 0, new_job = 0;
+	int i = 0, pros_done = 0;
 	float cur_time;
 	pthread_t *threads = malloc(LINE_COUNT * sizeof(pthread_t));
 	process *top_pros, **pros = malloc(LINE_COUNT * sizeof(process*));
@@ -121,21 +121,19 @@ void shortestJobFirst(line **dados){
 
 	job_order = criaPilha(LINE_COUNT); /* processo mais curto estará sempre no topo da pilha */
 
-	while (i < LINE_COUNT) {
+	while (pros_done < LINE_COUNT) {
 		cur_time = get_time();
 		top_pros = topoPilha(job_order);
 
-		if (!new_job) {
-			while (!pilhaVazia(job_order)) {
-				top_pros = desempilha(job_order);
-				pthread_create(&threads[top_pros->i], NULL, newThread, (void *) top_pros);
-				pthread_join(threads[top_pros->i], NULL);
-			}
+		if (!pilhaVazia(job_order)) {
+			top_pros = desempilha(job_order);
+			pthread_create(&threads[top_pros->i], NULL, newThread, (void *) top_pros);
+			pthread_join(threads[top_pros->i], NULL);
+			pros_done++;
 		}
 
-		/* Novo processo recebido */
-		if (cur_time >= dados[i]->t0) {
-			new_job = 1;
+		/* Recebe todos os processos disponíveis */
+		while (i < LINE_COUNT && cur_time >= dados[i]->t0) {
 			top_pros = topoPilha(job_order);
 			pros[i] = lineToProcess(dados[i], i, dados[i]->dt + 1); /* Quantum absurdo nunca será atingido */
 			insereOrdenado(job_order, pros[i]);
@@ -143,18 +141,7 @@ void shortestJobFirst(line **dados){
 
 			i++;
 		}
-		else
-			new_job = 0;
 	}
-
-	printf("Começa a espera\n");
-	/* Termina todos os processos restantes na pilha */
-	while (!pilhaVazia(job_order)) {
-		top_pros = desempilha(job_order);
-		pthread_create(&threads[top_pros->i], NULL, newThread, (void *) top_pros);
-		pthread_join(threads[top_pros->i], NULL);
-	}
-	printf("Fim da espera\n");
 
 	free(threads);
 	free(pros);
