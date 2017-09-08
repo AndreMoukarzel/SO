@@ -112,7 +112,7 @@ process *lineToProcess(line *l, int index, float quantum) {
 
 
 void shortestJobFirst(line **dados){
-	int i = 0, pros_done = 0;
+	int i = 0, th, pros_done = 0;
 	float cur_time;
 	pthread_t *threads = malloc(LINE_COUNT * sizeof(pthread_t));
 	process *top_pros, **pros = malloc(LINE_COUNT * sizeof(process*));
@@ -126,12 +126,13 @@ void shortestJobFirst(line **dados){
 
 		if (!pilhaVazia(job_order)) {
 			top_pros = desempilha(job_order);
-			pthread_create(&threads[top_pros->i], NULL, newThread, (void *) top_pros);
+			if ((th = pthread_create(&threads[top_pros->i], NULL, newThread, (void *) top_pros)))
+				printf("Failed to create thread %d\n", th);
 			pthread_join(threads[top_pros->i], NULL);
 			pros_done++;
 		}
 
-		/* Recebe todos os processos disponíveis */
+		/* Recebe todos os processos disponíveis no t atual */
 		while (i < LINE_COUNT && cur_time >= dados[i]->t0) {
 			top_pros = topoPilha(job_order);
 			pros[i] = lineToProcess(dados[i], i, dados[i]->dt + 1); /* Quantum absurdo nunca será atingido */
@@ -149,7 +150,7 @@ void shortestJobFirst(line **dados){
 
 
 void roundRobin(line **dados) {
-	int i = 0, j, th;
+	int i = 0, j, th, pros_done = 0;
 	float cur_time, quantum = 0.5;
 	pthread_t *threads = malloc(LINE_COUNT * sizeof(pthread_t));
 	process *top_pros;
@@ -157,11 +158,11 @@ void roundRobin(line **dados) {
 
 	jobs = criaFila(LINE_COUNT);
 
-	while (i < LINE_COUNT) {
+	while (pros_done < LINE_COUNT) {
 		cur_time = get_time();
 
-		/* Recebeu um novo processo */
-		if (cur_time >= dados[i]->t0){
+		/* Recebe todos os processos disponíveis no t atual */
+		while (i < LINE_COUNT && cur_time >= dados[i]->t0){
 			insere(jobs, lineToProcess(dados[i], i, quantum));
 			printf("Inseriu %s\n", dados[i]->name);
 			i++;
@@ -179,27 +180,14 @@ void roundRobin(line **dados) {
 				if (!finished_thread) {
 					insere(jobs, top_pros);
 					/* Se um processo é o único da fila, seu quantum acabar n conta como mudança de contexto */
-					if (jobs->tam == 0)
+					if (jobs->tam == 1)
 						context_changes--;
 				}
-				/* Caso contrario, o processo é permanentemente removido e a execução continua */
+				else /* Caso contrario, o processo é permanentemente removido e a execução continua */
+					pros_done++;
 				finished_thread = 0;
 			}
 		}
-	}
-
-	while (!filaVazia(jobs)) {
-		top_pros = removeFila(jobs);
-		if ((th = pthread_create(&threads[top_pros->i], NULL, newQuantumThread, (void *) top_pros)))
-			printf("Failed to create thread %d\n", th);
-		pthread_join(threads[top_pros->i], NULL);
-
-		/* Passa para o processo para o fim da fila, caso não tenha terminado */
-		if (!finished_thread) {
-			insere(jobs, top_pros);
-		}
-		/* Caso contrario, o processo é permanentemente removido e a execução continua */
-		finished_thread = 0;
 	}
 }
 
