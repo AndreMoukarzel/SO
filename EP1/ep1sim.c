@@ -12,6 +12,7 @@
 #include <readline/history.h>
 #include "fileReader.h"
 #include "pilha.h"
+#include "fila.h"
 
 pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex2 = PTHREAD_MUTEX_INITIALIZER;
@@ -162,42 +163,54 @@ void shortestJobFirst(line **dados){
 
 
 void roundRobin(line **dados) {
-	int i = 0, th, cur_pros = 0;
-	float cur_time;
-	pilha *jobs;
+	int i = 0, j, th;
+	float cur_time, quantum = 0.5;
 	pthread_t *threads = malloc(LINE_COUNT * sizeof(pthread_t));
+	process *top_pros;
+	fila *jobs;
 
-	jobs = criaPilha(LINE_COUNT);
+	jobs = criaFila(LINE_COUNT);
 
-	while (i < LINE_COUNT){
+	while (i < LINE_COUNT) {
 		cur_time = get_time();
 
 		/* Recebeu um novo processo */
 		if (cur_time >= dados[i]->t0){
-			if ((th = pthread_create(&threads[i], NULL, newQuantumThread, NULL)))
-				printf("Failed to create thread %d\n", th);
-
-			empilha(jobs, lineToProcess(dados[i], i, dados[i]->dt));
-			printf("empilhou %s\n", dados[i]->name);
+			insere(jobs, lineToProcess(dados[i], i, quantum));
+			printf("Inseriu %s\n", dados[i]->name);
 			i++;
-
 		}
 
-		if (!pilhaVazia(jobs)){
-			/* Espera a thread atual acabar */
-			pthread_join(threads[cur_pros], NULL);
-			/* Passa para a proxima thread, caso a ultima nao tenha acabado */
-			if (!finished_thread)
-				cur_pros = (cur_pros + 1)%jobs->topo;
-			/* Caso contrario, remove aquele processo e continua a execuçao */
-			else{
-				printf("processo %s acabou em %f\n", jobs->v[cur_pros]->name, get_time());
-				removePros(jobs, cur_pros);
-			}
-			finished_thread = 0;
-				if ((th = pthread_create(&threads[i], NULL, newQuantumThread, NULL)))
+		if (!filaVazia(jobs)){
+			/* Executa todas as threads na fila 1 vez */
+			for (j = jobs->tam; j > 0; j--) {
+				top_pros = removeFila(jobs);
+				if ((th = pthread_create(&threads[top_pros->i], NULL, newQuantumThread, (void *) top_pros)))
 					printf("Failed to create thread %d\n", th);
+				pthread_join(threads[top_pros->i], NULL);
+
+				/* Passa para o processo para o fim da fila, caso não tenha terminado */
+				if (!finished_thread) {
+					insere(jobs, top_pros);
+				}
+				/* Caso contrario, o processo é permanentemente removido e a execução continua */
+				finished_thread = 0;
+			}
 		}
+	}
+
+	while (!filaVazia(jobs)) {
+		top_pros = removeFila(jobs);
+		if ((th = pthread_create(&threads[top_pros->i], NULL, newQuantumThread, (void *) top_pros)))
+			printf("Failed to create thread %d\n", th);
+		pthread_join(threads[top_pros->i], NULL);
+
+		/* Passa para o processo para o fim da fila, caso não tenha terminado */
+		if (!finished_thread) {
+			insere(jobs, top_pros);
+		}
+		/* Caso contrario, o processo é permanentemente removido e a execução continua */
+		finished_thread = 0;
 	}
 }
 
