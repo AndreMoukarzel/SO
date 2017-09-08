@@ -14,11 +14,10 @@
 #include "pilha.h"
 #include "fila.h"
 
-pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t mutex2 = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
 
-int LINE_COUNT, context_changes = 0, finished_thread = 0;
+int LINE_COUNT, context_changes = 0, finished_thread = 0, pros_finished = 0;
 struct timeval starting_time;
 
 
@@ -82,9 +81,9 @@ void *newQuantumThread(void* arg) {
 	}
 	/* Saiu por causa do tempo */
 	if (elapsed >= p->quantum) {
-		pthread_mutex_lock(&mutex1);
+		pthread_mutex_lock(&mutex);
 		context_changes++;
-		pthread_mutex_unlock(&mutex1);
+		pthread_mutex_unlock(&mutex);
 		printf("acabou o tempo de %s\n", p->name);
 
 		pthread_exit(NULL); /* é correto ter isso aqui??? */
@@ -126,7 +125,7 @@ void shortestJobFirst(line **dados){
 		top_pros = topoPilha(job_order);
 
 		if (!new_job) {
-			while (!pilhaVazia(job_order)) {
+			if (!pilhaVazia(job_order)) {
 				top_pros = desempilha(job_order);
 				pthread_create(&threads[top_pros->i], NULL, newThread, (void *) top_pros);
 				pthread_join(threads[top_pros->i], NULL);
