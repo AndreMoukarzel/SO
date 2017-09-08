@@ -18,6 +18,7 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
 
 int LINE_COUNT, context_changes = 0, finished_thread = 0, pros_finished = 0;
+float STDQUANTUM = 0.5;
 struct timeval starting_time;
 
 
@@ -103,6 +104,7 @@ process *lineToProcess(line *l, int index, float quantum) {
 	p->t0 = l->t0;
 	p->dt = l->dt;
 	p->et = l->dt;
+	p->deadline = l->deadline;
 	p->quantum = quantum;
 	p->name = l->name;
 	p->i = index;
@@ -151,7 +153,7 @@ void shortestJobFirst(line **dados){
 
 void roundRobin(line **dados) {
 	int i = 0, j, th, pros_done = 0;
-	float cur_time, quantum = 0.5;
+	float cur_time;
 	pthread_t *threads = malloc(LINE_COUNT * sizeof(pthread_t));
 	process *top_pros;
 	fila *jobs;
@@ -163,7 +165,7 @@ void roundRobin(line **dados) {
 
 		/* Recebe todos os processos disponíveis no t atual */
 		while (i < LINE_COUNT && cur_time >= dados[i]->t0){
-			insere(jobs, lineToProcess(dados[i], i, quantum));
+			insere(jobs, lineToProcess(dados[i], i, STDQUANTUM));
 			printf("Inseriu %s\n", dados[i]->name);
 			i++;
 		}
@@ -192,8 +194,68 @@ void roundRobin(line **dados) {
 }
 
 
-void priorityEscalonator(line **dados) {
+float decideQuantum(process *p) {
+	float time = get_time();
+	/* Deadlines impossíveis ou muito justas obrigam o processo a ser executado imediatamente por inteiro */
+	if (p->t0 + p->dt >= p->deadline)
+		return p->dt;
+	/* Processo está estourando sua deadline */
+	if (p->et + time >= p->deadline)
+		return p->et + 0.1;
+	/* P está próximo da conclusão, vamos poupá-lo do escalonamento */
+	if (p->et < 2 * STDQUANTUM)
+		return p->et + 0.1;
+	/* P tem muito tempo para finalizar, vamos dar menos prioridade a ele */
+	if (p->et + time < p->deadline - 5)
+		return STDQUANTUM;
+	return STDQUANTUM;
+}
 
+
+void priorityEscalonator(line **dados) {
+	int i = 0, j, th, pros_done = 0;
+	float cur_time;
+	pthread_t *threads = malloc(LINE_COUNT * sizeof(pthread_t));
+	process *top_pros, *new_pros;
+	fila *jobs;
+
+	jobs = criaFila(LINE_COUNT);
+
+	while (pros_done < LINE_COUNT) {
+		cur_time = get_time();
+
+		/* Recebe todos os processos disponíveis no t atual */
+		while (i < LINE_COUNT && cur_time >= dados[i]->t0) {
+			new_pros = lineToProcess(dados[i], i, STDQUANTUM/2);
+			new_pros->quantum = decideQuantum(new_pros);
+			insere(jobs, new_pros);
+			printf("Inseriu %s\n", dados[i]->name);
+			i++;
+		}
+
+		if (!filaVazia(jobs)){
+			/* Executa todas as threads na fila 1 vez */
+			for (j = jobs->tam; j > 0; j--) {
+				top_pros = removeFila(jobs);
+				if ((th = pthread_create(&threads[top_pros->i], NULL, newQuantumThread, (void *) top_pros)))
+					printf("Failed to create thread %d\n", th);
+				pthread_join(threads[top_pros->i], NULL);
+
+				/* Passa para o processo para o fim da fila, caso não tenha terminado */
+				if (!finished_thread) {
+					insere(jobs, top_pros);
+					/* Se um processo é o único da fila, seu quantum acabar n conta como mudança de contexto */
+					if (jobs->tam == 1)
+						context_changes--;
+					else /* Adaptação dinâmica do quantum */
+						top_pros->quantum = decideQuantum(top_pros);
+				}
+				else /* Caso contrario, o processo é permanentemente removido e a execução continua */
+					pros_done++;
+				finished_thread = 0;
+			}
+		}
+	}
 }
 
 
