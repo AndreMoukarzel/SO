@@ -4,6 +4,6 @@ for i in 1 2 3
 do
     for j in $(seq 1 30)
     do
-        ./ep1sim i poucos.txt poucos-$i-$j.txt d
+        ./ep1sim $i poucos.txt poucos-$i-$j.txt d
     done
 done
