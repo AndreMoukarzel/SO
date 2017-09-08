@@ -1,4 +1,63 @@
-/* //////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
 // Nome: André Ferrari Moukarzel						NUSP: 9298166
 // Nome: Henrique Cerquinho								NUSP: ???????
-////////////////////////// COMO RODAR ///////////////////////////////
+////////////////////////// COMPILAÇÃO ///////////////////////////////
+
+	Ambos os executáveis podem ser criados com facilidade rodando o
+comando "make" no diretório. Se você deseja compilar um executável
+exclusivamente, pode fazê-lo digitando apenas "make ep1sh" ou
+"make ep1sim".
+	Caso não queira utilizar o comando make, a compilação pode ser
+realizada manualmente com as linhas:
+
+	"gcc -ansi -Wall -pedantic -O2 ep1sh.c stringReader.c
+stringReader.h -o ep1sh"
+
+	e
+
+	"gcc -ansi -Wall -pedantic -O2 ep1sim.c fileReader.c fileReader.h
+pilha.c pilha.h fila.c fila.h process.h -o ep1sim"
+
+//////////////////////////////////////////////////////////////////////
+///////////////////////////// SHELL //////////////////////////////////
+
+	É possível executar o shell com o comando ./ep1sh
+
+	ep1sh se comporta como uma versão mais limitada de um shell comum:
+
+	- Capaz de rodar executáveis da mesma forma ("./" seguido do nome
+do binário) com algumas limitações quando tais binários tentam
+imprimir algo no shell.
+
+	- Reconhece comando "date", "exit" e "chown". Nosso chown muda
+apenas o grupo com poderes sobre o arquivo especificado.
+
+	- Roda binários como "/bin/ping" e "/usr/bin/cal" com número
+variável de argumentos.
+
+//////////////////////////////////////////////////////////////////////
+///////////////////// SIMULADOR DE PROCESSOS /////////////////////////
+
+	É possível executar o simulador com o comando 
+./ep1sim arg1 arg2 arg3 arg4
+
+	arg1 - Número correspondente ao escalonador (1 = Sortes Job First,
+2 = Round Robin, 3 = Escalonamento com prioridade).
+	
+	arg2 - Nome do arquivo de trace
+
+	arg3 - Nome do arquivo de output do programa.
+
+	arg4(Opcional) - Caso seja "d", o programa envia impressões de
+debug para stderr.
+
+//////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
