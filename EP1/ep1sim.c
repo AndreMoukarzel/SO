@@ -192,6 +192,9 @@ void roundRobin(line **dados) {
 				/* Passa para o processo para o fim da fila, caso não tenha terminado */
 				if (!finished_thread) {
 					insere(jobs, top_pros);
+					/* Se um processo é o único da fila, seu quantum acabar n conta como mudança de contexto */
+					if (jobs->tam == 0)
+						context_changes--;
 				}
 				/* Caso contrario, o processo é permanentemente removido e a execução continua */
 				finished_thread = 0;
