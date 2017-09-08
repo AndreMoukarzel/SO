@@ -8,6 +8,12 @@ line *criaLine(int n) {
 	return l;
 }
 
+float geraRand(int n){
+	int k;
+	k = rand() % n;
+	return (float)(k) / 10.0;
+}
+
 
 /* Lê o arquivo e devolve uma lista lines, e o número de lines em
 // line_count */
@@ -40,9 +46,9 @@ line **readFile(char *filename, int *line_count) {
 			if (line_element == 1)
 				dados[k]->t0 = atof(buf);
 			else if (line_element == 2)
-				dados[k]->dt = atof(buf);
+				dados[k]->dt = atof(buf) + geraRand(30); /* soma entre 0s e 3s */
 			else /* deadline */
-				dados[k]->deadline = atof(buf);
+				dados[k]->deadline = atof(buf) + geraRand(40); /*soma entre 0s e 4s */
 
 			/* limpa o buffer e passa para
 			// o proximo elemento da linha */

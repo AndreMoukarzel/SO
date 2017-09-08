@@ -287,9 +287,13 @@ int main(int argc, char **argv){
 	int i;
 	line **dados;
 
+	srand(time(NULL));
 	gettimeofday(&tv, NULL);
 	starting_time = tv;
 	dados = readFile(argv[2], &LINE_COUNT);
+	for (i = 0; i<LINE_COUNT; i++){
+		printf("%f, %f, %f, %s\n", dados[i]->t0, dados[i]->dt, dados[i]->deadline, dados[i]->name);
+	}
 	f = fopen(argv[3], "w");
 	if (argc >= 5 && !strcmp(argv[4], "d"))
 		DEBUG = 1;
