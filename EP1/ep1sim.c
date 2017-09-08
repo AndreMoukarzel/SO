@@ -5,6 +5,7 @@
 
 #include <pthread.h>
 #include <unistd.h>
+#include <sched.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/time.h>
@@ -17,9 +18,10 @@
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
 
-int LINE_COUNT, context_changes = 0, finished_thread = 0, pros_finished = 0;
+int LINE_COUNT, DEBUG = 0, context_changes = 0, finished_thread = 0, F_LINE = 0;
 float STDQUANTUM = 0.5;
 struct timeval starting_time;
+FILE *f;
 
 
 /* Retorna o valor em float com 2 casas decimais (praying hand emoji) */
@@ -48,9 +50,9 @@ void *newThread(void* arg) {
 
 	t0 = t1 = get_time();
 	p = (process *) arg;
-	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
-	printf("Inicio da thread %s em: %f\n", p->name, get_time());
+	if (DEBUG)
+		fprintf(stderr, "Processo %s passou a usar a CPU %d\n", p->name, sched_getcpu());
 
 	while (p->et > 0) {
 		t1 = get_time();
@@ -58,7 +60,15 @@ void *newThread(void* arg) {
 		t0 = t1;
 	}
 
-	printf("Finalização da thread %s em: %f\n", p->name, get_time());
+	if (DEBUG) {
+		fprintf(stderr, "Processo %s liberando a CPU %d\n", p->name, sched_getcpu());
+		fprintf(stderr, "Processo %s finalizado. Escrevendo linha %d no arquivo de saída\n", p->name, F_LINE);
+	}
+	t1 = get_time();
+	fprintf(f, "%s %f %f\n", p->name, t1, t1 - p->t0);
+	pthread_mutex_lock(&mutex);
+	F_LINE++;
+	pthread_mutex_unlock(&mutex);
 
 	return NULL;
 }
@@ -70,8 +80,9 @@ void *newQuantumThread(void* arg) {
 
 	t0 = t1 = get_time();
 	p = (process *) arg;
-	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
+	if (DEBUG)
+		fprintf(stderr, "Processo %s passou a usar a CPU %d\n", p->name, sched_getcpu());
 	/* Passa a execuçao para outra thread se o quantum for cumprido ou
 	// se o processo acabar */
 	while (elapsed < p->quantum && p->et > 0){
@@ -80,18 +91,25 @@ void *newQuantumThread(void* arg) {
 		p->et -= t1 - t0;
 		t0 = t1;
 	}
+	if (DEBUG)
+		fprintf(stderr, "Processo %s liberando a CPU %d\n", p->name, sched_getcpu());
 	/* Saiu por causa do tempo */
 	if (elapsed >= p->quantum) {
 		pthread_mutex_lock(&mutex);
 		context_changes++;
 		pthread_mutex_unlock(&mutex);
-		printf("acabou o tempo de %s\n", p->name);
 
 		pthread_exit(NULL); /* é correto ter isso aqui??? */
 	}
 	/* Saiu porque terminou */
+	if (DEBUG)
+		fprintf(stderr, "Processo %s finalizado. Escrevendo linha %d no arquivo de saída\n", p->name, F_LINE);
+	t1 = get_time();
+	fprintf(f, "%s %f %f\n", p->name, t1, t1 - p->t0);
+	pthread_mutex_lock(&mutex);
 	finished_thread = 1;
-	printf("Finalização da thread %s em: %f\n", p->name, get_time());
+	F_LINE++;
+	pthread_mutex_unlock(&mutex);
 
 	return NULL;
 }
@@ -140,6 +158,8 @@ void shortestJobFirst(line **dados){
 			pros[i] = lineToProcess(dados[i], i, dados[i]->dt + 1); /* Quantum absurdo nunca será atingido */
 			insereOrdenado(job_order, pros[i]);
 			printf("Novo processo recebido | Processo = %s\n", pros[i]->name);
+			if (DEBUG)
+				fprintf(stderr, "Processo %s da linha %d recebido\n", pros[i]->name, i);
 
 			i++;
 		}
@@ -274,23 +294,26 @@ void simulador(line **dados, int tipo){
 
 int main(int argc, char **argv){
 	struct timeval tv;
-	int i, tipo = 1;
+	int i;
 	line **dados;
 
 	gettimeofday(&tv, NULL);
 	starting_time = tv;
- 	tipo = atoi(argv[2]);
+	dados = readFile(argv[2], &LINE_COUNT);
+	f = fopen(argv[3], "w");
+	if (argc >= 5 && !strcmp(argv[4], "d"))
+		DEBUG = 1;
 
-	dados = readFile(argv[1], &LINE_COUNT);
-
-	simulador(dados, tipo);
-
-	gettimeofday(&tv, NULL);
-	printf("context changes: %d\n", context_changes);
+	simulador(dados, atoi(argv[1]));
 
 	for (i = 0; i < LINE_COUNT; i++)
 		free(dados[i]);
 	free(dados);
+
+	if (DEBUG)
+		fprintf(stderr, "Ocorreram %d mudanças de contexto\n", context_changes);
+	fprintf(f, "%d", context_changes);
+	fclose(f);
 
 	return 0;
 }
