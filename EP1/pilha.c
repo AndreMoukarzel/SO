@@ -25,9 +25,9 @@ void insereOrdenado(pilha *p, process *x){
 	if (p->topo < p->max) {
         if (p->topo != 0) {
     		for (i = 0; i < p->topo && ok == 0; i++) {
-                /* se achar um dt maior, move o resto do vetor
+                /* se achar um dt menor, move o resto do vetor
                 // e insere x ordenado */
-                if (p->v[i]->et <= x->et) {
+                if (p->v[i]->dt <= x->dt) {
                     for (j = p->topo; j >= i; j--) {
                         p->v[j+1] = p->v[j];
                     }
@@ -35,7 +35,7 @@ void insereOrdenado(pilha *p, process *x){
                     ok = 1;
                 }
             }
-            /* x eh o maior valor do vetor */
+            /* x eh o menor valor do vetor */
             if (!ok) {
                 p->v[p->topo] = x;
             }
