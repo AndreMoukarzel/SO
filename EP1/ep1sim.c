@@ -157,7 +157,6 @@ void shortestJobFirst(line **dados){
 			top_pros = topoPilha(job_order);
 			pros[i] = lineToProcess(dados[i], i, dados[i]->dt + 1); /* Quantum absurdo nunca será atingido */
 			insereOrdenado(job_order, pros[i]);
-			printf("Novo processo recebido | Processo = %s\n", pros[i]->name);
 			if (DEBUG)
 				fprintf(stderr, "Processo %s da linha %d recebido\n", pros[i]->name, i);
 
@@ -186,7 +185,6 @@ void roundRobin(line **dados) {
 		/* Recebe todos os processos disponíveis no t atual */
 		while (i < LINE_COUNT && cur_time >= dados[i]->t0){
 			insere(jobs, lineToProcess(dados[i], i, STDQUANTUM));
-			printf("Inseriu %s\n", dados[i]->name);
 			i++;
 		}
 
@@ -249,7 +247,7 @@ void priorityEscalonator(line **dados) {
 			new_pros = lineToProcess(dados[i], i, STDQUANTUM/2);
 			new_pros->quantum = decideQuantum(new_pros);
 			insere(jobs, new_pros);
-			printf("Inseriu %s\n", dados[i]->name);
+
 			i++;
 		}
 
