@@ -297,6 +297,7 @@ int main(int argc, char **argv){
 	gettimeofday(&tv, NULL);
 	starting_time = tv;
 	dados = readFile(argv[2], &LINE_COUNT);
+	
 	for (i = 0; i<LINE_COUNT; i++){
 		printf("%f, %f, %f, %s\n", dados[i]->t0, dados[i]->dt, dados[i]->deadline, dados[i]->name);
 	}
