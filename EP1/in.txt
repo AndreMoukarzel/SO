@@ -1,6 +1,1 @@
 1 1 2 proc1
-1 1 2 proc1
-1 1 2 proc1
-1 1 2 proc1
-1 1 2 proc1
-1 1 2 proc1

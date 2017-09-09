@@ -1,7 +1,7 @@
 /* //////////////////////////////////////////////////////////////////
 // Nome: André Ferrari Moukarzel						NUSP: 9298166
 // Nome: Henrique Cerquinho								NUSP: 9793700
-////////////////////////// COMO RODAR /////////////////////////////*/
+///////////////////////////////////////////////////////////////////*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -142,10 +142,12 @@ void shortestJobFirst(line **dados){
 
 	job_order = criaPilha(LINE_COUNT); /* processo mais curto estará sempre no topo da pilha */
 
+	/* Executa enquanto nao acabarem os processos */
 	while (pros_done < LINE_COUNT) {
 		cur_time = get_time();
+		/* Pega o processo com maior prioridade (topo da pilha) */
 		top_pros = topoPilha(job_order);
-
+		/* Executa ele até o fim  */
 		if (!pilhaVazia(job_order)) {
 			top_pros = desempilha(job_order);
 			if ((th = pthread_create(&threads[top_pros->i], NULL, newThread, (void *) top_pros)))
@@ -195,6 +197,7 @@ void roundRobin(line **dados) {
 		if (!filaVazia(jobs)){
 			/* Executa todas as threads na fila 1 vez */
 			for (j = jobs->tam; j > 0; j--) {
+				/* Tira o processo da fila e executa */
 				top_pros = removeFila(jobs);
 				if ((th = pthread_create(&threads[top_pros->i], NULL, newQuantumThread, (void *) top_pros)))
 					printf("Failed to create thread %d\n", th);
@@ -209,6 +212,7 @@ void roundRobin(line **dados) {
 			}
 		}
 	}
+	destroiFila(jobs);
 }
 
 
@@ -270,6 +274,7 @@ void priorityEscalonator(line **dados) {
 			}
 		}
 	}
+	destroiFila(jobs);
 }
 
 
@@ -294,11 +299,8 @@ int main(int argc, char **argv){
 	gettimeofday(&tv, NULL);
 	starting_time = tv;
 	dados = readFile(argv[2], &LINE_COUNT);
-
-	for (i = 0; i<LINE_COUNT; i++){
-		printf("%f, %f, %f, %s\n", dados[i]->t0, dados[i]->dt, dados[i]->deadline, dados[i]->name);
-	}
 	f = fopen(argv[3], "w");
+
 	if (argc >= 5 && !strcmp(argv[4], "d"))
 		DEBUG = 1;
 
