@@ -20,13 +20,13 @@
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
 
-int LINE_COUNT, DEBUG = 0, context_changes = 0, finished_thread = 0, F_LINE = 0, deadline_cumpridas = 0;
+int LINE_COUNT, DEBUG = 0, context_changes = 0, finished_thread = 0, F_LINE = 0;
 float STDQUANTUM = 0.5;
 struct timeval starting_time;
 FILE *f;
 
 
-/* Retorna o valor em float com 2 casas decimais (praying hand emoji) */
+/* Retorna o valor em float com 2 casas decimais */
 float get_time(){
 	struct timeval tv, temp;
 
@@ -67,10 +67,8 @@ void *newThread(void* arg) {
 		fprintf(stderr, "Processo %s finalizado. Escrevendo linha %d no arquivo de saída\n", p->name, F_LINE);
 	}
 	t1 = get_time();
-	fprintf(f, "%s %f %f %f %f\n", p->name, t1, t1 - p->t0, p->dt, p->deadline);
+	fprintf(f, "%s %f %f\n", p->name, t1, t1 - p->t0);
 	pthread_mutex_lock(&mutex);
-	if (t1 <= p->deadline)
-		deadline_cumpridas++;
 	F_LINE++;
 	pthread_mutex_unlock(&mutex);
 
@@ -103,16 +101,14 @@ void *newQuantumThread(void* arg) {
 		context_changes++;
 		pthread_mutex_unlock(&mutex);
 
-		pthread_exit(NULL); /* é correto ter isso aqui??? */
+		pthread_exit(NULL);
 	}
 	/* Saiu porque terminou */
 	if (DEBUG)
 		fprintf(stderr, "Processo %s finalizado. Escrevendo linha %d no arquivo de saída\n", p->name, F_LINE);
 	t1 = get_time();
-	fprintf(f, "%s %f %f %f %f\n", p->name, t1, t1 - p->t0, p->dt, p->deadline);
+	fprintf(f, "%s %f %f\n", p->name, t1, t1 - p->t0);
 	pthread_mutex_lock(&mutex);
-	if (t1 <= p->deadline)
-		deadline_cumpridas++;
 	finished_thread = 1;
 	F_LINE++;
 	pthread_mutex_unlock(&mutex);
@@ -171,6 +167,8 @@ void shortestJobFirst(line **dados){
 	}
 
 	free(threads);
+	for (i = 0; i < LINE_COUNT; i++)
+		free(pros[i]);
 	free(pros);
 	destroiPilha(job_order);
 }
@@ -293,11 +291,10 @@ int main(int argc, char **argv){
 	int i;
 	line **dados;
 
-	srand(time(NULL));
 	gettimeofday(&tv, NULL);
 	starting_time = tv;
 	dados = readFile(argv[2], &LINE_COUNT);
-	
+
 	for (i = 0; i<LINE_COUNT; i++){
 		printf("%f, %f, %f, %s\n", dados[i]->t0, dados[i]->dt, dados[i]->deadline, dados[i]->name);
 	}
@@ -313,7 +310,7 @@ int main(int argc, char **argv){
 
 	if (DEBUG)
 		fprintf(stderr, "Ocorreram %d mudanças de contexto\n", context_changes);
-	fprintf(f, "%d %d", context_changes, deadline_cumpridas);
+	fprintf(f, "%d", context_changes);
 	fclose(f);
 
 	return 0;

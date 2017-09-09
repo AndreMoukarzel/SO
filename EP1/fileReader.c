@@ -8,12 +8,6 @@ line *criaLine(int n) {
 	return l;
 }
 
-float geraRand(int n){
-	int k;
-	k = rand() % n;
-	return (float)(k) / 10.0;
-}
-
 
 /* Lê o arquivo e devolve uma lista lines, e o número de lines em
 // line_count */
@@ -46,15 +40,11 @@ line **readFile(char *filename, int *line_count) {
 			if (line_element == 1)
 				dados[k]->t0 = atof(buf);
 			else if (line_element == 2)
-				dados[k]->dt = 0.5 + geraRand(5); /* soma entre 0s e 3s */
+				dados[k]->dt = atof(buf);
 			else /* deadline */
-				if (k == 0)
-					dados[k]->deadline = 1.0;
-				else
-					dados[k]->deadline = dados[k-1]->deadline + dados[k]->dt; /*soma entre 0s e 4s */
+				dados[k]->deadline = atof(buf);
 
-			/* limpa o buffer e passa para
-			// o proximo elemento da linha */
+			/* passa para o proximo elemento da linha */
 			line_element++;
 			i = 0;
 		}
@@ -76,9 +66,9 @@ line **readFile(char *filename, int *line_count) {
 	/* copia o nome da ultima linha, pois nao tem \n no final do arquivo*/
 	buf[i] = '\0';
 	strcpy(dados[k]->name, buf);
-	fclose(file);
 	k++;
 	*line_count = k;
+	fclose(file);
 
 	return dados;
 }

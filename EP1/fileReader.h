@@ -18,9 +18,6 @@ typedef struct{
 line *criaLine(int n);
 
 
-float geraRand(int n);
-
-
 /* Lê o arquivo e devolve uma lista lines, e o número de lines em
 // line_count */
 line **readFile(char *filename, int *line_count);
