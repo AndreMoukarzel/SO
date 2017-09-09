@@ -44,8 +44,7 @@ line **readFile(char *filename, int *line_count) {
 			else /* deadline */
 				dados[k]->deadline = atof(buf);
 
-			/* limpa o buffer e passa para
-			// o proximo elemento da linha */
+			/* passa para o proximo elemento da linha */
 			line_element++;
 			i = 0;
 		}
@@ -67,9 +66,9 @@ line **readFile(char *filename, int *line_count) {
 	/* copia o nome da ultima linha, pois nao tem \n no final do arquivo*/
 	buf[i] = '\0';
 	strcpy(dados[k]->name, buf);
-	fclose(file);
 	k++;
 	*line_count = k;
+	fclose(file);
 
 	return dados;
 }
