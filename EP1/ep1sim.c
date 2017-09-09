@@ -3,6 +3,8 @@
 // Nome: Henrique Cerquinho								NUSP: 9793700
 ////////////////////////// COMO RODAR /////////////////////////////*/
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <sched.h>
