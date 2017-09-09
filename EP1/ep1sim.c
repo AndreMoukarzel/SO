@@ -3,6 +3,8 @@
 // Nome: Henrique Cerquinho								NUSP: 9793700
 ////////////////////////// COMO RODAR /////////////////////////////*/
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <sched.h>
@@ -18,7 +20,7 @@
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t condition_var = PTHREAD_COND_INITIALIZER;
 
-int LINE_COUNT, DEBUG = 0, context_changes = 0, finished_thread = 0, F_LINE = 0;
+int LINE_COUNT, DEBUG = 0, context_changes = 0, finished_thread = 0, F_LINE = 0, deadline_cumpridas = 0;
 float STDQUANTUM = 0.5;
 struct timeval starting_time;
 FILE *f;
@@ -65,8 +67,10 @@ void *newThread(void* arg) {
 		fprintf(stderr, "Processo %s finalizado. Escrevendo linha %d no arquivo de saída\n", p->name, F_LINE);
 	}
 	t1 = get_time();
-	fprintf(f, "%s %f %f\n", p->name, t1, t1 - p->t0);
+	fprintf(f, "%s %f %f %f %f\n", p->name, t1, t1 - p->t0, p->dt, p->deadline);
 	pthread_mutex_lock(&mutex);
+	if (t1 <= p->deadline)
+		deadline_cumpridas++;
 	F_LINE++;
 	pthread_mutex_unlock(&mutex);
 
@@ -105,8 +109,10 @@ void *newQuantumThread(void* arg) {
 	if (DEBUG)
 		fprintf(stderr, "Processo %s finalizado. Escrevendo linha %d no arquivo de saída\n", p->name, F_LINE);
 	t1 = get_time();
-	fprintf(f, "%s %f %f\n", p->name, t1, t1 - p->t0);
+	fprintf(f, "%s %f %f %f %f\n", p->name, t1, t1 - p->t0, p->dt, p->deadline);
 	pthread_mutex_lock(&mutex);
+	if (t1 <= p->deadline)
+		deadline_cumpridas++;
 	finished_thread = 1;
 	F_LINE++;
 	pthread_mutex_unlock(&mutex);
@@ -306,7 +312,7 @@ int main(int argc, char **argv){
 
 	if (DEBUG)
 		fprintf(stderr, "Ocorreram %d mudanças de contexto\n", context_changes);
-	fprintf(f, "%d", context_changes);
+	fprintf(f, "%d %d", context_changes, deadline_cumpridas);
 	fclose(f);
 
 	return 0;
