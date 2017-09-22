@@ -5,7 +5,7 @@ OBJECTS = corrida.c ciclista.o
 all: corrida clean
 
 corrida: $(OBJECTS)
-	$(CC) $(OBJECTS) $(CFLAGS) -o corrida
+	$(CC) $(OBJECTS) $(CFLAGS) -lpthread -o corrida
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
