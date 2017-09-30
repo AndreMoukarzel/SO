@@ -1,0 +1,16 @@
+	Um ciclista a 30km/h sempre tende a ficar na pista mais interna
+possível (onde a mais interna é a coluna com menor indice em uma
+linha da matriz da pista).
+
+	Entenda "ir em frente" como ter uma vMax >= v, ou seja, não
+estar bloqueado por um ciclista à sua frente.
+	Um ciclista a 60km/h ou 90km/h sempre prioriza ir em frente
+sobre mudar de pista. Sendo assim, DEPOIS de ir em frente, tal
+ciclista tenta ir a uma pista mais interna, se possível.
+	Caso ele não seja capaz de ir em frente, o ciclista se move
+a uma pista adjacente mais externa e segue em sua vMax (até a 
+próxima checagem, claro).
+
+	A variável na struct ciclista que indica se eles estão
+quebrados deve salvar a volta em que um ciclista quebrou, ou
+-1 caso ele não tenha quebrado.
