@@ -5,9 +5,12 @@
 #include <stdlib.h>
 
 typedef struct {
+	int id; /* Identificador do ciclista */
 	int n; /* Volta atual do ciclista */
-	int v; /* Velocidade do ciclista */
-	int id; /* Identificador do ciclista, as ser usado no vetor da pista */
+	int v, vMax; /* Velocidade desejada e máxima do ciclista */
+	int pos; /* Posição relativa à corrida do ciclista */
+	int p_pos[2]; /* Posição [linha, coluna] da pista */ 
+	int quebrado; /* Guarda a volta em que ciclista quebrou. Se não, -1 */
 } ciclista;
 
 void *threadCiclista(void* arg);

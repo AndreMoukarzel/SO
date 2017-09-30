@@ -15,8 +15,8 @@
 #define MAX_LENGTH 1024
 
 /*pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;*/
-/* matriz da pista, de largura d e altura n */
-int **pista;
+
+int **pista; /* matriz da pista, de d linhas e 10 colunas */
 
 
 void simulador(int d, int n, int v){
