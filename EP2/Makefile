@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-ansi -Wall -pedantic -O2
+CFLAGS=-ansi -Wall -pedantic -O2 -D_POSIX_C_SOURCE=199309L
 OBJECTS = corrida.c ciclista.o
 
 all: corrida clean

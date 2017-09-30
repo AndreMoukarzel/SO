@@ -9,7 +9,7 @@ void *threadCiclista(void * arg) {
 	c.n = 1;
 	c.v = 30; /* todos começam a 30km/h */
 	c.id = id;
-	pista[0][id] = id; /* ciclista esta em 0 metros e na pista de numero id */
+	/*pista[0][id] = id; /* ciclista esta em 0 metros e na pista de numero id */
 
 	printf("dentro da thread: %d\n", *id);
 	return NULL;
