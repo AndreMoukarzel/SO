@@ -2,7 +2,10 @@
 
 metro *criaPista(int d) {
 	int i, j, d2 = (int) d;
-	metro* pista = malloc(d2 * sizeof(metro));
+	metro* pista;
+	printf("kek\n");
+	pista = malloc(d2 * sizeof(metro));
+
 
 	for (i = 0; i < d2; i++) {
 		pista[i].faixa = malloc(10 * sizeof(int));
@@ -17,5 +20,12 @@ metro *criaPista(int d) {
 }
 
 void destroiPista(metro* pista, int d) {
-	int i = 0;
+	int i, j;
+	for (i = 0; i < d; i++){
+		free(pista[i].faixa);
+		for (j = 0; j < 10; j++)
+			pthread_mutex_destroy(&pista[i].m[j]);
+		free(pista[i].m);
+	}
+	free(pista);
 }
