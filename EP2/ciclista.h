@@ -15,6 +15,6 @@ typedef struct {
 
 ciclista *criaCiclistas(int n);
 
-void posicionaLargada(int n, int d, ciclista* cics, metro* pista);
+void posicionaCiclistas(int d, int n, ciclista* cics, metro* pista);
 
 #endif
