@@ -13,8 +13,25 @@
 
 #define MAX_LENGTH 1024
 
-/*pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;*/
+/************************ VARIAVEIS GLOBAIS **************************/
 metro* pista;
+pthread_barrier_t barrier;
+pthread_mutext_t volta_mutex;
+/*********************************************************************/
+
+/*************************** DECLARAÇÕES *****************************/
+void *threadCiclista(void *arg);
+void simulador(int d, int n, int v);
+/*********************************************************************/
+
+
+void *threadCiclista(void * arg) {
+	int *id;
+	id = (int *) arg;
+
+	printf("dentro da thread: %d\n", *id);
+	return NULL;
+}
 
 
 void simulador(int d, int n, int v){
