@@ -21,7 +21,7 @@ metro *criaPista(int d) {
 
 void destroiPista(metro* pista, int d) {
 	int i, j;
-	
+
 	for (i = 0; i < d; i++){
 		free(pista[i].faixa);
 		for (j = 0; j < 10; j++)
