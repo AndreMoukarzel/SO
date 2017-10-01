@@ -19,6 +19,7 @@ pthread_barrier_t barreira;
 pthread_mutex_t volta_mutex;
 metro* pista;
 ciclista* c;
+int num_voltas;
 /*********************************************************************/
 
 /*************************** DECLARAÇÕES *****************************/
@@ -32,9 +33,17 @@ void corrida(int d, int n, int v);
 void *threadCiclista(void * arg) {
 	/* Atribui o argumento ao id do ciclista */
 	ciclista *temp, c;
+	int newPos = 0;
+
 	temp = (int *) arg;
 	c = *temp;
 
+	while (c.volta < num_voltas) {
+		if ((c.volta % 15) == 0)
+			if (quebraCiclista(c))
+				return 0;
+
+	}
 	pthread_barrier_wait(&barreira); /* Barreira para inicializaçao */
 	printf("dentro da thread: %d\n", c.id);
 	return NULL;
@@ -68,7 +77,7 @@ void liberaMemoria(int d, int n) {
 }
 
 
-void corrida(int d, int n, int v){
+void corrida(int d, int n){
 	int th, i;
 	pthread_t *thread = malloc(n * sizeof(pthread_t));
 
@@ -98,9 +107,9 @@ int main(int argc, char **argv) {
 	int d, n, v;
 	d = atoi(argv[1]);
 	n = atoi(argv[2]);
-	v = atoi(argv[3]);
+	num_voltas = atoi(argv[3]);
 
-	corrida(d, n, v);
+	corrida(d, n);
 
 	destroiPista(pista, d);
 
