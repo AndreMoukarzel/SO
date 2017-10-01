@@ -3,7 +3,7 @@
 metro *criaPista(int d) {
 	int i, j, d2 = (int) d;
 	metro* pista;
-	printf("kek\n");
+
 	pista = malloc(d2 * sizeof(metro));
 
 
