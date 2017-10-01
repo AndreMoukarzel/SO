@@ -10,7 +10,8 @@ typedef struct {
 	int v, vMax; /* Velocidade desejada e máxima do ciclista */
 	int impedido; /* Se o ciclista está tendo sua vMax limitada por outro */
 	int clas; /* Classificação atual do ciclista na corrida */
-	int pos, faixa; /* Posição em metros na pista e a faixa */
+	float pos; /* Posição em metros na pista */
+	int faixa; /* Faixa atual da pista em que o ciclista está */
 	int quebrado; /* Guarda a volta em que ciclista quebrou. Se não, -1 */
 } ciclista;
 

@@ -15,43 +15,18 @@
 #define MAX_LENGTH 1024
 
 /************************ VARIAVEIS GLOBAIS **************************/
-pthread_barrier_t barreira, barr_tempo;
-pthread_mutex_t init_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_barrier_t barreira;
+pthread_mutex_t volta_mutex;
 ciclista* ciclistas;
 metro* pista;
-int d;
-int num_voltas;
-int cic_ativos; /* Número de ciclistas que não quebraram */
-int fim = 0;
-int elapsed_time = 0;
+int num_voltas, num_ciclistas, tam_pista, cic_finalizados = 0;
 /*********************************************************************/
 
 
 void *threadDummy() {
-	while (!fim)
+	while (cic_finalizados < num_ciclistas)
 		pthread_barrier_wait(&barreira);
 
-	return NULL;
-}
-
-
-/* Thread que atualiza o tempo de simulaçao para ser usado nas velocidades */
-void *threadCoordenador(){
-	int ciclo_atual = 0;
-	int volta_atual = 1; /* Seria a volta atual do ciclista em 1o lugar (?) */
-
-	while(!fim){
-		pthread_barrier_wait(&barr_tempo);
-		/* Atualiza o tempo (em ms) caso nao seja a primeira iteração */
-		if (ciclo_atual != 0){
-			if (volta_atual < num_voltas - 2 && ciclo_atual != 0)
-				elapsed_time += 60;
-			else
-				elapsed_time += 20;
-		}
-		ciclo_atual++;
-		pthread_barrier_wait(&barr_tempo);
-	}
 	return NULL;
 }
 
@@ -60,45 +35,59 @@ void *threadCiclista(void * arg) {
 	/* Atribui o argumento ao id do ciclista */
 	ciclista *temp, c;
 	pthread_t dummy;
+	int a, b;
 
 	temp = (ciclista *) arg;
 	c = *temp;
-	pthread_mutex_unlock(&init_mutex);
-	printf("oi eu sou o %d\n", c.id);
-
-	/* Espera o coordenador mudar o tempo */
-	pthread_barrier_wait(&barr_tempo);
-	pthread_barrier_wait(&barr_tempo);
 
 	while (c.volta < num_voltas) {
-		if ((c.volta % 15) == 0)
-			if (quebraCiclista(c)) {
-				pthread_create(&dummy, NULL, &threadDummy, NULL);
-				cic_ativos--;
-				return NULL;
+		a = (int) c.pos;
+		b = c.faixa;
+		/* Ciclista tenta ir para a faixa mais interna possível, já que
+		// nessa velocidade ele não vai ultrapassar ninguém. */
+		if (c.v == 30) {
+			while (b > 0) {
+				pthread_mutex_lock(&(pista[a].m[b]));
+				pthread_mutex_lock(&(pista[a].m[b-1]));
+				if (pista[a].faixa[b - 1] == -1) {
+					pista[a].faixa[b] = -1;
+					pista[a].faixa[b - 1] = c.id;
+					pthread_mutex_unlock(&(pista[a].m[b]));
+					pthread_mutex_unlock(&(pista[a].m[b-1]));
+
+					b--;
+				}
+				else {
+					pthread_mutex_unlock(&(pista[a].m[b]));
+					pthread_mutex_unlock(&(pista[a].m[b-1]));
+					break;
+				}
 			}
+			c.pos += (float)c.vMax/60;
+			/* printf("%f\n", c.pos); */
+		}
 
-		/* Trava a posição atual do ciclista antes dele se mover */
-		pthread_mutex_lock(&pista[c.pos].m[c.faixa]);
+		if (c.pos > tam_pista - 1) {
+			c.pos -= tam_pista - 1;
+			c.volta += 1;
 
-		if ((elapsed_time % 120 == 0 && c.vMax == 30) ||
-			(elapsed_time % 60 == 0 && c.vMax == 60) ||
-			(c.vMax == 90)){
-			if (!c.impedido){
-				/* Espera o ciclista da frente andar, caso tenha algum */
-				while(pista[(c.pos + 1) % d].faixa[c.faixa] != -1) continue; /*ou tenta ultrapassar*/
-				pthread_mutex_lock(&pista[(c.pos + 1) % d].m[c.faixa]);
-				pista[c.pos].faixa[c.faixa] = -1;
-				pista[(c.pos + 1) % d].faixa[c.faixa] = c.id;
-				pthread_mutex_unlock(&pista[(c.pos + 1) % d].m[c.faixa]);
+			/* Ciclista tem 1% de chance de quebrar a cada 15 voltas */
+			if ((c.volta % 15) == 0) {
+				if (quebraCiclista(c)) {
+					pthread_create(&dummy, NULL, &threadDummy, NULL);
+					/* Botar semaforo aqui e TIRAR DA PISTAAA */
+					cic_finalizados++;
+					/***********************/
+					return NULL;
+				}
 			}
 		}
-		pthread_mutex_unlock(&pista[c.pos].m[c.faixa]);
-
-		c.volta += 1;
-		printf("%d\n", c.id);
-		pthread_barrier_wait(&barreira); /* Barreira para cada iteração */
+		/* pthread_barrier_wait(&barreira); */
 	}
+	/* Botar semaforo aqui */
+	cic_finalizados++;
+	/***********************/
+
 	return NULL;
 }
 
@@ -110,22 +99,15 @@ void preparaLargada(int d, int n) {
 }
 
 
-void corrida(int n){
+void corrida(int d, int n){
 	int th, i;
 	pthread_t *thread = malloc(n * sizeof(pthread_t));
-	pthread_t coord;
 
 	preparaLargada(d, n);
 	pthread_barrier_init(&barreira, NULL, n);
-	pthread_barrier_init(&barr_tempo, NULL, n + 1);
-	cic_ativos = n;
 
 	/* Dispara as threads */
-	if ((th = pthread_create(&coord, NULL, threadCoordenador, NULL)))
-		printf("Failed to create thread %d\n", th);
-
 	for (i = 0; i < n; i++) {
-		pthread_mutex_lock(&init_mutex);
 		if ((th = pthread_create(&thread[i], NULL, threadCiclista, (void *) &ciclistas[i])))
 			printf("Failed to create thread %d\n", th);
 	}
@@ -145,13 +127,11 @@ void corrida(int n){
 
 
 int main(int argc, char **argv) {
-	int n;
-
-	d = atoi(argv[1]);
-	n = atoi(argv[2]);
+	tam_pista = atoi(argv[1]);
+	num_ciclistas = atoi(argv[2]);
 	num_voltas = atoi(argv[3]);
 
-	corrida(n);
+	corrida(tam_pista, num_ciclistas);
 
 	return 0;
 }
