@@ -7,6 +7,7 @@
 typedef struct {
 	int id; /* Identificador do ciclista */
 	int n; /* Volta atual do ciclista */
+	int p; /* Pontuação acumulada do ciclista */
 	int v, vMax; /* Velocidade desejada e máxima do ciclista */
 	int pos; /* Posição relativa à corrida do ciclista */
 	int p_pos[2]; /* Posição [linha, coluna] da pista */ 

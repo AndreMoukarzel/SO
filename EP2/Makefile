@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-ansi -Wall -pedantic -O2
-OBJECTS = corrida.c ciclista.o
+OBJECTS = corrida.c ciclista.o pista.o
 
 all: corrida clean
 

@@ -6,18 +6,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <pthread.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <time.h>
 #include "ciclista.h"
+#include "pista.h"
 
 #define MAX_LENGTH 1024
 
 /*pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;*/
-
-int **pista; /* matriz da pista, de d linhas e 10 colunas */
-
+metro* pista;
 
 void simulador(int d, int n, int v){
 	int th, i, *id;
@@ -38,20 +36,16 @@ void simulador(int d, int n, int v){
 
 
 int main(int argc, char **argv) {
-	int d, n, v, i;
+	int d, n, v;
 	d = atoi(argv[1]);
 	n = atoi(argv[2]);
 	v = atoi(argv[3]);
 
-	/* essa alocagem ta certa?>?? */
-	pista = malloc(d*n*sizeof(int));
-	for (i = 0; i < d; i++)
-		pista[i] = malloc(n*sizeof(int));
+	pista = criaPista(d);
 
 	simulador(d, n, v);
 
-	for (i = 0; i < d; i++)
-		free(pista[i]);
-	free(pista);
+	destroiPista(pista, d);
+
 	return 0;
 }
