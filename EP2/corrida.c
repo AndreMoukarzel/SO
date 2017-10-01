@@ -16,9 +16,9 @@
 
 /************************ VARIAVEIS GLOBAIS **************************/
 pthread_barrier_t barreira;
-pthread_mutex_t volta_mutex, init_mutex = PTHREAD_MUTEX_INITIALIZER
-metro* pista;
+pthread_mutex_t volta_mutex, init_mutex = PTHREAD_MUTEX_INITIALIZER;
 ciclista* ciclistas;
+metro* pista;
 int num_voltas;
 /*********************************************************************/
 
@@ -50,7 +50,7 @@ void preparaLargada(int d, int n) {
 }
 
 
-void corrida(){
+void corrida(int d, int n){
 	int th, i;
 	pthread_t *thread = malloc(n * sizeof(pthread_t));
 
@@ -85,7 +85,7 @@ int main(int argc, char **argv) {
 	n = atoi(argv[2]);
 	num_voltas = atoi(argv[3]);
 
-	corrida();
+	corrida(d, n);
 
 	return 0;
 }
