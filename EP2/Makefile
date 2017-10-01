@@ -1,11 +1,11 @@
 CC=gcc
-CFLAGS=-ansi -Wall -pedantic -O2
+CFLAGS=-ansi -Wall -pedantic -O2 -lpthread -D_POSIX_C_SOURCE=199309L
 OBJECTS = corrida.c ciclista.o pista.o
 
 all: corrida clean
 
 corrida: $(OBJECTS)
-	$(CC) $(OBJECTS) $(CFLAGS) -lpthread -o corrida
+	$(CC) $(OBJECTS) $(CFLAGS) -o corrida
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<

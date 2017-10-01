@@ -8,9 +8,17 @@ estar bloqueado por um ciclista à sua frente.
 sobre mudar de pista. Sendo assim, DEPOIS de ir em frente, tal
 ciclista tenta ir a uma pista mais interna, se possível.
 	Caso ele não seja capaz de ir em frente, o ciclista se move
-a uma pista adjacente mais externa e segue em sua vMax (até a 
+a uma pista adjacente mais externa e segue em sua vMax (até a
 próxima checagem, claro).
 
 	A variável na struct ciclista que indica se eles estão
 quebrados deve salvar a volta em que um ciclista quebrou, ou
 -1 caso ele não tenha quebrado.
+
+	Para impedir que dois ciclistas tentem mudar para uma posiçao
+da pista (matriz) ao mesmo tempo e potencialmente sobreescrever
+um ao outro, podemos fazer uma matriz de semaforos, do mesmo
+tamanho da matriz da pista, isso é, um semaforo pra cada posiçao
+da pista, assim os ciclistas podem disputar a posiçao sem forçar
+todos os outros a pararem a execuçao antes de comparar (que
+aconteceria no caso de termos um unico semaforo para a comparaçao)

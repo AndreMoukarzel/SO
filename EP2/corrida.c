@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/types.h>
-#include <time.h>
 #include "ciclista.h"
 #include "pista.h"
 
@@ -16,6 +15,7 @@
 
 /*pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;*/
 metro* pista;
+
 
 void simulador(int d, int n, int v){
 	int th, i, *id;
