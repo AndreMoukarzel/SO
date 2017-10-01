@@ -24,13 +24,9 @@ int d, n, v;
 
 /*************************** DECLARAÇÕES *****************************/
 void *threadCiclista(void *arg);
-<<<<<<< HEAD
-void simulador();
-=======
 void preparaLargada(int d, int n);
 void liberaMemoria(int d, int n);
 void corrida(int d, int n, int v);
->>>>>>> 535f0511c581dc92562cf0f27f3f2737cdb03875
 /*********************************************************************/
 
 
@@ -50,12 +46,6 @@ void *threadCiclista(void * arg) {
 }
 
 
-<<<<<<< HEAD
-void simulador(){
-	int th, i, *id;
-	pthread_t *ciclistas = malloc(n * sizeof(pthread_t));
-	pthread_barrier_init(&barreira, NULL, (unsigned) n);
-=======
 void preparaLargada(int d, int n) {
 	pista = criaPista(d);
 	c = criaCiclistas(n);
@@ -81,17 +71,9 @@ void liberaMemoria(int d, int n) {
 	}
 	free(pista);
 }
->>>>>>> 535f0511c581dc92562cf0f27f3f2737cdb03875
 
 
-<<<<<<< HEAD
-	for (i = 0; i < n; i++){
-		/* Fecha o mutex para passar o argumento e ele nao ser mudado
-		// enquanto o ciclista o grava no id */
-		pthread_mutex_lock(&init_mutex);
-		if ((th = pthread_create(&ciclistas[i], NULL, threadCiclista, (void *) id)))
-=======
-void corrida(int d, int n, int v){
+void corrida(){
 	int th, i;
 	pthread_t *thread = malloc(n * sizeof(pthread_t));
 
@@ -102,7 +84,6 @@ void corrida(int d, int n, int v){
 	for (i = 0; i < n; i++) {
 		printf("%d\n", *id);
 		if ((th = pthread_create(&thread[i], NULL, threadCiclista, (void *) c[i])))
->>>>>>> 535f0511c581dc92562cf0f27f3f2737cdb03875
 			printf("Failed to create thread %d\n", th);
 	}
 
@@ -123,11 +104,9 @@ int main(int argc, char **argv) {
 	n = atoi(argv[2]);
 	v = atoi(argv[3]);
 
-<<<<<<< HEAD
-	simulador();
 	pista = criaPista(d);
 
-	corrida(d, n, v);
+	corrida();
 
 	destroiPista(pista, d);
 
