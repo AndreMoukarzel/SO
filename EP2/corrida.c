@@ -18,15 +18,8 @@
 pthread_barrier_t barreira;
 pthread_mutex_t volta_mutex;
 metro* pista;
-ciclista* c;
+ciclista* ciclistas;
 int num_voltas;
-/*********************************************************************/
-
-/*************************** DECLARAÇÕES *****************************/
-void *threadCiclista(void *arg);
-void preparaLargada(int d, int n);
-void liberaMemoria(int d, int n);
-void corrida(int d, int n, int v);
 /*********************************************************************/
 
 
@@ -35,43 +28,38 @@ void *threadCiclista(void * arg) {
 	ciclista *temp, c;
 	int newPos = 0;
 
-	temp = (int *) arg;
+	temp = (ciclista *) arg;
 	c = *temp;
 
+	printf("dentro da thread: %d\n", c.id);
 	while (c.volta < num_voltas) {
 		if ((c.volta % 15) == 0)
 			if (quebraCiclista(c))
-				return 0;
+				return NULL;
 
+		c.volta =+ 1;
+		pthread_barrier_wait(&barreira); /* Barreira para inicializaçao */
 	}
-	pthread_barrier_wait(&barreira); /* Barreira para inicializaçao */
-	printf("dentro da thread: %d\n", c.id);
+
 	return NULL;
 }
 
 
 void preparaLargada(int d, int n) {
 	pista = criaPista(d);
-	c = criaCiclistas(n);
-	posicionaCiclistas(d, n, c, pista);
+	ciclistas = criaCiclistas(n);
+	posicionaCiclistas(d, n, ciclistas, pista);
 }
 
 
 void liberaMemoria(int d, int n) {
-	int i, j;
+	int i;
 
-	for (i = 0; i < n; i++)
-		free(c[i]);
-	free(c);
+	free(ciclistas);
 
 	for (i = 0; i < d; i++) {
-		for (j = 0; j < 10; j++) {
-			free(pista[i].faixa[j]);
-			free(pista[i].m[j]);
-		}
 		free(pista[i].faixa);
 		free(pista[i].m);
-		free(pista[i]);
 	}
 	free(pista);
 }
@@ -86,8 +74,8 @@ void corrida(int d, int n){
 
 	/* Dispara as threads */
 	for (i = 0; i < n; i++) {
-		printf("%d\n", *id);
-		if ((th = pthread_create(&thread[i], NULL, threadCiclista, (void *) c[i])))
+		printf("%d\n", ciclistas[i].id);
+		if ((th = pthread_create(&thread[i], NULL, threadCiclista, (void *) &ciclistas[i])))
 			printf("Failed to create thread %d\n", th);
 	}
 
@@ -104,7 +92,7 @@ void corrida(int d, int n){
 
 
 int main(int argc, char **argv) {
-	int d, n, v;
+	int d, n;
 	d = atoi(argv[1]);
 	n = atoi(argv[2]);
 	num_voltas = atoi(argv[3]);
