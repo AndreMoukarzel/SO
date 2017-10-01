@@ -16,31 +16,37 @@
 
 /************************ VARIAVEIS GLOBAIS **************************/
 pthread_barrier_t barreira;
-pthread_mutex_t volta_mutex;
+pthread_mutex_t volta_mutex, init_mutex = PTHREAD_MUTEX_INITIALIZER;
+metro *pista;
+int d, n, v;
 /*********************************************************************/
 
 /*************************** DECLARAÇÕES *****************************/
 void *threadCiclista(void *arg);
-void simulador(int d, int n, int v);
+void simulador();
 /*********************************************************************/
 
 
 void *threadCiclista(void * arg) {
 	/* Atribui o argumento ao id do ciclista */
-	ciclista *temp, c;
+	int *temp;
+	ciclista c;
 	temp = (int *) arg;
-	c = *temp;
+	c.id = *temp;
 
-	pthread_barrier_wait(&barreira); /* Barreira para inicializaçao */
-	printf("dentro da thread: %d\n", c.id);
+	c.pos = d - c.id/10;
+
+	/*pthread_barrier_wait(&barreira); Barreira para inicializaçao/largada */
+	printf("oi eu sou o ciclista %d, minha pos %d\n", c.id, c.pos);
+	pthread_mutex_unlock(&init_mutex);
 	return NULL;
 }
 
 
-void simulador(int d, int n, int v){
+void simulador(){
 	int th, i, *id;
 	pthread_t *ciclistas = malloc(n * sizeof(pthread_t));
-	pthread_barrier_init(&barreira, NULL, (unsigned) d);
+	pthread_barrier_init(&barreira, NULL, (unsigned) n);
 
 	id = &i;
 
@@ -48,7 +54,6 @@ void simulador(int d, int n, int v){
 		/* Fecha o mutex para passar o argumento e ele nao ser mudado
 		// enquanto o ciclista o grava no id */
 		pthread_mutex_lock(&init_mutex);
-		printf("%d\n", *id);
 		if ((th = pthread_create(&ciclistas[i], NULL, threadCiclista, (void *) id)))
 			printf("Failed to create thread %d\n", th);
 	}
@@ -60,12 +65,11 @@ void simulador(int d, int n, int v){
 
 
 int main(int argc, char **argv) {
-	int d, n, v;
 	d = atoi(argv[1]);
 	n = atoi(argv[2]);
 	v = atoi(argv[3]);
 
-	simulador(d, n, v);
+	simulador();
 	pista = criaPista(d);
 
 
