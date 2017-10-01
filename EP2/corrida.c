@@ -26,22 +26,22 @@ int d, n, v;
 void *threadCiclista(void *arg);
 void preparaLargada(int d, int n);
 void liberaMemoria(int d, int n);
-void corrida(int d, int n, int v);
+void corrida();
 /*********************************************************************/
 
 
 void *threadCiclista(void * arg) {
 	/* Atribui o argumento ao id do ciclista */
-	int *temp;
+	ciclista *temp;
 	ciclista c;
-	temp = (int *) arg;
-	c.id = *temp;
+	temp = (ciclista *) arg;
+	c = *temp;
+	pthread_mutex_unlock(&init_mutex);
 
 	c.pos = d - c.id/10;
 
 	/*pthread_barrier_wait(&barreira); Barreira para inicializaçao/largada */
 	printf("oi eu sou o ciclista %d, minha pos %d\n", c.id, c.pos);
-	pthread_mutex_unlock(&init_mutex);
 	return NULL;
 }
 
@@ -56,18 +56,15 @@ void preparaLargada(int d, int n) {
 void liberaMemoria(int d, int n) {
 	int i, j;
 
-	for (i = 0; i < n; i++)
-		free(c[i]);
 	free(c);
 
 	for (i = 0; i < d; i++) {
 		for (j = 0; j < 10; j++) {
-			free(pista[i].faixa[j]);
-			free(pista[i].m[j]);
+			pthread_mutex_destroy(pista[i].m[j]);
 		}
 		free(pista[i].faixa);
 		free(pista[i].m);
-		free(pista[i]);
+		free(pista);
 	}
 	free(pista);
 }
@@ -82,7 +79,9 @@ void corrida(){
 
 	/* Dispara as threads */
 	for (i = 0; i < n; i++) {
-		printf("%d\n", *id);
+		pthread_mutex_lock(&init_mutex);
+		printf("%d\n", i);
+		c[i].id = i;
 		if ((th = pthread_create(&thread[i], NULL, threadCiclista, (void *) c[i])))
 			printf("Failed to create thread %d\n", th);
 	}
