@@ -30,6 +30,7 @@ void posicionaCiclistas(int d, int n, ciclista* cics, metro* pista) {
 			pista[pos].faixa[i] = num++;
 			cics[num].pos = pos;
 			cics[num].clas = d - pos;
+			cics[num].faixa = i;
 		}
 	}
 }
