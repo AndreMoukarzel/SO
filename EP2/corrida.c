@@ -84,6 +84,7 @@ void *threadCiclista(void * arg) {
 		}
 		/* pthread_barrier_wait(&barreira); */
 	}
+	pthread_create(&dummy, NULL, &threadDummy, NULL);
 	/* Botar semaforo aqui */
 	cic_finalizados++;
 	/***********************/
