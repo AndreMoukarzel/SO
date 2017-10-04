@@ -59,7 +59,7 @@ ciclista defineVel(ciclista arg, metro* pista) {
 	int r = rand() % 100;
 
 	if (c.v == 30) {
-		if (r < 1)
+		if (r < 30)
 			c.v = 30;
 		else
 			c.v = 60;

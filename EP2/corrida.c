@@ -53,29 +53,36 @@ void *threadCiclista(void * arg) {
 		/* Ciclista tenta ir para a faixa mais interna possível, já que
 		// nessa velocidade ele não vai ultrapassar ninguém. */
 		if (c.v == 30) {
+
+			LOCK(&(pista[a].m[b]));
+
 			while (b > 0) {
-				LOCK(&(pista[a].m[b]));
 				LOCK(&(pista[a].m[b-1]));
 				if (pista[a].faixa[b - 1] == -1) {
 					pista[a].faixa[b] = -1;
 					pista[a].faixa[b - 1] = c.id;
 					UNLOCK(&(pista[a].m[b]));
-					UNLOCK(&(pista[a].m[b-1]));
+					/*UNLOCK(&(pista[a].m[b-1])); libera isso aqui??*/
 
 					b--;
 				}
 				else {
-					UNLOCK(&(pista[a].m[b]));
 					UNLOCK(&(pista[a].m[b-1]));
 					break;
 				}
 			}
-			c.pos += (float)c.vMax/60;
+			/* Anda pra frente/espera o da frente andar */
+			LOCK(&(pista[(a + 1) % tam_pista].m[b]));
+			pista[a].faixa[b] = -1;
+			pista[(a + 1) % tam_pista].faixa[b] = c.id;
+			UNLOCK(&(pista[a].m[b]));
+			UNLOCK(&(pista[(a + 1) % tam_pista].m[b]));
+			a++;
 		}
 		else if (c.v == 60) {
 			/* corre bem rapido e tenta ultrapassar */
-			c.pos+=1;
 		}
+		c.pos += (float)c.vMax/60;
 
 		if (c.pos > tam_pista - 1) {
 			c.pos -= tam_pista - 1;
@@ -94,6 +101,8 @@ void *threadCiclista(void * arg) {
 				}
 			}
 		}
+		/* Atualiza o vetor global de ciclistas */
+		ciclistas[c.id] = c;
 		WAIT(&barreira);
 	}
 	pthread_create(&dummy, NULL, &threadDummy, NULL);
