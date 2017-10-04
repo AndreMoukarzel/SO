@@ -1,3 +1,8 @@
+/* //////////////////////////////////////////////////////////////////
+// Nome: André Ferrari Moukarzel						NUSP: 9298166
+// Nome: Henrique Cerquinho								NUSP: 9793700
+///////////////////////////////////////////////////////////////////*/
+
 #include "ciclista.h"
 
 
@@ -24,7 +29,7 @@ void posicionaCiclistas(int d, int n, ciclista* cics, metro* pista) {
 
 	for(num = 0; num < n; pos--) {
 		/* Bota até 10 ciclistas lado a lado */
-		for (i = 0; i < 10; i++) { 
+		for (i = 0; i < 10; i++) {
 			if (num >= n)
 				break;
 			pista[pos].faixa[i] = num++;

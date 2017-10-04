@@ -1,7 +1,7 @@
 /* //////////////////////////////////////////////////////////////////
 // Nome: André Ferrari Moukarzel						NUSP: 9298166
 // Nome: Henrique Cerquinho								NUSP: 9793700
-////////////////////////// COMO RODAR /////////////////////////////*/
+///////////////////////////////////////////////////////////////////*/
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -14,18 +14,22 @@
 
 #define MAX_LENGTH 1024
 
+/****************************** MACROS *******************************/
+#define LOCK(mutex) pthread_mutex_lock(mutex)
+#define UNLOCK(mutex) pthread_mutex_unlock(mutex)
+#define WAIT(barrier) pthread_barrier_wait(barrier)
 /************************ VARIAVEIS GLOBAIS **************************/
 pthread_barrier_t barreira;
-pthread_mutex_t volta_mutex;
+pthread_mutex_t mutex_finaliza = PTHREAD_MUTEX_INITIALIZER;
 ciclista* ciclistas;
 metro* pista;
-int num_voltas, num_ciclistas, tam_pista, cic_finalizados = 0;
+int tam_pista, num_ciclistas, num_voltas, cic_finalizados = 0;
 /*********************************************************************/
 
 
 void *threadDummy() {
 	while (cic_finalizados < num_ciclistas)
-		pthread_barrier_wait(&barreira);
+		WAIT(&barreira);
 
 	return NULL;
 }
@@ -40,6 +44,8 @@ void *threadCiclista(void * arg) {
 	temp = (ciclista *) arg;
 	c = *temp;
 
+	WAIT(&barreira); /* Ciclistas dão a largada sincronizados */
+
 	while (c.volta < num_voltas) {
 		a = (int) c.pos;
 		b = c.faixa;
@@ -47,24 +53,24 @@ void *threadCiclista(void * arg) {
 		// nessa velocidade ele não vai ultrapassar ninguém. */
 		if (c.v == 30) {
 			while (b > 0) {
-				pthread_mutex_lock(&(pista[a].m[b]));
-				pthread_mutex_lock(&(pista[a].m[b-1]));
+				LOCK(&(pista[a].m[b]));
+				LOCK(&(pista[a].m[b-1]));
 				if (pista[a].faixa[b - 1] == -1) {
 					pista[a].faixa[b] = -1;
 					pista[a].faixa[b - 1] = c.id;
-					pthread_mutex_unlock(&(pista[a].m[b]));
-					pthread_mutex_unlock(&(pista[a].m[b-1]));
+					UNLOCK(&(pista[a].m[b]));
+					UNLOCK(&(pista[a].m[b-1]));
 
 					b--;
 				}
 				else {
-					pthread_mutex_unlock(&(pista[a].m[b]));
-					pthread_mutex_unlock(&(pista[a].m[b-1]));
+					UNLOCK(&(pista[a].m[b]));
+					UNLOCK(&(pista[a].m[b-1]));
 					break;
 				}
 			}
 			c.pos += (float)c.vMax/60;
-			/* printf("%f\n", c.pos); */
+			printf("%d - %f\n", c.id, c.pos);
 		}
 
 		if (c.pos > tam_pista - 1) {
@@ -74,15 +80,16 @@ void *threadCiclista(void * arg) {
 			/* Ciclista tem 1% de chance de quebrar a cada 15 voltas */
 			if ((c.volta % 15) == 0) {
 				if (quebraCiclista(c)) {
+					/* TIRA DA PISTAAA */
 					pthread_create(&dummy, NULL, &threadDummy, NULL);
-					/* Botar semaforo aqui e TIRAR DA PISTAAA */
+					LOCK(&mutex_finaliza);
 					cic_finalizados++;
-					/***********************/
+					UNLOCK(&mutex_finaliza);
 					return NULL;
 				}
 			}
 		}
-		/* pthread_barrier_wait(&barreira); */
+		WAIT(&barreira);
 	}
 	pthread_create(&dummy, NULL, &threadDummy, NULL);
 	/* Botar semaforo aqui */
