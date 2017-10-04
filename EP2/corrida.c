@@ -49,6 +49,7 @@ void *threadCiclista(void * arg) {
 	while (c.volta < num_voltas) {
 		a = (int) c.pos;
 		b = c.faixa;
+		printf("%d - %d = %f :: %d\n", c.id, a, c.pos, c.v);
 		/* Ciclista tenta ir para a faixa mais interna possível, já que
 		// nessa velocidade ele não vai ultrapassar ninguém. */
 		if (c.v == 30) {
@@ -70,12 +71,16 @@ void *threadCiclista(void * arg) {
 				}
 			}
 			c.pos += (float)c.vMax/60;
-			printf("%d - %d\n", c.id, a);
+		}
+		else if (c.v == 60) {
+			/* corre bem rapido e tenta ultrapassar */
+			c.pos+=1;
 		}
 
 		if (c.pos > tam_pista - 1) {
 			c.pos -= tam_pista - 1;
 			c.volta += 1;
+			c = defineVel(c, pista);
 
 			/* Ciclista tem 1% de chance de quebrar a cada 15 voltas */
 			if ((c.volta % 15) == 0) {
@@ -92,9 +97,9 @@ void *threadCiclista(void * arg) {
 		WAIT(&barreira);
 	}
 	pthread_create(&dummy, NULL, &threadDummy, NULL);
-	/* Botar semaforo aqui */
+	LOCK(&mutex_finaliza);
 	cic_finalizados++;
-	/***********************/
+	UNLOCK(&mutex_finaliza);
 
 	return NULL;
 }

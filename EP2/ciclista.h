@@ -27,7 +27,7 @@ void posicionaCiclistas(int d, int n, ciclista* cics, metro* pista);
 
 int quebraCiclista(ciclista c);
 
-void defineVel(ciclista c, metro* pista);
+ciclista defineVel(ciclista c, metro* pista);
 
 
 #endif
