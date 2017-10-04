@@ -70,7 +70,7 @@ void *threadCiclista(void * arg) {
 				}
 			}
 			c.pos += (float)c.vMax/60;
-			printf("%d - %f\n", c.id, c.pos);
+			printf("%d - %d\n", c.id, a);
 		}
 
 		if (c.pos > tam_pista - 1) {

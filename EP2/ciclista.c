@@ -32,11 +32,11 @@ void posicionaCiclistas(int d, int n, ciclista* cics, metro* pista) {
 		for (i = 0; i < 10; i++) {
 			if (num >= n)
 				break;
-			pista[pos].faixa[i] = num++;
 			cics[num].pos = pos;
 			cics[num].faixa = i;
 			cics[num].clas = d - pos;
 			cics[num].faixa = i;
+			pista[pos].faixa[i] = num++;
 		}
 	}
 }
