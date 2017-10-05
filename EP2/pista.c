@@ -24,6 +24,17 @@ metro *criaPista(int d) {
 	return pista;
 }
 
+void printPista(metro *pista, int d){
+	int i, j;
+	for (i = 0; i < d; i++){
+		printf("%2dm>", i);
+		for (j = 0; j < 10; j++){
+			printf("%3d", pista[i].faixa[j]);
+		}
+		printf("\n");
+	}
+}
+
 void destroiPista(metro* pista, int d) {
 	int i, j;
 

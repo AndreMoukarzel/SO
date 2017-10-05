@@ -21,6 +21,7 @@
 /************************ VARIAVEIS GLOBAIS **************************/
 pthread_barrier_t barreira;
 pthread_mutex_t mutex_finaliza = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex_print = PTHREAD_MUTEX_INITIALIZER;
 ciclista* ciclistas;
 metro* pista;
 int tam_pista, num_ciclistas, num_voltas, cic_finalizados = 0;
@@ -49,7 +50,7 @@ void *threadCiclista(void * arg) {
 	while (c.volta < num_voltas) {
 		a = (int) c.pos;
 		b = c.faixa;
-		printf("%d - %d = %f :: %d\n", c.id, a, c.pos, c.v);
+		
 		/* Ciclista tenta ir para a faixa mais interna possível, já que
 		// nessa velocidade ele não vai ultrapassar ninguém. */
 		if (c.v == 30) {
@@ -84,10 +85,16 @@ void *threadCiclista(void * arg) {
 		}
 		c.pos += (float)c.vMax/60;
 
+		/* Final da volta */
 		if (c.pos > tam_pista - 1) {
 			c.pos -= tam_pista - 1;
 			c.volta += 1;
 			c = defineVel(c, pista);
+
+			LOCK(&mutex_print);
+			printPista(pista, tam_pista);
+			printf("\n");
+			UNLOCK(&mutex_print);
 
 			/* Ciclista tem 1% de chance de quebrar a cada 15 voltas */
 			if ((c.volta % 15) == 0) {

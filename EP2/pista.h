@@ -18,6 +18,8 @@ typedef struct {
 
 metro *criaPista(int d);
 
+void printPista(metro *pista, int d);
+
 void destroiPista(metro* pista, int d);
 
 #endif
