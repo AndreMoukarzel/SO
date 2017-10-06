@@ -50,50 +50,54 @@ void *threadCiclista(void * arg) {
 	while (c.volta < num_voltas) {
 		a = (int) c.pos;
 		b = c.faixa;
-		
+
 		/* Ciclista tenta ir para a faixa mais interna possível, já que
 		// nessa velocidade ele não vai ultrapassar ninguém. */
 		if (c.v == 30) {
-
-			LOCK(&(pista[a].m[b]));
-
 			while (b > 0) {
 				LOCK(&(pista[a].m[b-1]));
+
 				if (pista[a].faixa[b - 1] == -1) {
 					pista[a].faixa[b] = -1;
 					pista[a].faixa[b - 1] = c.id;
-					UNLOCK(&(pista[a].m[b]));
-					/*UNLOCK(&(pista[a].m[b-1])); libera isso aqui??*/
-
-					b--;
+					UNLOCK(&(pista[a].m[b-1]));
+					b = --c.faixa;
 				}
 				else {
 					UNLOCK(&(pista[a].m[b-1]));
 					break;
 				}
 			}
-			/* Anda pra frente/espera o da frente andar */
-			LOCK(&(pista[(a + 1) % tam_pista].m[b]));
-			pista[a].faixa[b] = -1;
-			pista[(a + 1) % tam_pista].faixa[b] = c.id;
-			UNLOCK(&(pista[a].m[b]));
-			UNLOCK(&(pista[(a + 1) % tam_pista].m[b]));
-			a++;
+			/* Anda pra frente/espera o da frente andar, caso c.pos
+			// seja inteiro */
+			if (c.pos == a){
+				LOCK(&(pista[(a + 1) % tam_pista].m[b]));
+
+				if (pista[(a + 1) % tam_pista].faixa[b] == -1){
+					pista[a].faixa[b] = -1;
+					pista[(a + 1) % tam_pista].faixa[b] = c.id;
+				}
+
+				UNLOCK(&(pista[(a + 1) % tam_pista].m[b]));
+			}
 		}
+
 		else if (c.v == 60) {
 			/* corre bem rapido e tenta ultrapassar */
 		}
+
+		/* Atualiza a posição */
 		c.pos += (float)c.vMax/60;
 
 		/* Final da volta */
 		if (c.pos > tam_pista - 1) {
 			c.pos -= tam_pista - 1;
 			c.volta += 1;
-			c = defineVel(c, pista);
+			/*c = defineVel(c, pista);*/
 
 			LOCK(&mutex_print);
-			printPista(pista, tam_pista);
 			printf("\n");
+			printPista(pista, tam_pista);
 			UNLOCK(&mutex_print);
 
 			/* Ciclista tem 1% de chance de quebrar a cada 15 voltas */
