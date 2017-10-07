@@ -37,6 +37,7 @@ void megaBarreira() {
 		printPista(pista, tam_pista);
 		/* Adicionar manejamento da corrida aqui */
 	}
+	WAIT(&barreira);
 }
 
 
@@ -60,7 +61,7 @@ int mudaFaixa(ciclista c, int dentro) {
 		UNLOCK(&(pista[pos].m[alvo]));
 		return 1;
 	} 
-	
+
 	UNLOCK(&(pista[pos].m[alvo]));
 	return 0;
 }
@@ -75,6 +76,8 @@ int andaFrente(ciclista c) {
 		pista[(pos + 1) % tam_pista].faixa[f] = c.id;
 		if (pista[pos].faixa[f] == c.id)
 			pista[pos].faixa[f] = -1;
+		else
+			printf("WTF\n");
 
 		UNLOCK(&(pista[(pos + 1) % tam_pista].m[f]));
 		return 1;
@@ -115,8 +118,10 @@ void *threadCiclista(void * arg) {
 
 			/* Anda pra frente/espera o da frente andar, caso o acrescimo
 			// de velocidade adicione um metro inteiro à sua posição */
-			if (next_pos > pos)
+			if (next_pos > pos) {
+				printf("C%d, %f | %d\n", c.id, c.pos, next_pos);
 				andaFrente(c);
+			}
 		}
 		else if (c.v == 60) {
 			/* corre bem rapido e tenta ultrapassar */
@@ -126,8 +131,8 @@ void *threadCiclista(void * arg) {
 		c.pos += (float)c.vMax/60;
 
 		/* Final da volta */
-		if (c.pos > tam_pista - 1) {
-			c.pos -= tam_pista - 1;
+		if ((int)c.pos > tam_pista - 1) {
+			c.pos -= tam_pista;
 			c.volta += 1;
 			/*c = defineVel(c, pista);*/
 

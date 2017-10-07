@@ -14,7 +14,6 @@ ciclista *criaCiclistas(int n) {
 		cics[i].id = i;
 		cics[i].volta = -1;
 		cics[i].p = 0;
-		cics[i].impedido = 0;
 		cics[i].v = 30;
 		cics[i].vMax = 30;
 		cics[i].quebrado = -1;
@@ -25,17 +24,16 @@ ciclista *criaCiclistas(int n) {
 
 
 void posicionaCiclistas(int d, int n, ciclista* cics, metro* pista) {
-	int pos = d -1, num, i;
+	int pos = d - 1, num, i;
 
 	for(num = 0; num < n; pos--) {
 		/* Bota até 10 ciclistas lado a lado */
 		for (i = 0; i < 10; i++) {
 			if (num >= n)
 				break;
-			cics[num].pos = pos;
+			cics[num].pos = (float)pos;
 			cics[num].faixa = i;
 			cics[num].clas = d - pos;
-			cics[num].faixa = i;
 			pista[pos].faixa[i] = num++;
 		}
 	}
@@ -70,10 +68,6 @@ ciclista defineVel(ciclista arg, metro* pista) {
 		else
 			c.v = 60;
 	}
-
-	if (!c.impedido)
-		c.vMax = c.v;
-
 	/* impede todos os ciclistas atrás dele */
 	return c;
 }

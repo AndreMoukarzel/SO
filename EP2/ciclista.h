@@ -13,7 +13,6 @@ typedef struct {
 	int volta; /* Volta atual do ciclista */
 	int p; /* Pontuação acumulada do ciclista */
 	int v, vMax; /* Velocidade desejada e máxima do ciclista */
-	int impedido; /* Se o ciclista está tendo sua vMax limitada por outro */
 	int clas; /* Classificação atual do ciclista na corrida */
 	float pos; /* Posição em metros na pista */
 	int faixa; /* Faixa atual da pista em que o ciclista está */
