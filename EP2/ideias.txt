@@ -24,12 +24,6 @@ todos os outros a pararem a execuçao antes de comparar (que
 aconteceria no caso de termos um unico semaforo para a comparaçao)
 
 	TESTES:
-		- Sempre q a função andaFrente devolve 1, a posição de
-		origem e destino do ciclista apresentam os valores
-		corretos (-1 e c.id, respectivamente). Estaria o problema
-		na mudança de faixa? N, parece estar funcionando ok.
-
-		- O problema deve ser quando o ciclista tenta avançar e n
-		consegue. Quando, em outra iteração ele for andar, ele vai
-		"pular" uma posição, e acabar mantendo seu id duas posições
-		atrás na pista.
+		- Testando duplicação com parâmetros 5 7 2
+		Claramente os ciclistas são clonados nos casos em que eles
+		são impedidos de andar, mas o motivo é incerto.

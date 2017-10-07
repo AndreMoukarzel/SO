@@ -104,7 +104,6 @@ void *threadDummy() {
 
 
 void *threadCiclista(void * arg) {
-	/* Atribui o argumento ao id do ciclista */
 	ciclista *temp, c;
 	pthread_t dummy;
 	int pos, next_pos;
@@ -118,20 +117,17 @@ void *threadCiclista(void * arg) {
 		pos = (int) c.pos;
 		next_pos = (int)(c.pos + (float)c.v/60);
 
-		if (c.v == 30) {
-			while (mudaFaixa(c, 1))
-				c = ciclistas[c.id];
+		while (mudaFaixa(c, 1))
 			c = ciclistas[c.id];
-			/* Anda pra frente/espera o da frente andar, caso o acrescimo
-			// de velocidade adicione um metro inteiro à sua posição */
-			if (next_pos > pos) {
-				if (!andaFrente(c)) /* Não atualiza a posição */
-					c.pos -= (float)c.v/60;
-				c = ciclistas[c.id];
+		c = ciclistas[c.id];
+		/* Anda pra frente/espera o da frente andar, caso o acrescimo
+		// de velocidade adicione um metro inteiro à sua posição */
+		if (next_pos > pos) {
+			if (!andaFrente(c)) { /* Não atualiza a posição */
+				c.pos -= (float)c.v/60;
+				printf("C%d não andou. Pos = %f\n", c.id, c.pos + (float)c.v/60);
 			}
-		}
-		else if (c.v == 60) {
-			/* corre bem rapido e tenta ultrapassar */
+			c = ciclistas[c.id];
 		}
 
 		/* Atualiza a posição */
