@@ -78,8 +78,6 @@ int andaFrente(ciclista c) {
 		pista[(pos + 1) % tam_pista].faixa[f] = c.id;
 		if (pista[pos].faixa[f] == c.id)
 			pista[pos].faixa[f] = -1;
-		else
-			printf("WTF\n");
 
 		UNLOCK(&(pista[(pos + 1) % tam_pista].m[f]));
 		return 1;
@@ -111,13 +109,11 @@ void *threadCiclista(void * arg) {
 
 	while (c.volta < num_voltas) {
 		pos = (int) c.pos;
-		next_pos = (int)(c.pos + (float)c.vMax/60);
+		next_pos = (int)(c.pos + (float)c.v/60);
 
-		/* Ciclista tenta ir para a faixa mais interna possível, já que
-		// nessa velocidade ele não vai ultrapassar ninguém. */
 		if (c.v == 30) {
-			while (mudaFaixa(c, 1));
-			/* Atualiza os atributos de c que foram mudados na função acima */
+			while (mudaFaixa(c, 1))
+				c = ciclistas[c.id];
 			c = ciclistas[c.id];
 
 			/* Anda pra frente/espera o da frente andar, caso o acrescimo
@@ -131,7 +127,7 @@ void *threadCiclista(void * arg) {
 		}
 
 		/* Atualiza a posição */
-		c.pos += (float)c.vMax/60;
+		c.pos += (float)c.v/60;
 
 		/* Final da volta */
 		if ((int)c.pos > tam_pista - 1) {
