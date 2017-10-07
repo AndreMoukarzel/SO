@@ -57,10 +57,12 @@ int mudaFaixa(ciclista c, int dentro) {
 		c.faixa = alvo;
 		if (pista[pos].faixa[f] == c.id)
 			pista[pos].faixa[f] = -1;
-		
+
 		UNLOCK(&(pista[pos].m[alvo]));
+		/* Atualiza o vetor global de ciclistas */
+		ciclistas[c.id] = c;
 		return 1;
-	} 
+	}
 
 	UNLOCK(&(pista[pos].m[alvo]));
 	return 0;
@@ -115,11 +117,12 @@ void *threadCiclista(void * arg) {
 		// nessa velocidade ele não vai ultrapassar ninguém. */
 		if (c.v == 30) {
 			while (mudaFaixa(c, 1));
+			/* Atualiza os atributos de c que foram mudados na função acima */
+			c = ciclistas[c.id];
 
 			/* Anda pra frente/espera o da frente andar, caso o acrescimo
 			// de velocidade adicione um metro inteiro à sua posição */
 			if (next_pos > pos) {
-				printf("C%d, %f | %d\n", c.id, c.pos, next_pos);
 				andaFrente(c);
 			}
 		}
@@ -148,6 +151,7 @@ void *threadCiclista(void * arg) {
 				}
 			}
 		}
+		ciclistas[c.id] = c;
 		megaBarreira();
 	}
 	pthread_create(&dummy, NULL, &threadDummy, NULL);
