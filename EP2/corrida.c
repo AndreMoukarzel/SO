@@ -76,6 +76,7 @@ int andaFrente(ciclista c) {
 	while (f <= 9) {
 		LOCK(&(pista[(pos + 1) % tam_pista].m[f]));
 		if (pista[(pos + 1) % tam_pista].faixa[f] == -1) {
+			/* Consegue ir para frente nesta faixa */
 			pista[(pos + 1) % tam_pista].faixa[f] = c.id;
 			if (pista[pos].faixa[f] == c.id)
 				pista[pos].faixa[f] = -1;
@@ -106,7 +107,7 @@ void *threadDummy() {
 void *threadCiclista(void * arg) {
 	ciclista *temp, c;
 	pthread_t dummy;
-	int pos, next_pos;
+	int pos, next_pos, impedido;
 
 	temp = (ciclista *) arg;
 	c = *temp;
@@ -116,6 +117,7 @@ void *threadCiclista(void * arg) {
 	while (c.volta < num_voltas) {
 		pos = (int) c.pos;
 		next_pos = (int)(c.pos + (float)c.v/60);
+		impedido = 0;
 
 		while (mudaFaixa(c, 1))
 			c = ciclistas[c.id];
@@ -124,14 +126,15 @@ void *threadCiclista(void * arg) {
 		// de velocidade adicione um metro inteiro à sua posição */
 		if (next_pos > pos) {
 			if (!andaFrente(c)) { /* Não atualiza a posição */
-				c.pos -= (float)c.v/60;
-				printf("C%d não andou. Pos = %f\n", c.id, c.pos + (float)c.v/60);
+				printf("C%d não andou. Pos = %f\n", c.id, c.pos);
+				impedido = 1;
 			}
 			c = ciclistas[c.id];
 		}
 
 		/* Atualiza a posição */
-		c.pos += (float)c.v/60;
+		if (!impedido)
+			c.pos += (float)c.v/60;
 
 		/* Completa uma volta */
 		if ((int)c.pos > tam_pista - 1) {
