@@ -27,6 +27,48 @@ metro* pista;
 int tam_pista, num_ciclistas, num_voltas, cic_finalizados = 0;
 /*********************************************************************/
 
+/* Retorna 1 se conseguir mudar de faixa, 0 c.c.
+// Se "dentro" = 1, tenta mudar para uma faixa mais interna, e tenta
+// ir para uma mais externa c. c. */
+int mudaFaixa(ciclista c, int dentro) {
+	int pos = (int) c.pos, f = c.faixa;
+	int alvo = f + 1 - (2 * dentro);
+
+	LOCK(&(pista[pos].m[alvo]));
+	if (pista[pos].faixa[alvo] == -1) {
+		LOCK(&(pista[pos].m[f]));
+		pista[pos].faixa[f] = -1;
+		pista[pos].faixa[alvo] = c.id;
+		UNLOCK(&(pista[pos].m[alvo]));
+		UNLOCK(&(pista[pos].m[f]));
+
+		return 1;
+	} 
+	UNLOCK(&(pista[pos].m[alvo]));
+
+	return 0;
+}
+
+
+/* Retorna 1 se conseguir andar, 0 c.c. */
+int andaFrente(ciclista c) {
+	int pos = (int)c.pos, f = c.faixa;
+
+	LOCK(&(pista[(pos + 1) % tam_pista].m[f]));
+	if (pista[(pos + 1) % tam_pista].faixa[f] == -1){
+		LOCK(&(pista[pos].m[f]));
+		pista[pos].faixa[f] = -1;
+		pista[(pos + 1) % tam_pista].faixa[f] = c.id;
+		UNLOCK(&(pista[(pos + 1) % tam_pista].m[f]));
+		UNLOCK(&(pista[pos].m[f]));
+
+		return 1;
+	}
+	UNLOCK(&(pista[(pos + 1) % tam_pista].m[f]));
+
+	return 0;
+}
+
 
 void *threadDummy() {
 	while (cic_finalizados < num_ciclistas)
@@ -40,7 +82,7 @@ void *threadCiclista(void * arg) {
 	/* Atribui o argumento ao id do ciclista */
 	ciclista *temp, c;
 	pthread_t dummy;
-	int a, b;
+	int pos, next_pos;
 
 	temp = (ciclista *) arg;
 	c = *temp;
@@ -48,40 +90,19 @@ void *threadCiclista(void * arg) {
 	WAIT(&barreira); /* Ciclistas dão a largada sincronizados */
 
 	while (c.volta < num_voltas) {
-		a = (int) c.pos;
-		b = c.faixa;
+		pos = (int) c.pos;
+		next_pos = (int)(c.pos + (float)c.vMax/60);
 
 		/* Ciclista tenta ir para a faixa mais interna possível, já que
 		// nessa velocidade ele não vai ultrapassar ninguém. */
 		if (c.v == 30) {
-			while (b > 0) {
-				LOCK(&(pista[a].m[b-1]));
+			while (mudaFaixa(c, 1));
 
-				if (pista[a].faixa[b - 1] == -1) {
-					pista[a].faixa[b] = -1;
-					pista[a].faixa[b - 1] = c.id;
-					UNLOCK(&(pista[a].m[b-1]));
-					b = --c.faixa;
-				}
-				else {
-					UNLOCK(&(pista[a].m[b-1]));
-					break;
-				}
-			}
 			/* Anda pra frente/espera o da frente andar, caso c.pos
 			// seja inteiro */
-			if (c.pos == a){
-				LOCK(&(pista[(a + 1) % tam_pista].m[b]));
-
-				if (pista[(a + 1) % tam_pista].faixa[b] == -1){
-					pista[a].faixa[b] = -1;
-					pista[(a + 1) % tam_pista].faixa[b] = c.id;
-				}
-
-				UNLOCK(&(pista[(a + 1) % tam_pista].m[b]));
-			}
+			if (next_pos > pos)
+				andaFrente(c);
 		}
-
 		else if (c.v == 60) {
 			/* corre bem rapido e tenta ultrapassar */
 		}
@@ -95,15 +116,17 @@ void *threadCiclista(void * arg) {
 			c.volta += 1;
 			/*c = defineVel(c, pista);*/
 
+			/*
 			LOCK(&mutex_print);
 			printf("\n");
 			printPista(pista, tam_pista);
 			UNLOCK(&mutex_print);
+			*/
 
 			/* Ciclista tem 1% de chance de quebrar a cada 15 voltas */
 			if ((c.volta % 15) == 0) {
 				if (quebraCiclista(c)) {
-					/* TIRA DA PISTAAA */
+					/* TIRA DA PISTA */
 					pthread_create(&dummy, NULL, &threadDummy, NULL);
 					LOCK(&mutex_finaliza);
 					cic_finalizados++;
@@ -113,7 +136,7 @@ void *threadCiclista(void * arg) {
 			}
 		}
 		/* Atualiza o vetor global de ciclistas */
-		ciclistas[c.id] = c;
+		ciclistas[c.id] = c; /* ??????????????????????????? */
 		WAIT(&barreira);
 	}
 	pthread_create(&dummy, NULL, &threadDummy, NULL);
