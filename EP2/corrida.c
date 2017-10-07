@@ -52,17 +52,16 @@ int mudaFaixa(ciclista c, int dentro) {
 
 	LOCK(&(pista[pos].m[alvo]));
 	if (pista[pos].faixa[alvo] == -1) {
-		LOCK(&(pista[pos].m[f]));
-		pista[pos].faixa[f] = -1;
 		pista[pos].faixa[alvo] = c.id;
 		c.faixa = alvo;
+		if (pista[pos].faixa[f] == c.id)
+			pista[pos].faixa[f] = -1;
+		
 		UNLOCK(&(pista[pos].m[alvo]));
-		UNLOCK(&(pista[pos].m[f]));
-
 		return 1;
 	} 
+	
 	UNLOCK(&(pista[pos].m[alvo]));
-
 	return 0;
 }
 
@@ -73,16 +72,15 @@ int andaFrente(ciclista c) {
 
 	LOCK(&(pista[(pos + 1) % tam_pista].m[f]));
 	if (pista[(pos + 1) % tam_pista].faixa[f] == -1){
-		LOCK(&(pista[pos].m[f]));
-		pista[pos].faixa[f] = -1;
 		pista[(pos + 1) % tam_pista].faixa[f] = c.id;
-		UNLOCK(&(pista[(pos + 1) % tam_pista].m[f]));
-		UNLOCK(&(pista[pos].m[f]));
+		if (pista[pos].faixa[f] == c.id)
+			pista[pos].faixa[f] = -1;
 
+		UNLOCK(&(pista[(pos + 1) % tam_pista].m[f]));
 		return 1;
 	}
-	UNLOCK(&(pista[(pos + 1) % tam_pista].m[f]));
 
+	UNLOCK(&(pista[(pos + 1) % tam_pista].m[f]));
 	return 0;
 }
 
