@@ -71,19 +71,26 @@ int mudaFaixa(ciclista c, int dentro) {
 
 /* Retorna 1 se conseguir andar, 0 c.c. */
 int andaFrente(ciclista c) {
-	int pos = (int)c.pos, f = c.faixa;
+	int pos = (int) c.pos, f = c.faixa;
 
-	LOCK(&(pista[(pos + 1) % tam_pista].m[f]));
-	if (pista[(pos + 1) % tam_pista].faixa[f] == -1){
-		pista[(pos + 1) % tam_pista].faixa[f] = c.id;
-		if (pista[pos].faixa[f] == c.id)
-			pista[pos].faixa[f] = -1;
+	while (f <= 9) {
+		LOCK(&(pista[(pos + 1) % tam_pista].m[f]));
+		if (pista[(pos + 1) % tam_pista].faixa[f] == -1) {
+			pista[(pos + 1) % tam_pista].faixa[f] = c.id;
+			if (pista[pos].faixa[f] == c.id)
+				pista[pos].faixa[f] = -1;
 
+			UNLOCK(&(pista[(pos + 1) % tam_pista].m[f]));
+			return 1;
+		}
 		UNLOCK(&(pista[(pos + 1) % tam_pista].m[f]));
-		return 1;
+
+		if (!mudaFaixa(c, 0))
+			break;
+		c = ciclistas[c.id];
+		f = c.faixa;
 	}
 
-	UNLOCK(&(pista[(pos + 1) % tam_pista].m[f]));
 	return 0;
 }
 
@@ -115,12 +122,12 @@ void *threadCiclista(void * arg) {
 			while (mudaFaixa(c, 1))
 				c = ciclistas[c.id];
 			c = ciclistas[c.id];
-
 			/* Anda pra frente/espera o da frente andar, caso o acrescimo
 			// de velocidade adicione um metro inteiro à sua posição */
 			if (next_pos > pos) {
 				if (!andaFrente(c)) /* Não atualiza a posição */
 					c.pos -= (float)c.v/60;
+				c = ciclistas[c.id];
 			}
 		}
 		else if (c.v == 60) {
@@ -130,7 +137,7 @@ void *threadCiclista(void * arg) {
 		/* Atualiza a posição */
 		c.pos += (float)c.v/60;
 
-		/* Final da volta */
+		/* Completa uma volta */
 		if ((int)c.pos > tam_pista - 1) {
 			c.pos -= tam_pista;
 			c.volta += 1;
