@@ -55,6 +55,7 @@ int mudaFaixa(ciclista c, int dentro) {
 		LOCK(&(pista[pos].m[f]));
 		pista[pos].faixa[f] = -1;
 		pista[pos].faixa[alvo] = c.id;
+		c.faixa = alvo;
 		UNLOCK(&(pista[pos].m[alvo]));
 		UNLOCK(&(pista[pos].m[f]));
 
@@ -114,8 +115,8 @@ void *threadCiclista(void * arg) {
 		if (c.v == 30) {
 			while (mudaFaixa(c, 1));
 
-			/* Anda pra frente/espera o da frente andar, caso c.pos
-			// seja inteiro */
+			/* Anda pra frente/espera o da frente andar, caso o acrescimo
+			// de velocidade adicione um metro inteiro à sua posição */
 			if (next_pos > pos)
 				andaFrente(c);
 		}
@@ -135,7 +136,7 @@ void *threadCiclista(void * arg) {
 			/* Ciclista tem 1% de chance de quebrar a cada 15 voltas */
 			if ((c.volta % 15) == 0) {
 				if (quebraCiclista(c)) {
-					/* TIRA DA PISTA */
+					pista[(int)c.pos].faixa[c.faixa] = -1;
 					pthread_create(&dummy, NULL, &threadDummy, NULL);
 					LOCK(&mutex_finaliza);
 					cic_finalizados++;

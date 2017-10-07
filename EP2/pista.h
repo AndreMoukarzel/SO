@@ -12,7 +12,6 @@
 
 typedef struct {
 	int *faixa; /* As 10 faixas da pista, -1 se livre */
-	int vazia; /* 0 se não há ninguém nesse metro, 1 caso constrário */
 	pthread_mutex_t *m;	/* Um semáforo para cada faixa deste metro */
 } metro; /* matriz da pista, de d linhas e 10 colunas */
 

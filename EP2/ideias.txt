@@ -22,3 +22,14 @@ tamanho da matriz da pista, isso é, um semaforo pra cada posiçao
 da pista, assim os ciclistas podem disputar a posiçao sem forçar
 todos os outros a pararem a execuçao antes de comparar (que
 aconteceria no caso de termos um unico semaforo para a comparaçao)
+
+	TESTES:
+		- Sempre q a função andaFrente devolve 1, a posição de
+		origem e destino do ciclista apresentam os valores
+		corretos (-1 e c.id, respectivamente). Estaria o problema
+		na mudança de faixa? N, parece estar funcionando ok.
+
+		- O problema deve ser quando o ciclista tenta avançar e n
+		consegue. Quando, em outra iteração ele for andar, ele vai
+		"pular" uma posição, e acabar mantendo seu id duas posições
+		atrás na pista.
