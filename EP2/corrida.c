@@ -119,7 +119,8 @@ void *threadCiclista(void * arg) {
 			/* Anda pra frente/espera o da frente andar, caso o acrescimo
 			// de velocidade adicione um metro inteiro à sua posição */
 			if (next_pos > pos) {
-				andaFrente(c);
+				if (!andaFrente(c)) /* Não atualiza a posição */
+					c.pos -= (float)c.v/60;
 			}
 		}
 		else if (c.v == 60) {
@@ -150,6 +151,7 @@ void *threadCiclista(void * arg) {
 		ciclistas[c.id] = c;
 		megaBarreira();
 	}
+	pista[(int)c.pos].faixa[c.faixa] = -1;
 	pthread_create(&dummy, NULL, &threadDummy, NULL);
 	LOCK(&mutex_finaliza);
 	cic_finalizados++;
