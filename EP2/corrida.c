@@ -27,12 +27,28 @@ metro* pista;
 int tam_pista, num_ciclistas, num_voltas, cic_finalizados = 0;
 /*********************************************************************/
 
+
+void megaBarreira() {
+	int b = WAIT(&barreira);
+
+	/* Só ocorre 1 vez por sincronização */
+	if (b == PTHREAD_BARRIER_SERIAL_THREAD) {
+		printf("\n");
+		printPista(pista, tam_pista);
+		/* Adicionar manejamento da corrida aqui */
+	}
+}
+
+
 /* Retorna 1 se conseguir mudar de faixa, 0 c.c.
 // Se "dentro" = 1, tenta mudar para uma faixa mais interna, e tenta
 // ir para uma mais externa c. c. */
 int mudaFaixa(ciclista c, int dentro) {
 	int pos = (int) c.pos, f = c.faixa;
 	int alvo = f + 1 - (2 * dentro);
+
+	if (alvo < 0 || alvo >= 10)
+		return 0;
 
 	LOCK(&(pista[pos].m[alvo]));
 	if (pista[pos].faixa[alvo] == -1) {
@@ -72,7 +88,7 @@ int andaFrente(ciclista c) {
 
 void *threadDummy() {
 	while (cic_finalizados < num_ciclistas)
-		WAIT(&barreira);
+		megaBarreira();
 
 	return NULL;
 }
@@ -116,13 +132,6 @@ void *threadCiclista(void * arg) {
 			c.volta += 1;
 			/*c = defineVel(c, pista);*/
 
-			/*
-			LOCK(&mutex_print);
-			printf("\n");
-			printPista(pista, tam_pista);
-			UNLOCK(&mutex_print);
-			*/
-
 			/* Ciclista tem 1% de chance de quebrar a cada 15 voltas */
 			if ((c.volta % 15) == 0) {
 				if (quebraCiclista(c)) {
@@ -135,9 +144,7 @@ void *threadCiclista(void * arg) {
 				}
 			}
 		}
-		/* Atualiza o vetor global de ciclistas */
-		ciclistas[c.id] = c; /* ??????????????????????????? */
-		WAIT(&barreira);
+		megaBarreira();
 	}
 	pthread_create(&dummy, NULL, &threadDummy, NULL);
 	LOCK(&mutex_finaliza);
