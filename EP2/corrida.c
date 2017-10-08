@@ -142,8 +142,9 @@ void *threadCiclista(void * arg) {
 			c.volta += 1;
 			/*c = defineVel(c, pista);*/
 
-			/* Ciclista tem 1% de chance de quebrar a cada 15 voltas */
-			if ((c.volta % 15) == 0) {
+			/* Ciclista tem 1% de chance de quebrar a cada 15 voltas
+			// se tiverem mais de 5 ciclistas */
+			if ((c.volta % 15) == 0 && num_ciclistas - cic_finalizados > 5) {
 				if (quebraCiclista(c)) {
 					pista[(int)c.pos].faixa[c.faixa] = -1;
 					pthread_create(&dummy, NULL, &threadDummy, NULL);
