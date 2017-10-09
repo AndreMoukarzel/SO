@@ -20,7 +20,7 @@
 #define UNLOCK(mutex) pthread_mutex_unlock(mutex)
 #define WAIT(barrier) pthread_barrier_wait(barrier)
 /************************ VARIAVEIS GLOBAIS **************************/
-pthread_barrier_t barreira, sort;
+pthread_barrier_t barreira;
 pthread_mutex_t mutex_finaliza = PTHREAD_MUTEX_INITIALIZER;
 ciclista *ciclistas, *clas;
 metro* pista;
@@ -203,7 +203,6 @@ void corrida(int d, int n){
 
 	preparaLargada(d, n);
 	pthread_barrier_init(&barreira, NULL, n);
-	pthread_barrier_init(&sort, NULL, n);
 
 	/* Dispara as threads */
 	for (i = 0; i < n; i++) {
