@@ -21,7 +21,6 @@
 /************************ VARIAVEIS GLOBAIS **************************/
 pthread_barrier_t barreira;
 pthread_mutex_t mutex_finaliza = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t mutex_print = PTHREAD_MUTEX_INITIALIZER;
 ciclista* ciclistas;
 metro* pista;
 int tam_pista, num_ciclistas, num_voltas, cic_finalizados = 0;
@@ -153,7 +152,7 @@ void *threadCiclista(void * arg) {
 
 			/* Ciclista tem 1% de chance de quebrar a cada 15 voltas
 			// se tiverem mais de 5 ciclistas */
-			if ((c.volta % 15) == 0 && num_ciclistas - cic_finalizados > 5) {
+			if ((c.volta % 15) == 0 && (num_ciclistas - cic_finalizados) > 5) {
 				if (quebraCiclista(c)) {
 					pista[(int)c.pos].faixa[c.faixa] = -1;
 					pthread_create(&dummy, NULL, &threadDummy, NULL);
