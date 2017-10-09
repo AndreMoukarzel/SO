@@ -41,7 +41,7 @@ void megaBarreira() {
 
 		/* Atualiza os dados dos ciclistas no vetor de classificações */
 		for (i = 0; i < num_ciclistas; i++)
-			classifics[i] = ciclistas[classifics[i].id];
+			classifics[i] = ciclistas[i];
 
 		/* E o ordena */
 		defineClas(classifics, num_ciclistas, num_voltas);
@@ -174,6 +174,9 @@ void *threadCiclista(void * arg) {
 			c.volta += 1;
 
 			/* Volta de sprint: define a pontuação*/
+			/* ERRADO
+			// O ciclista pode ter mudado de clas durante
+			essa iteração. Essa checagem deve ser feita antes dele se mover */
 			if (!(c.volta % 10)) {
 				if (c.clas == 1)
 					c.p += 5;
