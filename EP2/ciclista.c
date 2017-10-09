@@ -17,6 +17,7 @@ ciclista *criaCiclistas(int n) {
 		cics[i].v = 30;
 		cics[i].vMax = 30;
 		cics[i].quebrado = -1;
+		cics[i].clas = i + 1;
 	}
 
 	return cics;

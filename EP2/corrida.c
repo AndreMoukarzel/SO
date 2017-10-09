@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include "ciclista.h"
 #include "pista.h"
+#include "defineClas.h"
 
 #define MAX_LENGTH 1024
 
@@ -19,23 +20,32 @@
 #define UNLOCK(mutex) pthread_mutex_unlock(mutex)
 #define WAIT(barrier) pthread_barrier_wait(barrier)
 /************************ VARIAVEIS GLOBAIS **************************/
-pthread_barrier_t barreira;
+pthread_barrier_t barreira, sort;
 pthread_mutex_t mutex_finaliza = PTHREAD_MUTEX_INITIALIZER;
-ciclista* ciclistas;
+ciclista *ciclistas, *clas;
 metro* pista;
 int tam_pista, num_ciclistas, num_voltas, cic_finalizados = 0;
 /*********************************************************************/
 
 
 void megaBarreira() {
-	int b = WAIT(&barreira);
+	int i, b = WAIT(&barreira);
 
 	/* Só ocorre 1 vez por sincronização */
 	if (b == PTHREAD_BARRIER_SERIAL_THREAD) {
 		printf("\n");
 		printPista(pista, tam_pista);
-		/* Adicionar manejamento da corrida aqui */
+		WAIT(&sort);
+
+		/* Atualiza os dados dos ciclistas no vetor de classificações */
+		for (i = 0; i < num_ciclistas; i++)
+			clas[i] = ciclistas[i];
+
+		/* E o ordena */
+		clas = defineClas(clas, pista, (num_ciclistas-cic_finalizados));
 	}
+	else
+		WAIT(&sort);
 	WAIT(&barreira);
 }
 
@@ -148,7 +158,8 @@ void *threadCiclista(void * arg) {
 		if ((int)c.pos > tam_pista - 1) {
 			c.pos -= tam_pista;
 			c.volta += 1;
-			c = defineVel(c);
+			if (c.volta >= 1) /* Todos fazem a primeira volta a 30km/h */
+				c = defineVel(c);
 
 			/* Ciclista tem 1% de chance de quebrar a cada 15 voltas
 			// se tiverem mais de 5 ciclistas */
@@ -179,6 +190,7 @@ void *threadCiclista(void * arg) {
 void preparaLargada(int d, int n) {
 	pista = criaPista(d);
 	ciclistas = criaCiclistas(n);
+	clas = malloc(n * sizeof(ciclista));
 	posicionaCiclistas(d, n, ciclistas, pista);
 }
 
@@ -189,6 +201,7 @@ void corrida(int d, int n){
 
 	preparaLargada(d, n);
 	pthread_barrier_init(&barreira, NULL, n);
+	pthread_barrier_init(&sort, NULL, n);
 
 	/* Dispara as threads */
 	for (i = 0; i < n; i++) {
@@ -206,6 +219,7 @@ void corrida(int d, int n){
 
 	destroiPista(pista, d);
 	free(ciclistas);
+	free(clas);
 	free(thread);
 }
 
