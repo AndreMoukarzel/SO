@@ -12,6 +12,6 @@
 /* Ordena o vetor de ciclistas pelo numero de voltas de cada ciclista e pela
 // sua respectiva posição, determinando assim a classificação de cada
 // ciclsita */
-void *defineClas(ciclista *clas, int n, int num_voltas);
+void defineClas(ciclista *clas, int n, int num_voltas);
 
 #endif

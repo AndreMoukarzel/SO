@@ -28,9 +28,26 @@ int tam_pista, num_ciclistas, num_voltas;
 int cic_finalizados = 0, voltas_sobre_outros = 1, DEBUG = 0;
 /*********************************************************************/
 
+/* Ordena os ciclistas no vetor classifics em função de sua
+// classificação na corrida 
+*/
+void ordena() {
+	int i;
+	/* Atualiza os dados dos ciclistas no vetor de classificações */
+	for (i = 0; i < num_ciclistas; i++)
+		classifics[i] = ciclistas[i];
+	/* E o ordena */
+	defineClas(classifics, num_ciclistas, num_voltas);
+	/* Atualiza as classificações e o vetor global de ciclistas */
+	for (i = 0; i < num_ciclistas; i++){
+        classifics[i].clas = i + 1;
+		ciclistas[classifics[i].id] = classifics[i];
+    }
+}
+
 
 void megaBarreira() {
-	int i, b = WAIT(&barreira);
+	int b = WAIT(&barreira);
 
 	/* Só ocorre 1 vez por sincronização */
 	if (b == PTHREAD_BARRIER_SERIAL_THREAD) {
@@ -38,14 +55,7 @@ void megaBarreira() {
 			printf("\n");
 			printPista(pista, tam_pista);
 		}
-
-		/* Atualiza os dados dos ciclistas no vetor de classificações */
-		for (i = 0; i < num_ciclistas; i++)
-			classifics[i] = ciclistas[i];
-
-		/* E o ordena */
-		defineClas(classifics, num_ciclistas, num_voltas);
-
+		ordena();
 		/* Se o ciclista em primeiro der uma volta sobre todos os outros,
 		// ganha 20 pontos */
 		if (classifics[0].volta - classifics[1].volta > voltas_sobre_outros) {
@@ -54,13 +64,8 @@ void megaBarreira() {
 			// sobre os outros */
 			voltas_sobre_outros++;
 		}
-
-		/* Atualiza as classificações e o vetor global de ciclistas */
-		for (i = 0; i < num_ciclistas; i++){
-	        classifics[i].clas = i + 1;
-			ciclistas[classifics[i].id] = classifics[i];
-	    }
 	}
+
 	WAIT(&barreira);
 }
 
@@ -173,11 +178,9 @@ void *threadCiclista(void * arg) {
 			c.pos -= tam_pista;
 			c.volta += 1;
 
-			/* Volta de sprint: define a pontuação*/
-			/* ERRADO
-			// O ciclista pode ter mudado de clas durante
-			essa iteração. Essa checagem deve ser feita antes dele se mover */
+			/* Volta de sprint: define a pontuação */
 			if (!(c.volta % 10)) {
+				ordena();
 				if (c.clas == 1)
 					c.p += 5;
 				else if (c.clas == 2)

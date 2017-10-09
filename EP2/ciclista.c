@@ -12,7 +12,7 @@ ciclista *criaCiclistas(int n) {
 
 	for (i = 0; i < n; i++) {
 		cics[i].id = i;
-		cics[i].volta = -1;
+		cics[i].volta = 0;
 		cics[i].p = 0;
 		cics[i].v = 30;
 		cics[i].vMax = 30;

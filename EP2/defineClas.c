@@ -6,7 +6,7 @@
 #include "defineClas.h"
 
 
-void *defineClas(ciclista *clas, int n, int num_voltas) {
+void defineClas(ciclista *clas, int n, int num_voltas) {
     int i, j, ini, fim, v, k;
     ciclista atual;
 
