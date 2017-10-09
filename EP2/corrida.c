@@ -24,7 +24,8 @@ pthread_barrier_t barreira;
 pthread_mutex_t mutex_finaliza = PTHREAD_MUTEX_INITIALIZER;
 ciclista *ciclistas, *clas;
 metro* pista;
-int tam_pista, num_ciclistas, num_voltas, cic_finalizados = 0;
+int tam_pista, num_ciclistas, num_voltas;
+int cic_finalizados = 0, voltas_sobre_outros = 1;
 /*********************************************************************/
 
 
@@ -42,10 +43,20 @@ void megaBarreira() {
 
 		/* E o ordena */
 		defineClas(clas, num_ciclistas, num_voltas);
-		printf("\n");
+
+		/* Se o ciclista em primeiro der uma volta sobre todos os outros,
+		// ganha 20 pontos */
+		if (clas[0].volta - clas[1].volta > voltas_sobre_outros) {
+			clas[0].p += 20;
+			/* Para ganhar denovo precisa ter dado uma volta a mais
+			// sobre os outros */
+			voltas_sobre_outros++;
+		}
+
+		/* Atualiza as classificações e o vetor global de ciclistas */
 		for (i = 0; i < num_ciclistas; i++){
 	        clas[i].clas = i + 1;
-	        printf("clas:%2d, pos:%.2f, volta:%2d\n", clas[i].clas,clas[i].pos, clas[i].volta);
+			ciclistas[clas[i].id] = clas[i];
 	    }
 	}
 	WAIT(&barreira);
@@ -160,6 +171,18 @@ void *threadCiclista(void * arg) {
 		if ((int)c.pos > tam_pista - 1) {
 			c.pos -= tam_pista;
 			c.volta += 1;
+
+			/* Volta de sprint: define a pontuação*/
+			if (c.volta != 0 && !(c.volta % 10)) {
+				if (c.clas == 1)
+					c.p += 5;
+				else if (c.clas == 2)
+					c.p += 3;
+				else if (c.clas == 3)
+					c.p += 2;
+				else if (c.clas == 4)
+					c.p += 1;
+			}
 			if (c.volta >= 1) /* Todos fazem a primeira volta a 30km/h */
 				c = defineVel(c);
 
@@ -178,6 +201,7 @@ void *threadCiclista(void * arg) {
 		}
 		ciclistas[c.id] = c;
 		megaBarreira();
+		c = ciclistas[c.id];
 	}
 	pista[(int)c.pos].faixa[c.faixa] = -1;
 	pthread_create(&dummy, NULL, &threadDummy, NULL);
