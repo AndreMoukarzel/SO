@@ -22,10 +22,10 @@
 /************************ VARIAVEIS GLOBAIS **************************/
 pthread_barrier_t barreira;
 pthread_mutex_t mutex_finaliza = PTHREAD_MUTEX_INITIALIZER;
-ciclista *ciclistas, *clas;
+ciclista *ciclistas, *classifics;
 metro* pista;
 int tam_pista, num_ciclistas, num_voltas;
-int cic_finalizados = 0, voltas_sobre_outros = 1;
+int cic_finalizados = 0, voltas_sobre_outros = 1, DEBUG = 0;
 /*********************************************************************/
 
 
@@ -34,20 +34,22 @@ void megaBarreira() {
 
 	/* Só ocorre 1 vez por sincronização */
 	if (b == PTHREAD_BARRIER_SERIAL_THREAD) {
-		printf("\n");
-		printPista(pista, tam_pista);
+		if (DEBUG) {
+			printf("\n");
+			printPista(pista, tam_pista);
+		}
 
 		/* Atualiza os dados dos ciclistas no vetor de classificações */
 		for (i = 0; i < num_ciclistas; i++)
-			clas[i] = ciclistas[i];
+			classifics[i] = ciclistas[i];
 
 		/* E o ordena */
-		defineClas(clas, num_ciclistas, num_voltas);
+		defineClas(classifics, num_ciclistas, num_voltas);
 
 		/* Se o ciclista em primeiro der uma volta sobre todos os outros,
 		// ganha 20 pontos */
-		if (clas[0].volta - clas[1].volta > voltas_sobre_outros) {
-			clas[0].p += 20;
+		if (classifics[0].volta - classifics[1].volta > voltas_sobre_outros) {
+			classifics[0].p += 20;
 			/* Para ganhar denovo precisa ter dado uma volta a mais
 			// sobre os outros */
 			voltas_sobre_outros++;
@@ -55,8 +57,8 @@ void megaBarreira() {
 
 		/* Atualiza as classificações e o vetor global de ciclistas */
 		for (i = 0; i < num_ciclistas; i++){
-	        clas[i].clas = i + 1;
-			ciclistas[clas[i].id] = clas[i];
+	        classifics[i].clas = i + 1;
+			ciclistas[classifics[i].id] = classifics[i];
 	    }
 	}
 	WAIT(&barreira);
@@ -161,7 +163,6 @@ void *threadCiclista(void * arg) {
 			c.pos += (float)c.v/60;
 		else {
 			c.vMax = ciclistas[f_id].vMax;
-			printf("C%d, %dkm/h -> %dkm/h\n", c.id, c.v, c.vMax);
 			next_pos = (int)(c.pos + (float)c.vMax/60);
 			if (next_pos == pos)
 				c.pos += (float)c.vMax/60;
@@ -173,7 +174,7 @@ void *threadCiclista(void * arg) {
 			c.volta += 1;
 
 			/* Volta de sprint: define a pontuação*/
-			if (c.volta != 0 && !(c.volta % 10)) {
+			if (!(c.volta % 10)) {
 				if (c.clas == 1)
 					c.p += 5;
 				else if (c.clas == 2)
@@ -183,8 +184,7 @@ void *threadCiclista(void * arg) {
 				else if (c.clas == 4)
 					c.p += 1;
 			}
-			if (c.volta >= 1) /* Todos fazem a primeira volta a 30km/h */
-				c = defineVel(c);
+			c = defineVel(c);
 
 			/* Ciclista tem 1% de chance de quebrar a cada 15 voltas
 			// se tiverem mais de 5 ciclistas */
@@ -216,7 +216,7 @@ void *threadCiclista(void * arg) {
 void preparaLargada(int d, int n) {
 	pista = criaPista(d);
 	ciclistas = criaCiclistas(n);
-	clas = malloc(n * sizeof(ciclista));
+	classifics = malloc(n * sizeof(ciclista));
 	posicionaCiclistas(d, n, ciclistas, pista);
 }
 
@@ -244,7 +244,7 @@ void corrida(int d, int n){
 
 	destroiPista(pista, d);
 	free(ciclistas);
-	free(clas);
+	free(classifics);
 	free(thread);
 }
 
@@ -253,6 +253,8 @@ int main(int argc, char **argv) {
 	tam_pista = atoi(argv[1]);
 	num_ciclistas = atoi(argv[2]);
 	num_voltas = atoi(argv[3]);
+	if (argc > 4)
+		DEBUG = 1;
 
 	corrida(tam_pista, num_ciclistas);
 
