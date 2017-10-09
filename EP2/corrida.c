@@ -35,17 +35,19 @@ void megaBarreira() {
 	if (b == PTHREAD_BARRIER_SERIAL_THREAD) {
 		printf("\n");
 		printPista(pista, tam_pista);
-		WAIT(&sort);
 
 		/* Atualiza os dados dos ciclistas no vetor de classificações */
 		for (i = 0; i < num_ciclistas; i++)
 			clas[i] = ciclistas[i];
 
 		/* E o ordena */
-		clas = defineClas(clas, pista, (num_ciclistas-cic_finalizados));
+		defineClas(clas, num_ciclistas, num_voltas);
+		printf("\n");
+		for (i = 0; i < num_ciclistas; i++){
+	        clas[i].clas = i + 1;
+	        printf("clas:%2d, pos:%.2f, volta:%2d\n", clas[i].clas,clas[i].pos, clas[i].volta);
+	    }
 	}
-	else
-		WAIT(&sort);
 	WAIT(&barreira);
 }
 

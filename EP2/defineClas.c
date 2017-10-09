@@ -6,41 +6,44 @@
 #include "defineClas.h"
 
 
-ciclista *defineClas(ciclista *clas, metro *pista, int n) {
-    int i, j;
+void *defineClas(ciclista *clas, int n, int num_voltas) {
+    int i, j, ini, fim, v, k;
     ciclista atual;
-    printf("antes:");
-    for (i = 0; i < n; i++){
-        clas[i].clas = i + 1;
-        printf("clas:%2d, pos:%.2f, volta:%2d\n", clas[i].clas,clas[i].pos, clas[i].volta);
-    }
 
     /* Ordena por volta */
-	for (i = 1; i < n - 1; i++){
+	for (i = 1; i < n; i++){
 		atual = clas[i];
 
-		for (j = i; j >= 0 && clas[j].volta > atual.volta; j++)
-            /* troca as duas posiçoes */
+        j = i - 1;
+		while (j >= 0 && clas[j].volta < atual.volta) {
 			clas[j + 1] = clas[j];
+            j--;
+        }
 		clas[j+1] = atual;
 	}
 
     /* Ordena por posição
-    for (i = 0; i < n; i++) {
-        atual = clas[i + 1];
+    // Aqui ordenaremos o vetor por "blocos" de numero de voltas iguais, pois
+    // se apenas ordenassemos novamente por posição, desordenariamos
+    // por volta */
+    for (v = num_voltas, k = 0; v >= 0; v = clas[k].volta) {
+        /* k será a primeira posiçao do vetor que o v é diferente.
+        // Assim, usaremos ele para determinar os intervalos de ordenação */
+        ini = k;
+        while (v == clas[k].volta)
+            k++;
+        fim = k - 1;
 
-        for (j = i; (j >= 0) && (clas[i].pos < atual.pos); j--) {
-            clas[j + 1] = clas[j];
+        for (i = ini + 1; i <= fim && i < n; i++) {
+            atual = clas[i];
+
+            j = i - 1;
+            while (j >= ini && clas[j].pos < atual.pos) {
+                clas[j + 1] = clas[j];
+                j--;
+            }
+            clas[j+1] = atual;
         }
-        clas[j + 1] = atual;
-    }*/
-
-    /* Atualiza as classificações */
-    printf("depois:");
-    for (i = 0; i < n; i++){
-        clas[i].clas = i + 1;
-        printf("clas:%2d, pos:%.2f, volta:%2d\n", clas[i].clas,clas[i].pos, clas[i].volta);
     }
-
-    return clas;
+    return NULL;
 }
