@@ -41,7 +41,7 @@ void megaBarreira() {
 
 		/* Atualiza os dados dos ciclistas no vetor de classificações */
 		for (i = 0; i < num_ciclistas; i++)
-			classifics[i] = ciclistas[i];
+			classifics[i] = ciclistas[classifics[i].id];
 
 		/* E o ordena */
 		defineClas(classifics, num_ciclistas, num_voltas);

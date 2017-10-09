@@ -26,11 +26,13 @@ void *defineClas(ciclista *clas, int n, int num_voltas) {
     // Aqui ordenaremos o vetor por "blocos" de numero de voltas iguais, pois
     // se apenas ordenassemos novamente por posição, desordenariamos
     // por volta */
-    for (v = num_voltas, k = 0; v >= 0; v = clas[k].volta) {
+    k = 0;
+    v = clas[k].volta;
+    while(k < n) {
         /* k será a primeira posiçao do vetor que o v é diferente.
         // Assim, usaremos ele para determinar os intervalos de ordenação */
         ini = k;
-        while (v == clas[k].volta)
+        while (v == clas[k].volta && k < n)
             k++;
         fim = k - 1;
 
@@ -38,12 +40,13 @@ void *defineClas(ciclista *clas, int n, int num_voltas) {
             atual = clas[i];
 
             j = i - 1;
-            while (j >= ini && clas[j].pos < atual.pos) {
+            while (j >= ini && clas[j].pos > atual.pos) {
                 clas[j + 1] = clas[j];
                 j--;
             }
             clas[j+1] = atual;
         }
+        v = clas[k].volta;
     }
     return NULL;
 }
