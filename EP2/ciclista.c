@@ -52,7 +52,7 @@ int quebraCiclista(ciclista c) {
 }
 
 
-ciclista defineVel(ciclista arg, metro* pista) {
+ciclista defineVel(ciclista arg) {
 	ciclista c = arg;
 	int r = rand() % 100;
 
@@ -68,6 +68,7 @@ ciclista defineVel(ciclista arg, metro* pista) {
 		else
 			c.v = 60;
 	}
-	/* impede todos os ciclistas atrás dele */
+	c.vMax = c.v;
+
 	return c;
 }

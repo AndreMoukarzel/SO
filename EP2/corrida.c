@@ -69,9 +69,10 @@ int mudaFaixa(ciclista c, int dentro) {
 }
 
 
-/* Retorna 1 se conseguir andar, 0 c.c. */
+/* Retorna -1 se conseguir andar, id do ciclista que o
+// impediu c.c. */
 int andaFrente(ciclista c) {
-	int pos = (int) c.pos, f = c.faixa;
+	int pos = (int) c.pos, f = c.faixa, id = num_ciclistas;
 
 	while (f <= 9) {
 		LOCK(&(pista[(pos + 1) % tam_pista].m[f]));
@@ -82,8 +83,9 @@ int andaFrente(ciclista c) {
 				pista[pos].faixa[f] = -1;
 
 			UNLOCK(&(pista[(pos + 1) % tam_pista].m[f]));
-			return 1;
+			return -1;
 		}
+		id = pista[(pos + 1) % tam_pista].faixa[f];
 		UNLOCK(&(pista[(pos + 1) % tam_pista].m[f]));
 
 		if (!mudaFaixa(c, 0))
@@ -92,7 +94,7 @@ int andaFrente(ciclista c) {
 		f = c.faixa;
 	}
 
-	return 0;
+	return id;
 }
 
 
@@ -107,7 +109,7 @@ void *threadDummy() {
 void *threadCiclista(void * arg) {
 	ciclista *temp, c;
 	pthread_t dummy;
-	int pos, next_pos, impedido;
+	int pos, next_pos, impedido, f_id;
 
 	temp = (ciclista *) arg;
 	c = *temp;
@@ -125,8 +127,8 @@ void *threadCiclista(void * arg) {
 		/* Anda pra frente/espera o da frente andar, caso o acrescimo
 		// de velocidade adicione um metro inteiro à sua posição */
 		if (next_pos > pos) {
-			if (!andaFrente(c)) { /* Não atualiza a posição */
-				printf("C%d não andou. Pos = %f\n", c.id, c.pos);
+			f_id = andaFrente(c);
+			if (f_id != -1) { /* Impedido por um ciclista à frente */
 				impedido = 1;
 			}
 			c = ciclistas[c.id];
@@ -135,12 +137,19 @@ void *threadCiclista(void * arg) {
 		/* Atualiza a posição */
 		if (!impedido)
 			c.pos += (float)c.v/60;
+		else {
+			c.vMax = ciclistas[f_id].vMax;
+			printf("C%d, %dkm/h -> %dkm/h\n", c.id, c.v, c.vMax);
+			next_pos = (int)(c.pos + (float)c.vMax/60);
+			if (next_pos == pos)
+				c.pos += (float)c.vMax/60;
+		}
 
 		/* Completa uma volta */
 		if ((int)c.pos > tam_pista - 1) {
 			c.pos -= tam_pista;
 			c.volta += 1;
-			/*c = defineVel(c, pista);*/
+			c = defineVel(c);
 
 			/* Ciclista tem 1% de chance de quebrar a cada 15 voltas
 			// se tiverem mais de 5 ciclistas */
