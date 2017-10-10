@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include "ciclista.h"
 #include "pista.h"
+#include "buffer.h"
 
 #define MAX_LENGTH 1024
 
@@ -25,6 +26,7 @@ ciclista *ciclistas, *classifics;
 metro* pista;
 int tam_pista, num_ciclistas, num_voltas, id_frente = 0;
 int cic_finalizados = 0, voltas_sobre_outros = 1, DEBUG = 0;
+int *pontuado;
 /*********************************************************************/
 
 /* Ordena os ciclistas no vetor classifics em função de sua
@@ -55,23 +57,27 @@ void atribuePontos() {
 	for (i = 0; i < num_ciclistas; i++) {
 		/* Volta de sprint: define a pontuação */
 		if (ciclistas[i].quebrado == -1 && !(ciclistas[i].volta % 10)) {
-			if (ciclistas[i].clas == 1) {
-				ciclistas[i].p += 5;
-				/* Se o ciclista em primeiro der uma volta sobre todos os outros,
-				// ganha 20 pontos */
-				if (ciclistas[i].volta - classifics[1].volta > voltas_sobre_outros) {
-					ciclistas[i].p += 20;
-					/* Para ganhar denovo precisa ter dado uma volta a mais
-					// sobre os outros */
-					voltas_sobre_outros++;
+			if (pontuado[ciclistas[i].id] == 0) {
+				if (ciclistas[i].clas == 1) {
+					ciclistas[i].p += 5;
+					/* Se o ciclista em primeiro der uma volta sobre todos os outros,
+					// ganha 20 pontos */
+					if (ciclistas[i].volta - classifics[1].volta > voltas_sobre_outros) {
+						ciclistas[i].p += 20;
+						/* Para ganhar denovo precisa ter dado uma volta a mais
+						// sobre os outros */
+						voltas_sobre_outros++;
+					}
 				}
+				else if (ciclistas[i].clas == 2)
+					ciclistas[i].p += 3;
+				else if (ciclistas[i].clas == 3)
+					ciclistas[i].p += 2;
+				else if (ciclistas[i].clas == 4)
+					ciclistas[i].p += 1;
+
+				pontuado[ciclistas[i].id] = 1;
 			}
-			else if (ciclistas[i].clas == 2)
-				ciclistas[i].p += 3;
-			else if (ciclistas[i].clas == 3)
-				ciclistas[i].p += 2;
-			else if (ciclistas[i].clas == 4)
-				ciclistas[i].p += 1;
 		}
 	}
 }
@@ -200,6 +206,7 @@ void *threadCiclista(void * arg) {
 			c.pos -= tam_pista;
 			c.volta += 1;
 
+			pontuado[c.id] = 0;
 			c = defineVel(c);
 
 			/* Ciclista tem 1% de chance de quebrar a cada 15 voltas
@@ -230,9 +237,14 @@ void *threadCiclista(void * arg) {
 
 
 void preparaLargada(int d, int n) {
+	int i;
+
 	pista = criaPista(d);
 	ciclistas = criaCiclistas(n);
 	classifics = malloc(n * sizeof(ciclista));
+	pontuado = malloc(n * sizeof(int));
+	for (i = 0; i < n; i++)
+		pontuado[i] = 0;
 	posicionaCiclistas(d, n, ciclistas, pista);
 }
 
