@@ -28,5 +28,6 @@ int quebraCiclista(ciclista c);
 
 ciclista defineVel(ciclista c);
 
+void defineClas(ciclista *clas, int n, int num_voltas);
 
 #endif

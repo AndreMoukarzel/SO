@@ -11,7 +11,6 @@
 #include <sys/types.h>
 #include "ciclista.h"
 #include "pista.h"
-#include "defineClas.h"
 
 #define MAX_LENGTH 1024
 

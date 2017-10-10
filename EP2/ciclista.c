@@ -73,3 +73,58 @@ ciclista defineVel(ciclista arg) {
 
 	return c;
 }
+
+
+/* Ordena os ciclistas no vetor clas baseado em sua classificação na corrida */
+void defineClas(ciclista *clas, int n, int num_voltas) {
+    int i, j, ini, fim, v, k;
+    ciclista atual;
+
+    /* Ordena por volta */
+	for (i = 1; i < n; i++){
+		atual = clas[i];
+
+        j = i - 1;
+		while (j >= 0 && clas[j].volta < atual.volta) {
+			clas[j + 1] = clas[j];
+            j--;
+        }
+		clas[j+1] = atual;
+	}
+
+    /* Ordena por posição
+    // Aqui ordenaremos o vetor por "blocos" de numero de voltas iguais, pois
+    // se apenas ordenassemos novamente por posição, desordenariamos
+    // por volta */
+    k = 0;
+    v = clas[k].volta;
+    while(k < n) {
+        /* k será a primeira posiçao do vetor que o v é diferente.
+        // Assim, usaremos ele para determinar os intervalos de ordenação */
+        ini = k;
+        while (v == clas[k].volta && k < n)
+            k++;
+        fim = k - 1;
+
+        for (i = ini + 1; i <= fim && i < n; i++) {
+            atual = clas[i];
+
+            j = i - 1;
+            while (j >= ini && clas[j].pos < atual.pos) {
+                clas[j + 1] = clas[j];
+                j--;
+            }
+            clas[j+1] = atual;
+        }
+        v = clas[k].volta;
+    }
+
+    /* Atualiza as classificações */
+    j = 1;
+    clas[0].clas = 1;
+    for (i = 1; i < n; i++) {
+        if ((clas[i].volta != clas[i-1].volta) || (clas[i].pos != clas[i-1].pos)) /* Não estão empatados */
+            j++;
+        clas[i].clas = j;
+    }
+}
