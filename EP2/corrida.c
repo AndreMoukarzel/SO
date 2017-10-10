@@ -30,8 +30,7 @@ int *pontuado;
 /*********************************************************************/
 
 /* Ordena os ciclistas no vetor classifics em função de sua
-// classificação na corrida 
-*/
+// classificação na corrida */
 void ordena() {
 	int i;
 	/* Atualiza os dados dos ciclistas no vetor de classificações */
@@ -45,7 +44,28 @@ void ordena() {
 }
 
 
-void atribuePontos() {
+void printPontos() {
+	int i, j;
+	ciclista temp;
+
+	for (i = 1; i < num_ciclistas; i++){
+		temp = classifics[i];
+
+        j = i - 1;
+		while (j >= 0 && classifics[j].p < temp.p) {
+			classifics[j + 1] = classifics[j];
+            j--;
+        }
+		classifics[j+1] = temp;
+	}
+
+	for (i = 0; i < num_ciclistas; i++) {
+		printf("Ciclista %3d, volta %d, %da posicao, %d pontos\n",
+		classifics[i].id, classifics[i].volta, classifics[i].clas, classifics[i].p);
+	}
+}
+
+void atribuiPontos() {
 	int i;
 
 	if (classifics[0].id != id_frente) {
@@ -56,10 +76,9 @@ void atribuePontos() {
 
 	for (i = 0; i < num_ciclistas; i++) {
 		/* Volta de sprint: define a pontuação */
-		if (ciclistas[i].quebrado == -1 && !(ciclistas[i].volta % 10)) {
+		if (ciclistas[i].quebrado == -1) {
 			if (pontuado[ciclistas[i].id] == 0) {
 				if (ciclistas[i].clas == 1) {
-					ciclistas[i].p += 5;
 					/* Se o ciclista em primeiro der uma volta sobre todos os outros,
 					// ganha 20 pontos */
 					if (ciclistas[i].volta - classifics[1].volta > voltas_sobre_outros) {
@@ -69,12 +88,16 @@ void atribuePontos() {
 						voltas_sobre_outros++;
 					}
 				}
-				else if (ciclistas[i].clas == 2)
-					ciclistas[i].p += 3;
-				else if (ciclistas[i].clas == 3)
-					ciclistas[i].p += 2;
-				else if (ciclistas[i].clas == 4)
-					ciclistas[i].p += 1;
+				if (ciclistas[i].volta != 0 && !(ciclistas[i].volta % 10)) {
+					if (ciclistas[i].clas == 1)
+						ciclistas[i].p += 5;
+					else if (ciclistas[i].clas == 2)
+						ciclistas[i].p += 3;
+					else if (ciclistas[i].clas == 3)
+						ciclistas[i].p += 2;
+					else if (ciclistas[i].clas == 4)
+						ciclistas[i].p += 1;
+				}
 
 				pontuado[ciclistas[i].id] = 1;
 			}
@@ -91,7 +114,9 @@ void megaBarreira() {
 		if (DEBUG)
 			printPista(pista, tam_pista);
 		ordena();
-		atribuePontos();
+		atribuiPontos();
+		printPontos();
+		ordena();
 	}
 
 	WAIT(&barreira);

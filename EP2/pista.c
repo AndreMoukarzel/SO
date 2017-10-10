@@ -29,7 +29,7 @@ void printPista(metro *pista, int d){
 
 	printf("\n");
 	for (i = 0; i < d; i++){
-		printf("%2dm>", i);
+		printf("%4dm>", i);
 		for (j = 0; j < 10; j++){
 			if (pista[i].faixa[j] == -1)
 				printf("%3c", '-');
