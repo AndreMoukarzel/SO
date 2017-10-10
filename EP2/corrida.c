@@ -24,7 +24,7 @@ pthread_barrier_t barreira;
 pthread_mutex_t mutex_finaliza = PTHREAD_MUTEX_INITIALIZER;
 ciclista *ciclistas, *classifics;
 metro* pista;
-int tam_pista, num_ciclistas, num_voltas;
+int tam_pista, num_ciclistas, num_voltas, id_frente = 0;
 int cic_finalizados = 0, voltas_sobre_outros = 1, DEBUG = 0;
 /*********************************************************************/
 
@@ -46,24 +46,49 @@ void ordena() {
 }
 
 
+void atribuePontos() {
+	int i;
+
+	if (classifics[0].id != id_frente) {
+		/* Ciclista na dianteira mudou */
+		id_frente = classifics[0].id;
+		voltas_sobre_outros = 1;
+	}
+
+	for (i = 0; i < num_ciclistas; i++) {
+		/* Volta de sprint: define a pontuação */
+		if (ciclistas[i].quebrado == -1 && !(ciclistas[i].volta % 10)) {
+			if (ciclistas[i].clas == 1) {
+				ciclistas[i].p += 5;
+				/* Se o ciclista em primeiro der uma volta sobre todos os outros,
+				// ganha 20 pontos */
+				if (ciclistas[i].volta - classifics[1].volta > voltas_sobre_outros) {
+					ciclistas[i].p += 20;
+					/* Para ganhar denovo precisa ter dado uma volta a mais
+					// sobre os outros */
+					voltas_sobre_outros++;
+				}
+			}
+			else if (ciclistas[i].clas == 2)
+				ciclistas[i].p += 3;
+			else if (ciclistas[i].clas == 3)
+				ciclistas[i].p += 2;
+			else if (ciclistas[i].clas == 4)
+				ciclistas[i].p += 1;
+		}
+	}
+}
+
+
 void megaBarreira() {
 	int b = WAIT(&barreira);
 
 	/* Só ocorre 1 vez por sincronização */
 	if (b == PTHREAD_BARRIER_SERIAL_THREAD) {
-		if (DEBUG) {
-			printf("\n");
+		if (DEBUG)
 			printPista(pista, tam_pista);
-		}
 		ordena();
-		/* Se o ciclista em primeiro der uma volta sobre todos os outros,
-		// ganha 20 pontos */
-		if (classifics[0].volta - classifics[1].volta > voltas_sobre_outros) {
-			classifics[0].p += 20;
-			/* Para ganhar denovo precisa ter dado uma volta a mais
-			// sobre os outros */
-			voltas_sobre_outros++;
-		}
+		atribuePontos();
 	}
 
 	WAIT(&barreira);
@@ -178,18 +203,6 @@ void *threadCiclista(void * arg) {
 			c.pos -= tam_pista;
 			c.volta += 1;
 
-			/* Volta de sprint: define a pontuação */
-			if (!(c.volta % 10)) {
-				ordena();
-				if (c.clas == 1)
-					c.p += 5;
-				else if (c.clas == 2)
-					c.p += 3;
-				else if (c.clas == 3)
-					c.p += 2;
-				else if (c.clas == 4)
-					c.p += 1;
-			}
 			c = defineVel(c);
 
 			/* Ciclista tem 1% de chance de quebrar a cada 15 voltas

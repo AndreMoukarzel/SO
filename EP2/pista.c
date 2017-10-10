@@ -26,6 +26,8 @@ metro *criaPista(int d) {
 
 void printPista(metro *pista, int d){
 	int i, j;
+
+	printf("\n");
 	for (i = 0; i < d; i++){
 		printf("%2dm>", i);
 		for (j = 0; j < 10; j++){
