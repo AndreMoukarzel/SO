@@ -10,9 +10,6 @@ void defineClas(ciclista *clas, int n, int num_voltas) {
     int i, j, ini, fim, v, k;
     ciclista atual;
 
-    printf("ANTES\n");
-    for (i = 0; i < n; i++)
-        printf("C%d, clas %d, volta %d, pos %f\n", clas[i].id, i, clas[i].volta, clas[i].pos);
     /* Ordena por volta */
 	for (i = 1; i < n; i++){
 		atual = clas[i];
@@ -51,7 +48,13 @@ void defineClas(ciclista *clas, int n, int num_voltas) {
         }
         v = clas[k].volta;
     }
-    printf("DEPOIS\n");
-    for (i = 0; i < n; i++)
-        printf("C%d, clas %d, volta %d, pos %f\n", clas[i].id, i, clas[i].volta, clas[i].pos);
+
+    /* Atualiza as classificações */
+    j = 1;
+    clas[0].clas = 1;
+    for (i = 1; i < n; i++) {
+        if ((clas[i].volta != clas[i-1].volta) || (clas[i].pos != clas[i-1].pos)) /* Não estão empatados */
+            j++;
+        clas[i].clas = j;
+    }
 }

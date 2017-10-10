@@ -38,11 +38,9 @@ void ordena() {
 		classifics[i] = ciclistas[i];
 	/* E o ordena */
 	defineClas(classifics, num_ciclistas, num_voltas);
-	/* Atualiza as classificações e o vetor global de ciclistas */
-	for (i = 0; i < num_ciclistas; i++){
-        classifics[i].clas = i + 1;
-		ciclistas[classifics[i].id] = classifics[i];
-    }
+	/* Atualiza o vetor global de ciclistas com as novas classificações */
+	for (i = 0; i < num_ciclistas; i++)
+        ciclistas[classifics[i].id] = classifics[i];
 }
 
 

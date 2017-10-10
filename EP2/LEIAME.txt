@@ -1,0 +1,28 @@
+/////////////////////////////////////////////////////////////////////
+// Nome: André Ferrari Moukarzel						NUSP: 9298166
+// Nome: Henrique Cerquinho								NUSP: 9793700
+////////////////////////// COMPILAÇÃO ///////////////////////////////
+
+	O executável pode ser criado com facilidade rodando o comando
+"make". Se, por ventura, não quiser usar tal comando, pode ser
+utilizada a seguinte linha no terminal:
+
+	"gcc -ansi -Wall -pedantic -O2 -lpthread -o corrida.c ciclista.c
+ciclista.h pista.c pista.h defineClas.c defineClas.h corrida.c"
+
+//////////////////////////////////////////////////////////////////////
+/////////////////////////// SIMULADOR ////////////////////////////////
+
+	É possível executar o simulador com o comando 
+./corrida d n v arg4
+
+	d - Comprimento, em metros, do velódromo.
+	
+	n - Número de ciclistas a competir.
+
+	v - Número de voltas até o fim da corrida.
+
+	arg4(Opcional) - Pode ser qualquer string. Imprime a condição de
+cada ponto do velódromo a cada iteração.
+
+//////////////////////////////////////////////////////////////////////
