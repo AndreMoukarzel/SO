@@ -23,14 +23,14 @@ typedef struct {
 } buffer;
 
 
-buffer criaBuffer();
+buffer *criaBuffer();
 
-void insereBuffer(ciclista c, buffer b, int n);
+void insereBuffer(ciclista c, buffer *b, int n);
 
-void defineAtivos(buffer b, int volta, int ativos);
+void defineAtivos(buffer *b, int volta, int ativos);
 
-int imprimeVolta(int volta, int n, buffer b);
+int imprimeVolta(int volta, int n, buffer *b);
 
-void destroiBuffer(buffer b);
+void destroiBuffer(buffer *b);
 
 #endif

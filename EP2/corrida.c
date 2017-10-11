@@ -22,8 +22,10 @@
 /************************ VARIAVEIS GLOBAIS **************************/
 pthread_barrier_t barreira;
 pthread_mutex_t mutex_finaliza = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex_buf = PTHREAD_MUTEX_INITIALIZER;
 ciclista *ciclistas, *classifics;
 metro* pista;
+buffer *B;
 int tam_pista, num_ciclistas, num_voltas, id_frente = 0;
 int cic_finalizados = 0, voltas_sobre_outros = 1, DEBUG = 0;
 int *pontuado;
@@ -79,8 +81,8 @@ void atribuiPontos() {
 		if (ciclistas[i].quebrado == -1) {
 			if (pontuado[ciclistas[i].id] == 0) {
 				if (ciclistas[i].clas == 1) {
-					/* Se o ciclista em primeiro der uma volta sobre todos os outros,
-					// ganha 20 pontos */
+					/* Se o ciclista em primeiro der uma volta sobre todos
+					// os outros, ganha 20 pontos */
 					if (ciclistas[i].volta - classifics[1].volta > voltas_sobre_outros) {
 						ciclistas[i].p += 20;
 						/* Para ganhar denovo precisa ter dado uma volta a mais
@@ -117,6 +119,8 @@ void megaBarreira() {
 		atribuiPontos();
 		printPontos();
 		ordena();
+		/* Se todos terminaram volta x, imprime todos daquela volta.
+		// Faz o mesmo pros pontos em voltas%10 */
 	}
 
 	WAIT(&barreira);
@@ -231,6 +235,10 @@ void *threadCiclista(void * arg) {
 			c.pos -= tam_pista;
 			c.volta += 1;
 
+			LOCK(&mutex_buf);
+			insereBuffer(c, B, num_ciclistas); /* num ciclistas aqui? ou num - finalziados? */
+			LOCK(&mutex_buf);
+
 			pontuado[c.id] = 0;
 			c = defineVel(c);
 
@@ -278,6 +286,7 @@ void corrida(int d, int n){
 	int th, i;
 	pthread_t *thread = malloc(n * sizeof(pthread_t));
 
+	B = criaBuffer();
 	preparaLargada(d, n);
 	pthread_barrier_init(&barreira, NULL, n);
 
@@ -309,6 +318,7 @@ int main(int argc, char **argv) {
 	if (argc > 4)
 		DEBUG = 1;
 
+	srand(time(NULL));
 	corrida(tam_pista, num_ciclistas);
 
 	return 0;
