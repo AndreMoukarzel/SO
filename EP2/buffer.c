@@ -5,96 +5,91 @@
 
 #include "buffer.h"
 
-int B_MAX = 4;
-
-buffer *criaBuffer() {
+buffer *criaBuffer(int n, int v) {
+	int i;
 	buffer *b;
 
 	b = malloc(sizeof(buffer));
-	b->buf = malloc(B_MAX * sizeof(c_buff));
-	b->size = malloc(B_MAX * sizeof(int));
-	b->ativ = malloc(B_MAX * sizeof(int));
-	b->max = B_MAX;
-
+	/* Matriz vxn */
+	b->buf = malloc(v * sizeof(c_buff*));
+	b->topo = malloc(v * sizeof(int));
+	b->cheio = malloc(v * sizeof(int));
+	for (i = 0; i < v; i++) {
+		b->buf[i] = malloc(n * sizeof(c_buff));
+		b->topo[i] = 0;
+		b->cheio[i] = 0;
+	}
 	return b;
 }
 
-void insereBuffer(ciclista c, buffer *b, int n) {
+void insereBuffer(buffer *b, ciclista c, int cic_ativos) {
+	int v;
 	c_buff cb;
-	int i = 0, j = 0;
 
+	v = c.volta;
 	cb.id = c.id;
 	cb.volta = c.volta;
 	cb.p = c.p;
 	cb.clas = c.clas;
 
-	while (i < b->max && b->buf[i] != NULL && b->buf[i][0].volta != cb.volta)
-		i++;
+	/* Insere o ciclista na primeira posiçao livre e incrementa o topo */
+	b->buf[v][b->topo[v]++] = cb;
 
-	if (i == b->max) {
-		B_MAX *= 2;
-		b->max = B_MAX;
-		b->buf = (c_buff**) realloc(b->buf, B_MAX * sizeof(c_buff));
-		b->size = (int*) realloc(b->size, B_MAX * sizeof(int));
-		b->ativ = (int*) realloc(b->ativ, B_MAX * sizeof(int));
-	}
-
-	if (b->buf[i] == NULL) {
-		b->size[i] = 0;
-		b->buf[i] = malloc(n * sizeof(c_buff));
-	}
-	else if (b->buf[i][0].volta == cb.volta)
-		j = b->size[i];
-
-	b->size[1] += 1;
-	b->buf[i][j] = cb;
+	if (b->topo[v] == cic_ativos)
+		imprimeVolta(b, v);
 }
 
-void defineAtivos(buffer *b, int volta, int ativos) {
-	int i = 0;
-
-	while (i < b->max && b->buf[i] != NULL && volta != b->buf[i][0].volta)
-		i++;
-
-	b->ativ[i] = ativos;
-}
-
-int imprimeVolta(int volta, int n, buffer *b) {
+void imprimeVolta(buffer *b, int v) {
 	c_buff cb;
-	int i = 0, j;
+	int i, j;
+	/* Ordena por clas */
+	for (i = 1; i < b->topo[v]; i++){
+		cb = b->buf[v][i];
 
-	while (i < b->max && b->buf[i] != NULL && volta != b->buf[i][0].volta)
-		i++;
+		j = i - 1;
+		while (j >= 0 && b->buf[v][j].clas > cb.clas) {
+			b->buf[v][j + 1] = b->buf[v][j];
+			j--;
+		}
+		b->buf[v][j + 1] = cb;
+	}
 
-	if (i >= b->max || b->buf[i] == NULL) /* Erro */
-		return -1;
-	if (b->ativ[i] != b->size[1]) /* Ainda n tem ciclistas o suficiente aqui */
-		return -2;
-
-	/* Imprime a volta e a libera do buffer */
+	printf("Volta %d:\n", v);
+	for (i = 0; i < b->topo[v]; i++) {
+		cb = b->buf[v][i];
+		printf("%4da posição: Ciclista %d\n", cb.clas, cb.id);
+	}
 	printf("\n");
-	if (b->buf[i][0].volta % 10) {
-		for (j = 0; j < b->size[1]; j++) {
-			cb = b->buf[i][j];
-			printf("Ciclista de id %d teve classificação %d na volta %d\n", cb.id, cb.clas, cb.volta);
-		}
-	}
-	else {
-		for (j = 0; j < b->size[1]; j++) {
-			cb = b->buf[i][j];
-			/* Imprimir pontuação em ordem decrescente */
-		}
-	}
-	for (j = i; j < b->max - 1; j++) {
-		b->buf[j] = b->buf[j + 1];
-	}
-	b->buf[j + 1] = malloc(n * sizeof(c_buff));
 
-	return 0;
+	/* Se volta for multipla de 10, imprime os pontos */
+	if (!(v % 10)) {
+		printf("Pontuação na volta %d:\n", v);
+		/* Ordena a linha da matriz por pontos */
+		for (i = 1; i < b->topo[v]; i++){
+			cb = b->buf[v][i];
+
+	        j = i - 1;
+			while (j >= 0 && b->buf[v][j].p < cb.p) {
+				b->buf[v][j + 1] = b->buf[v][j];
+	            j--;
+	        }
+			b->buf[v][j + 1] = cb;
+		}
+		/* E imprime */
+		for (i = 0; i < b->topo[v]; i++) {
+			cb = b->buf[v][i];
+			printf("%3d pontos - Ciclista %d\n", cb.p, cb.id);
+		}
+		printf("\n");
+	}
 }
 
-void destroiBuffer(buffer *b) {
+void destroiBuffer(buffer *b, int v) {
+	int i;
+	for (i = 0; i < v; i++)
+		free(b->buf[i]);
 	free(b->buf);
-	free(b->size);
-	free(b->ativ);
+	free(b->topo);
+	free(b->cheio);
+	free(b);
 }

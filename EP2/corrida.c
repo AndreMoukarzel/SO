@@ -26,8 +26,8 @@ pthread_mutex_t mutex_buf = PTHREAD_MUTEX_INITIALIZER;
 ciclista *ciclistas, *classifics;
 metro* pista;
 buffer *B;
-int tam_pista, num_ciclistas, num_voltas, id_frente = 0;
-int cic_finalizados = 0, voltas_sobre_outros = 1, DEBUG = 0;
+int tam_pista, num_ciclistas, num_voltas, id_frente = 0, DEBUG = 0;
+int cic_finalizados = 0, *cic_quebrados, voltas_sobre_outros = 1;
 int *pontuado;
 /*********************************************************************/
 
@@ -45,27 +45,6 @@ void ordena() {
         ciclistas[classifics[i].id] = classifics[i];
 }
 
-
-void printPontos() {
-	int i, j;
-	ciclista temp;
-
-	for (i = 1; i < num_ciclistas; i++){
-		temp = classifics[i];
-
-        j = i - 1;
-		while (j >= 0 && classifics[j].p < temp.p) {
-			classifics[j + 1] = classifics[j];
-            j--;
-        }
-		classifics[j+1] = temp;
-	}
-
-	for (i = 0; i < num_ciclistas; i++) {
-		printf("Ciclista %3d, volta %d, %da posicao, %d pontos\n",
-		classifics[i].id, classifics[i].volta, classifics[i].clas, classifics[i].p);
-	}
-}
 
 void atribuiPontos() {
 	int i;
@@ -117,10 +96,6 @@ void megaBarreira() {
 			printPista(pista, tam_pista);
 		ordena();
 		atribuiPontos();
-		printPontos();
-		ordena();
-		/* Se todos terminaram volta x, imprime todos daquela volta.
-		// Faz o mesmo pros pontos em voltas%10 */
 	}
 
 	WAIT(&barreira);
@@ -235,9 +210,11 @@ void *threadCiclista(void * arg) {
 			c.pos -= tam_pista;
 			c.volta += 1;
 
+			/* Insere seus dados na matriz de impressão e imprime os dados
+			// da volta, caso ele tenha sido o ultimo a completá-la */
 			LOCK(&mutex_buf);
-			insereBuffer(c, B, num_ciclistas); /* num ciclistas aqui? ou num - finalziados? */
-			LOCK(&mutex_buf);
+			insereBuffer(B, c, (num_ciclistas - cic_quebrados[c.volta]));
+			UNLOCK(&mutex_buf);
 
 			pontuado[c.id] = 0;
 			c = defineVel(c);
@@ -248,9 +225,14 @@ void *threadCiclista(void * arg) {
 				if (quebraCiclista(c)) {
 					pista[(int)c.pos].faixa[c.faixa] = -1;
 					pthread_create(&dummy, NULL, &threadDummy, NULL);
+
 					LOCK(&mutex_finaliza);
 					cic_finalizados++;
+					/* Cada posiçao do vetor de quebrados é o numero de
+					// ciclsitas que quebraram até aquela volta */
+					cic_quebrados[c.volta] += cic_quebrados[c.volta-1] + 1;
 					UNLOCK(&mutex_finaliza);
+					
 					return NULL;
 				}
 			}
@@ -272,12 +254,16 @@ void *threadCiclista(void * arg) {
 void preparaLargada(int d, int n) {
 	int i;
 
+	B = criaBuffer(n, num_voltas);
 	pista = criaPista(d);
 	ciclistas = criaCiclistas(n);
 	classifics = malloc(n * sizeof(ciclista));
+	cic_quebrados = malloc(num_voltas * sizeof(int));
 	pontuado = malloc(n * sizeof(int));
 	for (i = 0; i < n; i++)
 		pontuado[i] = 0;
+	for (i = 0; i < num_voltas; i++)
+		cic_quebrados[i] = 0;
 	posicionaCiclistas(d, n, ciclistas, pista);
 }
 
@@ -286,7 +272,6 @@ void corrida(int d, int n){
 	int th, i;
 	pthread_t *thread = malloc(n * sizeof(pthread_t));
 
-	B = criaBuffer();
 	preparaLargada(d, n);
 	pthread_barrier_init(&barreira, NULL, n);
 
@@ -305,9 +290,12 @@ void corrida(int d, int n){
 	/* Imprimir resultados aqui */
 
 	destroiPista(pista, d);
+	destroiBuffer(B, num_voltas);
+	free(thread);
+	free(pontuado);
 	free(ciclistas);
 	free(classifics);
-	free(thread);
+	free(cic_quebrados);
 }
 
 

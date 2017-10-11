@@ -12,25 +12,22 @@ typedef struct {
 	int id; /* Identificador do ciclista */
 	int volta; /* Volta atual do ciclista */
 	int p; /* Pontuação acumulada do ciclista */
-	int clas;
+	int clas; /* Classificação do ciclista na corrida */
 } c_buff;
 
 typedef struct {
-	c_buff **buf;
-	int *size; /* Tamanho dos buffers de cada volta no buffer */
-	int *ativ; /* Número de ciclistas ativos em cada volta no buffer */
-	int max; /* Tamanho de buf */
+	c_buff **buf; /* Matriz de ciclistas na ordem que terminaram cada volta */
+	int *topo; /* Vetor com a primeira posiçao livre de cada linha da matriz */
+	int *cheio; /* 1 se todos os ciclistas ja terminaram aquela volta */
 } buffer;
 
 
-buffer *criaBuffer();
+buffer *criaBuffer(int n, int v);
 
-void insereBuffer(ciclista c, buffer *b, int n);
+void insereBuffer(buffer *b, ciclista c, int cic_ativos);
 
-void defineAtivos(buffer *b, int volta, int ativos);
+void imprimeVolta(buffer *b, int v);
 
-int imprimeVolta(int volta, int n, buffer *b);
-
-void destroiBuffer(buffer *b);
+void destroiBuffer(buffer *b, int v);
 
 #endif
