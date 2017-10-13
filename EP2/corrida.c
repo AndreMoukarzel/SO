@@ -170,7 +170,7 @@ void *threadDummy() {
 void *threadCiclista(void * arg) {
 	ciclista *temp, c;
 	pthread_t dummy;
-	int pos, next_pos, impedido, f_id;
+	int pos, next_pos, impedido, f_id, i, q;
 
 	temp = (ciclista *) arg;
 	c = *temp;
@@ -212,9 +212,14 @@ void *threadCiclista(void * arg) {
 
 			/* Insere seus dados na matriz de impressão e imprime os dados
 			// da volta, caso ele tenha sido o ultimo a completá-la */
-			LOCK(&mutex_buf);
-			insereBuffer(B, c, (num_ciclistas - cic_quebrados[c.volta]));
-			UNLOCK(&mutex_buf);
+			if (c.volta > 1) {
+				LOCK(&mutex_buf);
+				/* q é o numero de ciclistas quebrado até aquela volta */
+				for (i = 0, q = 0; i < c.volta; i++)
+					q += cic_quebrados[i];
+				insereBuffer(B, c, (num_ciclistas - q));
+				UNLOCK(&mutex_buf);
+			}
 
 			pontuado[c.id] = 0;
 			c = defineVel(c);
@@ -230,9 +235,9 @@ void *threadCiclista(void * arg) {
 					cic_finalizados++;
 					/* Cada posiçao do vetor de quebrados é o numero de
 					// ciclsitas que quebraram até aquela volta */
-					cic_quebrados[c.volta] += cic_quebrados[c.volta-1] + 1;
+					cic_quebrados[c.volta]++;
 					UNLOCK(&mutex_finaliza);
-					
+
 					return NULL;
 				}
 			}
@@ -285,7 +290,10 @@ void corrida(int d, int n){
 	for (i = 0; i < n; i++) {
 		pthread_join(thread[i], NULL);
 	}
-
+	for (i = 0; i< num_voltas; i++) {
+		if (cic_quebrados[i])
+		printf("%d ", i);
+	}
 
 	/* Imprimir resultados aqui */
 

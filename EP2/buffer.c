@@ -11,10 +11,10 @@ buffer *criaBuffer(int n, int v) {
 
 	b = malloc(sizeof(buffer));
 	/* Matriz vxn */
-	b->buf = malloc(v * sizeof(c_buff*));
-	b->topo = malloc(v * sizeof(int));
-	b->cheio = malloc(v * sizeof(int));
-	for (i = 0; i < v; i++) {
+	b->buf = malloc((v+1) * sizeof(c_buff*));
+	b->topo = malloc((v+1) * sizeof(int));
+	b->cheio = malloc((v+1) * sizeof(int));
+	for (i = 0; i < (v+1); i++) {
 		b->buf[i] = malloc(n * sizeof(c_buff));
 		b->topo[i] = 0;
 		b->cheio[i] = 0;
@@ -86,7 +86,7 @@ void imprimeVolta(buffer *b, int v) {
 
 void destroiBuffer(buffer *b, int v) {
 	int i;
-	for (i = 0; i < v; i++)
+	for (i = 0; i < (v+1); i++)
 		free(b->buf[i]);
 	free(b->buf);
 	free(b->topo);
