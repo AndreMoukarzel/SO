@@ -23,6 +23,7 @@
 /************************ VARIAVEIS GLOBAIS **************************/
 pthread_barrier_t barreira;
 pthread_mutex_t mutex_finaliza = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t mutex_print = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex_buf = PTHREAD_MUTEX_INITIALIZER;
 ciclista *ciclistas, *classifics;
 metro* pista;
@@ -97,14 +98,18 @@ void megaBarreira(ciclista c, int cic_ativos) {
 			printPista(pista, tam_pista);
 		ordena();
 		atribuiPontos();
-		
+
 		if (sorteado_90 >= 0)
 			simulacao = 180;
 	}
-	if (B->impresso[c.volta] == 0 && B->topo[c.volta] == cic_ativos) {
-		imprimeVolta(B, c.volta);
-		B->impresso[c.volta] = 1;
+	LOCK(&mutex_print);
+	if (cic_ativos != -1) { /* Caso nao seja a thread dummy */
+		if (B->impresso[c.volta] == 0 && B->topo[c.volta] == cic_ativos) {
+			imprimeVolta(B, c.volta);
+			B->impresso[c.volta] = 1;
+		}
 	}
+	UNLOCK(&mutex_print);
 
 	WAIT(&barreira);
 }
@@ -170,7 +175,7 @@ int andaFrente(ciclista c) {
 void *threadDummy() {
 	ciclista c;
 	while (cic_finalizados < num_ciclistas)
-		megaBarreira(c, 0);
+		megaBarreira(c, -1);
 
 	return NULL;
 }
