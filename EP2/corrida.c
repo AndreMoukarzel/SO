@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 #include "ciclista.h"
@@ -326,6 +327,10 @@ void corrida(int d, int n){
 
 
 int main(int argc, char **argv) {
+	struct timespec start, finish;
+	double elapsed;
+	clock_gettime(CLOCK_MONOTONIC, &start);
+
 	tam_pista = atoi(argv[1]);
 	num_ciclistas = atoi(argv[2]);
 	num_voltas = atoi(argv[3]);
@@ -334,6 +339,14 @@ int main(int argc, char **argv) {
 
 	srand(time(NULL));
 	corrida(tam_pista, num_ciclistas);
+
+	clock_gettime(CLOCK_MONOTONIC, &finish);
+
+	elapsed = (finish.tv_sec - start.tv_sec);
+	elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
+
+	printf("Time elapsed: %f\n", elapsed);
+
 
 	return 0;
 }
