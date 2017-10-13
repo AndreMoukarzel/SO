@@ -54,7 +54,7 @@ void imprimeVolta(buffer *b, int v) {
 		b->buf[v][j + 1] = cb;
 	}
 
-	printf("Volta %d:\n", v);
+	printf("Volta %d:\n", v - 1);
 	for (i = 0; i < b->topo[v]; i++) {
 		cb = b->buf[v][i];
 		printf("%4da posição: Ciclista %d\n", cb.clas, cb.id);

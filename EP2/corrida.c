@@ -28,7 +28,7 @@ metro* pista;
 buffer *B;
 int tam_pista, num_ciclistas, num_voltas, id_frente = 0, DEBUG = 0;
 int cic_finalizados = 0, *cic_quebrados, voltas_sobre_outros = 1;
-int *pontuado;
+int *pontuado, sorteado_90 = -2, simulacao = 60;
 /*********************************************************************/
 
 /* Ordena os ciclistas no vetor classifics em função de sua
@@ -96,6 +96,8 @@ void megaBarreira() {
 			printPista(pista, tam_pista);
 		ordena();
 		atribuiPontos();
+		if (sorteado_90 >= 0)
+			simulacao = 180;
 	}
 
 	WAIT(&barreira);
@@ -170,7 +172,7 @@ void *threadDummy() {
 void *threadCiclista(void * arg) {
 	ciclista *temp, c;
 	pthread_t dummy;
-	int pos, next_pos, impedido, f_id, i, q;
+	int pos, next_pos, impedido, f_id, i, q, r;
 
 	temp = (ciclista *) arg;
 	c = *temp;
@@ -179,7 +181,7 @@ void *threadCiclista(void * arg) {
 
 	while (c.volta < num_voltas) {
 		pos = (int) c.pos;
-		next_pos = (int)(c.pos + (float)c.v/60);
+		next_pos = (int)(c.pos + (float)c.v/simulacao);
 		impedido = 0;
 
 		while (mudaFaixa(c, 1))
@@ -195,14 +197,15 @@ void *threadCiclista(void * arg) {
 			c = ciclistas[c.id];
 		}
 
-		/* Atualiza a posição */
+		/* Atualiza a posição. Simulacao começa com 60 e vai para 180 caso
+		// um ciclista seja sorteado para andar a 90km/h */
 		if (!impedido)
-			c.pos += (float)c.v/60;
+			c.pos += (float)c.v/simulacao;
 		else {
 			c.vMax = ciclistas[f_id].vMax;
-			next_pos = (int)(c.pos + (float)c.vMax/60);
+			next_pos = (int)(c.pos + (float)c.vMax/simulacao);
 			if (next_pos == pos)
-				c.pos += (float)c.vMax/60;
+				c.pos += (float)c.vMax/simulacao;
 		}
 
 		/* Completa uma volta */
@@ -211,9 +214,22 @@ void *threadCiclista(void * arg) {
 			c.volta += 1;
 
 			/* Insere seus dados na matriz de impressão e imprime os dados
-			// da volta, caso ele tenha sido o ultimo a completá-la */
+			// da volta, caso ele tenha sido o ultimo a completá-la,
+			// além de possivelmente sortear um ciclistas para andar a 90km/h */
 			if (c.volta > 1) {
 				LOCK(&mutex_buf);
+				if (sorteado_90 == -2 && c.volta == num_voltas - 2) {
+					if ((r = rand()%100) < 10) {
+						/* Alguem foi sorteado, resorteia se o ciclista
+						// estiver quebrado */
+						sorteado_90 = rand() % num_ciclistas;
+						while (ciclistas[sorteado_90].quebrado != -1)
+							sorteado_90 = rand()%num_ciclistas;
+					}
+					else /* Ninguem foi sorteado */
+						sorteado_90 = -1;
+				}
+
 				/* q é o numero de ciclistas quebrado até aquela volta */
 				for (i = 0, q = 0; i < c.volta; i++)
 					q += cic_quebrados[i];
@@ -221,8 +237,14 @@ void *threadCiclista(void * arg) {
 				UNLOCK(&mutex_buf);
 			}
 
+			if (c.id == sorteado_90)
+				c.v = c.vMax = 90;
+
 			pontuado[c.id] = 0;
-			c = defineVel(c);
+
+			/* Define a velocidade para a proxima volta caso nao esteja a 90 */
+			if (c.id != sorteado_90)
+				c = defineVel(c);
 
 			/* Ciclista tem 1% de chance de quebrar a cada 15 voltas
 			// se tiverem mais de 5 ciclistas */
@@ -289,10 +311,6 @@ void corrida(int d, int n){
 	/* Espera a corrida acabar */
 	for (i = 0; i < n; i++) {
 		pthread_join(thread[i], NULL);
-	}
-	for (i = 0; i< num_voltas; i++) {
-		if (cic_quebrados[i])
-		printf("%d ", i);
 	}
 
 	/* Imprimir resultados aqui */
