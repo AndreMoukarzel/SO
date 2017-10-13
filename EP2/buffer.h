@@ -18,7 +18,7 @@ typedef struct {
 typedef struct {
 	c_buff **buf; /* Matriz de ciclistas na ordem que terminaram cada volta */
 	int *topo; /* Vetor com a primeira posiçao livre de cada linha da matriz */
-	int *cheio; /* 1 se todos os ciclistas ja terminaram aquela volta */
+	int *impresso; /* 1 se todos os ciclistas ja terminaram aquela volta */
 } buffer;
 
 

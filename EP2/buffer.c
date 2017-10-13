@@ -13,11 +13,11 @@ buffer *criaBuffer(int n, int v) {
 	/* Matriz vxn */
 	b->buf = malloc((v+1) * sizeof(c_buff*));
 	b->topo = malloc((v+1) * sizeof(int));
-	b->cheio = malloc((v+1) * sizeof(int));
+	b->impresso = malloc((v+1) * sizeof(int));
 	for (i = 0; i < (v+1); i++) {
 		b->buf[i] = malloc(n * sizeof(c_buff));
 		b->topo[i] = 0;
-		b->cheio[i] = 0;
+		b->impresso[i] = 0;
 	}
 	return b;
 }
@@ -34,9 +34,6 @@ void insereBuffer(buffer *b, ciclista c, int cic_ativos) {
 
 	/* Insere o ciclista na primeira posiçao livre e incrementa o topo */
 	b->buf[v][b->topo[v]++] = cb;
-
-	if (b->topo[v] == cic_ativos)
-		imprimeVolta(b, v);
 }
 
 void imprimeVolta(buffer *b, int v) {
@@ -90,6 +87,6 @@ void destroiBuffer(buffer *b, int v) {
 		free(b->buf[i]);
 	free(b->buf);
 	free(b->topo);
-	free(b->cheio);
+	free(b->impresso);
 	free(b);
 }

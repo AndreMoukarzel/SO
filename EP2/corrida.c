@@ -70,7 +70,7 @@ void atribuiPontos() {
 						voltas_sobre_outros++;
 					}
 				}
-				if (ciclistas[i].volta != 0 && !(ciclistas[i].volta % 10)) {
+				if (!(ciclistas[i].volta % 10)) {
 					if (ciclistas[i].clas == 1)
 						ciclistas[i].p += 5;
 					else if (ciclistas[i].clas == 2)
@@ -88,7 +88,7 @@ void atribuiPontos() {
 }
 
 
-void megaBarreira() {
+void megaBarreira(ciclista c, int cic_ativos) {
 	int b = WAIT(&barreira);
 
 	/* Só ocorre 1 vez por sincronização */
@@ -97,8 +97,13 @@ void megaBarreira() {
 			printPista(pista, tam_pista);
 		ordena();
 		atribuiPontos();
+		
 		if (sorteado_90 >= 0)
 			simulacao = 180;
+	}
+	if (B->impresso[c.volta] == 0 && B->topo[c.volta] == cic_ativos) {
+		imprimeVolta(B, c.volta);
+		B->impresso[c.volta] = 1;
 	}
 
 	WAIT(&barreira);
@@ -163,8 +168,9 @@ int andaFrente(ciclista c) {
 
 
 void *threadDummy() {
+	ciclista c;
 	while (cic_finalizados < num_ciclistas)
-		megaBarreira();
+		megaBarreira(c, 0);
 
 	return NULL;
 }
@@ -173,7 +179,7 @@ void *threadDummy() {
 void *threadCiclista(void * arg) {
 	ciclista *temp, c;
 	pthread_t dummy;
-	int pos, next_pos, impedido, f_id, i, q, r;
+	int pos, next_pos, impedido, f_id, i, q = 0, r;
 
 	temp = (ciclista *) arg;
 	c = *temp;
@@ -266,7 +272,7 @@ void *threadCiclista(void * arg) {
 			}
 		}
 		ciclistas[c.id] = c;
-		megaBarreira();
+		megaBarreira(c, num_ciclistas - q);
 		c = ciclistas[c.id];
 	}
 	pista[(int)c.pos].faixa[c.faixa] = -1;
