@@ -8,7 +8,7 @@
 utilizada a seguinte linha no terminal:
 
 	"gcc -ansi -Wall -pedantic -O2 -lpthread -o corrida.c ciclista.c
-ciclista.h pista.c pista.h corrida.c"
+ciclista.h pista.c pista.h buffer.c buffer.h corrida.c"
 
 //////////////////////////////////////////////////////////////////////
 /////////////////////////// SIMULADOR ////////////////////////////////
