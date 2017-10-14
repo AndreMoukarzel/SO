@@ -13,6 +13,7 @@
 #include "ciclista.h"
 #include "pista.h"
 #include "buffer.h"
+#include <sys/resource.h>
 
 #define MAX_LENGTH 1024
 
@@ -340,6 +341,8 @@ void corrida(int d, int n){
 int main(int argc, char **argv) {
 	struct timespec start, finish;
 	double elapsed;
+	struct rusage r_usage;
+	
 	clock_gettime(CLOCK_MONOTONIC, &start);
 
 	tam_pista = atoi(argv[1]);
@@ -357,7 +360,8 @@ int main(int argc, char **argv) {
 	elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
 
 	printf("Time elapsed: %f\n", elapsed);
-
+	getrusage(RUSAGE_SELF, &r_usage);
+	printf("Memory usage: %ld bytes\n", r_usage.ru_maxrss);
 
 	return 0;
 }
