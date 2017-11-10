@@ -28,8 +28,14 @@ def get_time():
 def main():
 
 	while True:
-		linha = raw_input("[ep3]: ")
+		linha = input("[ep3]: ")
 		linha = linha.split()
+
+		# Descomenta e roda so 'executa n' no prompt pra ir mais rapido:
+		# esp = 1
+		# sub = 1
+		# intervalo = 10
+		# arquivo = "in.txt"
 
 		if linha[0] == "carrega":
 			arquivo = linha[1]
@@ -46,7 +52,7 @@ def main():
 		elif linha[0] == "executa":
 			intervalo = float(linha[1])
 			print ("Intervalo definido como " + str(intervalo))
-			print ("Executando " + arquivo + " " + ger[esp] + " " + subst[sub])
+			# print ("Executando " + arquivo + " " + ger[esp] + " " + subst[sub])
 
 			sim.simula(arquivo, esp, sub, intervalo)
 

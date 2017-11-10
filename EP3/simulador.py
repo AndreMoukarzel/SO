@@ -51,5 +51,3 @@ def simula(arquivo, espaco, subst, intervalo):
 
 	Memoria('/tmp/ep3.mem', fis_total)
 	Memoria('/tmp/ep3.vir', fis_total)
-
-	print ("Falta o resto do programa safadao")
