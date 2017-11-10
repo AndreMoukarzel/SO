@@ -18,19 +18,11 @@ def simula(arquivo, espaco, subst, intervalo):
 
 	# Gera o arquivo de memoria fisica no diretorio /tmp
 	# e preenche  com -1
-	with open('/tmp/ep3.mem', 'wb') as f:
+	with open('ep3.mem', 'wb') as f:
 			for i in range(total):
-    				f.write('-1 ')
-				# 1 linha pra cada byte?
-				if (not i%8 and i != 0):
-						f.write('\n')
+    				f.write(bytes(('10000001\n').encode()))
 
 	# E o de memoria virtual
-	with open('/tmp/ep3.vir', 'wb') as f:
+	with open('ep3.vir', 'wb') as f:
 			for i in range(virtual):
-    				f.write('-1 ')
-				# 1 linha pra cada byte?
-				if (not i%8 and i != 0):
-						f.write('\n')
-
-	print ("Falta o resto do programa safadão")
+    				f.write(bytes(('10000001\n').encode()))
