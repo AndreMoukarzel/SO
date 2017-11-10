@@ -42,7 +42,6 @@ def main():
 		elif linha[0] == "substitui":
 			sub = int(linha[1])
 			print ("Algoritmo de substituicao definido para " + subst[sub])
-			# Settar alguma variavel como linha[1] aqui
 
 		elif linha[0] == "executa":
 			intervalo = float(linha[1])
