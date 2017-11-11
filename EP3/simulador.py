@@ -3,17 +3,19 @@
 # Nome: Henrique Cerquinho                          NUSP: 9793700	#
 #####################################################################
 import math
-import time
+from bitarray import bitarray
 
 class Memoria:
 	tam = 0
 	arquivo = 0
+	bitmap = 0
 
 	def __init__(self, nome, tamanho):
 		self.tam = tamanho
 		self.arquivo = nome
 
 		self.criaArquivo()
+		self.bitmap = tamanho * bitarray('0')
 
 
 	def criaArquivo(self):
@@ -23,6 +25,12 @@ class Memoria:
 		# for i in range (self.tam):
 		# 	l.append(128) # Preenche com -1
 		self.write(l)
+
+
+	def imprime(self):
+		l = self.read()
+		for i in range(self.tam):
+			print (str(i) + ' | ' + str(l[i]) + ' | ' + str(int(self.bitmap[i])))
 
 
 	def read(self):
@@ -104,6 +112,7 @@ def simula(arquivo, espaco, subst, intervalo):
 	with open(arquivo) as f:
 		linhas = f.readlines()
 	linha = linhas[0].split()
+	num = len(linhas) # Numero de linhas no arquivo de trace
 	fis_total = int(linha[0]) # Memoria fisica total
 	vir_total = int(linha[1]) # Memoria virtual total
 	s = int(linha[2]) # Tamanho da unidade de alocacao
@@ -113,8 +122,41 @@ def simula(arquivo, espaco, subst, intervalo):
 	vir = Memoria('/tmp/ep3.vir', vir_total)
 	fis.compactar(2)
 
-	# bestFit(vir, "ronaldo", int(math.ceil(8/s)))
-	# print (fis.read())
+	bestFit(vir, "ronaldo", int(math.ceil(8/s))) # TESTE
+
+	t = 0
+	i = 1 # Linha 0 ja foi interpretada
+	while  True:
+
+		linha = linhas[i].split()
+		while i < num and int(linha[0]) == t:
+
+			if len(linha) == 2 and linha[1] == 'COMPACTAR': # Excecao para COMPACTAR
+				fis.compactar()
+				vir.compactar()
+
+			# tratar processo adequadamente aqui
+			i += 1
+			if i < num:
+				linha = linhas[i].split()
+
+		if t % intervalo == 0: # Imprime informacoess
+			print (30 * '-' + '\nTempo = ' + str(t) + '\n')
+			print ('Memoria Virtual')
+			vir.imprime()
+			print ('\nMemoria Fisica')
+			fis.imprime()
+			print ('\n' + 30 * '-' + '\n')
+
+		if i == num:
+			# isso aqui esta incorreto, na vdd.
+			# o break deve vir n quando terminamos de ler todos os processos,
+			# e sim quando terminamos de ler E n vai ter mais acessos por nenhum processo.
+			# vamos ter q guardar essa informacao sobre acessos em algum lugar
+			break
+
+		t += 1
+
 
 
 # Insere p com p_paginas na memoria especificada
