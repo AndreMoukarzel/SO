@@ -21,9 +21,8 @@ class Memoria:
 	def criaArquivo(self):
 		f = open(self.arquivo, 'w+b')
 		f.close()
-		l = [128, 128, 3, 4, 5, 128, 128, 128, 128, 128, 2, 128, 128, 128, 10, 128] # vetor pra teste
-		# for i in range (self.tam):
-		# 	l.append(128) # Preenche com -1
+		for i in range (self.tam):
+			l.append(128) # Preenche com -1
 		self.write(l)
 
 
@@ -54,16 +53,13 @@ class Memoria:
 
 
 	def compactar(self, tam_bloco):
-		print ("vrrrrrr *compactando memoria*")
 		mem = self.read()
 		compactado = False
-		print("antes de compactar:")
-		print(mem)
 
 		while not compactado:
 			# Procura o primeiro bloco livre
 			cheio = True
-			for i in range(0, len(mem), tam_bloco):
+			for i in range(0, len(mem)):
 				if mem[i] == 128:
 					cheio = False
 					livre = i
@@ -73,7 +69,7 @@ class Memoria:
 				break
 
 			# Procura o proximo bloco ocupado
-			for i in range(livre + tam_bloco, len(mem), tam_bloco):
+			for i in range(livre + tam_bloco, len(mem)):
 				if mem[i] != 128:
 					ocupado = i
 					break
@@ -97,8 +93,6 @@ class Memoria:
 				if fim == 1 and mem[i] != 128:
 					compactado = False
 					break
-
-		print("depois de compactar:")
 		print(mem)
 
 
