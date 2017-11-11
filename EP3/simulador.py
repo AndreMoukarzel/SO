@@ -72,19 +72,28 @@ def simula(arquivo, espaco, subst, intervalo):
 	t = 0
 	i = 1 # Linha 0 ja foi interpretada
 	while  True:
-		while i < num and int(linhas[i][0]) == t:
-			proc = linhas[i].split()
 
-			if len(proc) == 2 and proc[1] == 'COMPACTAR': # Excecao para COMPACTAR
+		linha = linhas[i].split()
+		while i < num and int(linha[0]) == t:
+
+			if len(linha) == 2 and linha[1] == 'COMPACTAR': # Excecao para COMPACTAR
 				fis.compactar()
 				vir.compactar()
 
 			# tratar processo adequadamente aqui
-
 			i += 1
+			if i < num:
+				linha = linhas[i].split()
 
-		if t % intervalo: # Imprime informacoess
-			pass
+		if t % intervalo == 0: # Imprime informacoess
+			print (30 * '-' + '\nTempo = ' + str(t) + '\n')
+			print ('Memoria Virtual')
+			print (vir.read())
+			# imprimir bitmap da virtual
+			print ('\nMemoria Fisica')
+			print (fis.read())
+			# imprimir bitmap da fisica
+			print ('\n' + 30 * '-' + '\n')
 
 		if i == num:
 			# isso aqui esta incorreto, na vdd.

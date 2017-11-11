@@ -29,7 +29,6 @@ def main():
 	# Descomenta e roda so 'executa n' no prompt pra ir mais rapido:
 	esp = 1
 	sub = 1
-	intervalo = 10
 	arquivo = "in.txt"
 
 	while True:
@@ -49,7 +48,7 @@ def main():
 			print ("Algoritmo de substituicao definido para " + subst[sub])
 
 		elif linha[0] == "executa":
-			intervalo = float(linha[1])
+			intervalo = int(linha[1])
 			print ("Intervalo definido como " + str(intervalo))
 			# print ("Executando " + arquivo + " " + ger[esp] + " " + subst[sub])
 
