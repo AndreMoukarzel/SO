@@ -3,16 +3,19 @@
 # Nome: Henrique Cerquinho                          NUSP: 9793700	#
 #####################################################################
 import math
+from bitarray import bitarray
 
 class Memoria:
 	tam = 0
 	arquivo = 0
+	bitmap = 0
 
 	def __init__(self, nome, tamanho):
 		self.tam = tamanho
 		self.arquivo = nome
 
 		self.criaArquivo()
+		self.bitmap = tamanho * bitarray('0')
 
 
 	def criaArquivo(self):
@@ -22,6 +25,12 @@ class Memoria:
 		for i in range (self.tam):
 			l.append(128)
 		self.write(l)
+
+
+	def imprime(self):
+		l = self.read()
+		for i in range(self.tam):
+			print (str(i) + ' | ' + str(l[i]) + ' | ' + str(int(self.bitmap[i])))
 
 
 	def read(self):
@@ -88,11 +97,9 @@ def simula(arquivo, espaco, subst, intervalo):
 		if t % intervalo == 0: # Imprime informacoess
 			print (30 * '-' + '\nTempo = ' + str(t) + '\n')
 			print ('Memoria Virtual')
-			print (vir.read())
-			# imprimir bitmap da virtual
+			vir.imprime()
 			print ('\nMemoria Fisica')
-			print (fis.read())
-			# imprimir bitmap da fisica
+			fis.imprime()
 			print ('\n' + 30 * '-' + '\n')
 
 		if i == num:
