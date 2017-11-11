@@ -64,7 +64,7 @@ class Memoria:
 		f.close()
 
 
-	def compactar(self, tam_bloco):
+	def compactar(self):
 		mem = self.read()
 		compactado = False
 		ocupado = self.tam
@@ -72,7 +72,7 @@ class Memoria:
 		while not compactado:
 			# Procura o primeiro bloco livre
 			cheio = True
-			for i in range(0, self.tam):
+			for i in range(self.tam):
 				if mem[i] == 128:
 					cheio = False
 					livre = i
@@ -82,24 +82,25 @@ class Memoria:
 				break
 
 			# Procura o proximo bloco ocupado
-			for i in range(livre + tam_bloco, self.tam):
+			for i in range(livre + 1, self.tam):
 				if mem[i] != 128:
 					ocupado = i
 					break
 
 
 			# Move os blocos ocupados para a esquerda
-			while ocupado <= (self.tam - tam_bloco) and mem[ocupado] != 128:
+			while ocupado < self.tam:
 				# Move o bloco inteiro
-				for i in range(tam_bloco):
-					mem[livre + i], mem[ocupado + i] = mem[ocupado + i], mem[livre + i]
+				while mem[ocupado] != 128:
+					mem[livre] = mem[ocupado]
+					mem[ocupado] = 128
 
-				livre += tam_bloco
-				ocupado += tam_bloco
+				livre += 1
+				ocupado += 1
 
 			# Checa se compactou
 			fim = 0
-			for i in range(0, self.tam, tam_bloco):
+			for i in range(self.tam):
 				compactado = True
 				if mem[i] == 128:
 					fim = 1
@@ -145,8 +146,8 @@ def simula(arquivo, espaco, subst, intervalo):
 		while i < num and int(linha[0]) == t:
 
 			if len(linha) == 2 and linha[1] == 'COMPACTAR': # Excecao para COMPACTAR
-				fis.compactar(2) # substituir 2 com o tamanho apropriado
-				vir.compactar(2)
+				fis.compactar()
+				vir.compactar()
 
 			# tratar processo adequadamente aqui
 			i += 1
