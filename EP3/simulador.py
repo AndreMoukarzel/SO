@@ -12,16 +12,16 @@ class Memoria:
 		self.tam = tamanho
 		self.arquivo = nome
 
-		### Preenche arquivo binario com -1 ###
-		binarios = bytearray()
-		for i in range(tamanho):
-			binarios.append(128) # 128 = -1 em binario
-		f = open(nome, 'w+b')
-		f.write(binarios)
-		f.close()
-		#######################################
+		self.criaArquivo()
 
-		print (self.read())
+
+	def criaArquivo(self):
+		f = open(self.arquivo, 'w+b')
+		f.close()
+		l = []
+		for i in range (self.tam):
+			l.append(128)
+		self.write(l)
 
 
 	def read(self):
@@ -32,11 +32,21 @@ class Memoria:
 			while byte != "":
 				lista.append(self.bytes_to_int(byte))
 				byte = f.read(1)
+		f.close()
 
 		return lista
 
+
+	def write(self, lista):
+		binarios = bytearray(lista)
+		f = open(self.arquivo, 'r+')
+		f.write(binarios)
+		f.close()
+
+
 	def bytes_to_int(self, bytes):
 		return int(bytes.encode('hex'), 16)
+
 
 
 def simula(arquivo, espaco, subst, intervalo):
@@ -50,4 +60,4 @@ def simula(arquivo, espaco, subst, intervalo):
 	p = int(linha[3]) # Tamanho da unidade de alocacao
 
 	Memoria('/tmp/ep3.mem', fis_total)
-	Memoria('/tmp/ep3.vir', fis_total)
+	Memoria('/tmp/ep3.vir', vir_total)
