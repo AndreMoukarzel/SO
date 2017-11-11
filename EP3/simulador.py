@@ -19,8 +19,9 @@ class Memoria:
 
 
 	def criaArquivo(self):
-		f = open(self.arquivo, 'w+b')
+		f = open(self.arquivo, 'w+b') # Constroi o arquivo
 		f.close()
+		l = []
 		for i in range (self.tam):
 			l.append(128) # Preenche com -1
 		self.write(l)
@@ -30,6 +31,17 @@ class Memoria:
 		l = self.read()
 		for i in range(self.tam):
 			print (str(i) + ' | ' + str(l[i]) + ' | ' + str(int(self.bitmap[i])))
+
+
+	# Insere processo de PID que ocupa b blocos de memoria, comecando na posicao pos
+	def insere(self, pid, pos, b):
+		l = self.read()
+
+		for i in range(b):
+			l[pos + i] = pid
+			self.bitmap[pos + 1] = True
+
+		self.write(l)
 
 
 	def read(self):
@@ -55,11 +67,12 @@ class Memoria:
 	def compactar(self, tam_bloco):
 		mem = self.read()
 		compactado = False
+		ocupado = self.tam
 
 		while not compactado:
 			# Procura o primeiro bloco livre
 			cheio = True
-			for i in range(0, len(mem)):
+			for i in range(0, self.tam):
 				if mem[i] == 128:
 					cheio = False
 					livre = i
@@ -69,14 +82,14 @@ class Memoria:
 				break
 
 			# Procura o proximo bloco ocupado
-			for i in range(livre + tam_bloco, len(mem)):
+			for i in range(livre + tam_bloco, self.tam):
 				if mem[i] != 128:
 					ocupado = i
 					break
 
 
 			# Move os blocos ocupados para a esquerda
-			while ocupado <= (len(mem) - tam_bloco) and mem[ocupado] != 128:
+			while ocupado <= (self.tam - tam_bloco) and mem[ocupado] != 128:
 				# Move o bloco inteiro
 				for i in range(tam_bloco):
 					mem[livre + i], mem[ocupado + i] = mem[ocupado + i], mem[livre + i]
@@ -86,14 +99,21 @@ class Memoria:
 
 			# Checa se compactou
 			fim = 0
-			for i in range(0, len(mem), tam_bloco):
+			for i in range(0, self.tam, tam_bloco):
 				compactado = True
 				if mem[i] == 128:
 					fim = 1
 				if fim == 1 and mem[i] != 128:
 					compactado = False
 					break
-		print(mem)
+		
+		for i in range(self.tam): # Atualiza o bitmap
+			if mem[i] == 128:
+				self.bitmap[i] = False
+			else:
+				self.bitmap[i] = True
+
+		self.write(mem)
 
 
 	def bytes_to_int(self, bytes):
@@ -114,7 +134,6 @@ def simula(arquivo, espaco, subst, intervalo):
 
 	fis = Memoria('/tmp/ep3.mem', fis_total)
 	vir = Memoria('/tmp/ep3.vir', vir_total)
-	fis.compactar(2)
 
 	bestFit(vir, "ronaldo", int(math.ceil(8/s))) # TESTE
 
@@ -126,8 +145,8 @@ def simula(arquivo, espaco, subst, intervalo):
 		while i < num and int(linha[0]) == t:
 
 			if len(linha) == 2 and linha[1] == 'COMPACTAR': # Excecao para COMPACTAR
-				fis.compactar()
-				vir.compactar()
+				fis.compactar(2) # substituir 2 com o tamanho apropriado
+				vir.compactar(2)
 
 			# tratar processo adequadamente aqui
 			i += 1
@@ -168,7 +187,4 @@ def bestFit(memoria, p_nome, p_paginas):
 				best_index = ini
 			ini = i + 1
 
-	for i in range(p_paginas):
-		mem[best_index + i] = 3 # PID do processo no lugar de 3 aqui
-
-	memoria.write(mem)
+	memoria.insere(3, best_index, p_paginas) # substituir 3 por PID
