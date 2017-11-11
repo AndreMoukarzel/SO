@@ -3,6 +3,7 @@
 # Nome: Henrique Cerquinho                          NUSP: 9793700	#
 #####################################################################
 import math
+import time
 
 class Memoria:
 	tam = 0
@@ -18,9 +19,9 @@ class Memoria:
 	def criaArquivo(self):
 		f = open(self.arquivo, 'w+b')
 		f.close()
-		l = []
-		for i in range (self.tam):
-			l.append(128)
+		l = [128, 128, 3, 4, 5, 128, 128, 128, 128, 128, 2, 128, 128, 128, 10, 128] # vetor pra teste
+		# for i in range (self.tam):
+		# 	l.append(128) # Preenche com -1
 		self.write(l)
 
 
@@ -44,8 +45,53 @@ class Memoria:
 		f.close()
 
 
-	def compactar(self):
-		print ("Haha eu n fiz o compactar ainda lololkillmelololol")
+	def compactar(self, tam_bloco):
+		print ("vrrrrrr *compactando memoria*")
+		mem = self.read()
+		compactado = False
+		print("antes de compactar:")
+		print(mem)
+
+		while not compactado:
+			# Procura o primeiro bloco livre
+			cheio = True
+			for i in range(0, len(mem), tam_bloco):
+				if mem[i] == 128:
+					cheio = False
+					livre = i
+					break
+			# Ja esta compactado se esta cheio
+			if cheio:
+				break
+
+			# Procura o proximo bloco ocupado
+			for i in range(livre + tam_bloco, len(mem), tam_bloco):
+				if mem[i] != 128:
+					ocupado = i
+					break
+
+
+			# Move os blocos ocupados para a esquerda
+			while ocupado <= (len(mem) - tam_bloco) and mem[ocupado] != 128:
+				# Move o bloco inteiro
+				for i in range(tam_bloco):
+					mem[livre + i], mem[ocupado + i] = mem[ocupado + i], mem[livre + i]
+
+				livre += tam_bloco
+				ocupado += tam_bloco
+
+			# Checa se compactou
+			fim = 0
+			for i in range(0, len(mem), tam_bloco):
+				compactado = True
+				if mem[i] == 128:
+					fim = 1
+				if fim == 1 and mem[i] != 128:
+					compactado = False
+					break
+
+		print("depois de compactar:")
+		print(mem)
 
 
 	def bytes_to_int(self, bytes):
@@ -60,14 +106,15 @@ def simula(arquivo, espaco, subst, intervalo):
 	linha = linhas[0].split()
 	fis_total = int(linha[0]) # Memoria fisica total
 	vir_total = int(linha[1]) # Memoria virtual total
-	s = int(linha[2]) # Tamanho da pagina
-	p = int(linha[3]) # Tamanho da unidade de alocacao
+	s = int(linha[2]) # Tamanho da unidade de alocacao
+	p = int(linha[3]) # Tamanho da pagina
 
 	fis = Memoria('/tmp/ep3.mem', fis_total)
 	vir = Memoria('/tmp/ep3.vir', vir_total)
+	fis.compactar(2)
 
-	bestFit(vir, "ronaldo", int(math.ceil(8/s)))
-	print (vir.read())
+	# bestFit(vir, "ronaldo", int(math.ceil(8/s)))
+	# print (fis.read())
 
 
 # Insere p com p_paginas na memoria especificada
