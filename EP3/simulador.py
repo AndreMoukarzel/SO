@@ -45,7 +45,7 @@ class Memoria:
 
 
 	def compactar(self):
-		print ("Haha eu n fiz o compactar ainda lololkillmelololol")
+		print ("compacta")
 
 
 	def bytes_to_int(self, bytes):
@@ -58,6 +58,7 @@ def simula(arquivo, espaco, subst, intervalo):
 	with open(arquivo) as f:
 		linhas = f.readlines()
 	linha = linhas[0].split()
+	num = len(linhas) # Numero de linhas no arquivo de trace
 	fis_total = int(linha[0]) # Memoria fisica total
 	vir_total = int(linha[1]) # Memoria virtual total
 	s = int(linha[2]) # Tamanho da pagina
@@ -66,8 +67,34 @@ def simula(arquivo, espaco, subst, intervalo):
 	fis = Memoria('/tmp/ep3.mem', fis_total)
 	vir = Memoria('/tmp/ep3.vir', vir_total)
 
-	bestFit(vir, "ronaldo", int(math.ceil(8/s)))
-	print (vir.read())
+	bestFit(vir, "ronaldo", int(math.ceil(8/s))) # TESTE
+
+	t = 0
+	i = 1 # Linha 0 ja foi interpretada
+	while  True:
+		while i < num and int(linhas[i][0]) == t:
+			proc = linhas[i].split()
+
+			if len(proc) == 2 and proc[1] == 'COMPACTAR': # Excecao para COMPACTAR
+				fis.compactar()
+				vir.compactar()
+
+			# tratar processo adequadamente aqui
+
+			i += 1
+
+		if t % intervalo: # Imprime informacoess
+			pass
+
+		if i == num:
+			# isso aqui esta incorreto, na vdd.
+			# o break deve vir n quando terminamos de ler todos os processos,
+			# e sim quando terminamos de ler E n vai ter mais acessos por nenhum processo.
+			# vamos ter q guardar essa informacao sobre acessos em algum lugar
+			break
+
+		t += 1
+
 
 
 # Insere p com p_paginas na memoria especificada
