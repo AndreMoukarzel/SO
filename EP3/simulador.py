@@ -3,6 +3,7 @@
 # Nome: Henrique Cerquinho                          NUSP: 9793700	#
 #####################################################################
 import math
+import listas
 from bitarray import bitarray
 
 class Memoria:
@@ -73,7 +74,7 @@ class Memoria:
 		return lista
 
 
-	# Define a memória como a lista de PIDs passada como argumento
+	# Define a memoria como a lista de PIDs passada como argumento
 	def write(self, lista):
 		binarios = bytearray(lista)
 		f = open(self.arquivo, 'r+')
@@ -81,7 +82,7 @@ class Memoria:
 		f.close()
 
 
-	# Compacta memória
+	# Compacta memoria
 	def compactar(self):
 		mem = self.read()
 		compactado = False
