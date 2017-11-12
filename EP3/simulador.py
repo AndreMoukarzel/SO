@@ -29,8 +29,12 @@ class Memoria:
 
 	def imprime(self):
 		l = self.read()
+		print ('Bloco\t|\tPID\t|\tBitmap')
 		for i in range(self.tam):
-			print (str(i) + ' | ' + str(l[i]) + ' | ' + str(int(self.bitmap[i])))
+			if l[i] == 128:
+				print (str(i) + '\t|\t' + str(-1) + '\t|\t' + str(int(self.bitmap[i])))
+			else:
+				print (str(i) + '\t|\t' + str(l[i]) + '\t|\t' + str(int(self.bitmap[i])))
 
 
 	# Insere processo de PID que ocupa b blocos de memoria, comecando na posicao pos
@@ -39,11 +43,23 @@ class Memoria:
 
 		for i in range(b):
 			l[pos + i] = pid
-			self.bitmap[pos + 1] = True
+			self.bitmap[pos + i] = True
 
 		self.write(l)
 
 
+	# Remove processo que ocuba b blocos, comecando na posicao pos
+	def remove(self, pos, b):
+		l = self.read()
+
+		for i in range(b):
+			l[pos + i] = 128
+			self.bitmap[pos + i] = False
+
+		self.write()
+
+
+	# Devolve a memoria como uma lista de PIDs (int)
 	def read(self):
 		lista = []
 
@@ -57,6 +73,7 @@ class Memoria:
 		return lista
 
 
+	# Define a memória como a lista de PIDs passada como argumento
 	def write(self, lista):
 		binarios = bytearray(lista)
 		f = open(self.arquivo, 'r+')
@@ -64,6 +81,7 @@ class Memoria:
 		f.close()
 
 
+	# Compacta memória
 	def compactar(self):
 		mem = self.read()
 		compactado = False
