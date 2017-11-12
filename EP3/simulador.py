@@ -126,7 +126,7 @@ class Memoria:
 				if fim == 1 and mem[i] != 128:
 					compactado = False
 					break
-		
+
 		for i in range(self.tam): # Atualiza o bitmap
 			if mem[i] == 128:
 				self.bitmap[i] = False
@@ -152,6 +152,14 @@ def simula(arquivo, espaco, subst, intervalo):
 	s = int(linha[2]) # Tamanho da unidade de alocacao
 	p = int(linha[3]) # Tamanho da pagina
 
+	# Descobre quando que a simulacao acabara
+	tempos_finais = []
+	for i in range(1, num):
+		linha = linhas[i].split()
+		if linha[1] != 'COMPACTAR':
+			tempos_finais.append(int(linha[1]))
+	last_tf = max(tempos_finais)
+
 	fis = Memoria('/tmp/ep3.mem', fis_total)
 	vir = Memoria('/tmp/ep3.vir', vir_total)
 
@@ -162,15 +170,15 @@ def simula(arquivo, espaco, subst, intervalo):
 	while  True:
 
 		linha = linhas[i].split()
-		while i < num and int(linha[0]) == t:
+		while i < num - 1 and int(linha[0]) == t:
 
 			if len(linha) == 2 and linha[1] == 'COMPACTAR': # Excecao para COMPACTAR
 				fis.compactar()
 				vir.compactar()
 
 			# tratar processo adequadamente aqui
-			i += 1
-			if i < num:
+			if i < num - 1:
+				i += 1
 				linha = linhas[i].split()
 
 		if t % intervalo == 0: # Imprime informacoess
@@ -181,11 +189,10 @@ def simula(arquivo, espaco, subst, intervalo):
 			fis.imprime()
 			print ('\n' + 30 * '-' + '\n')
 
-		if i == num:
-			# isso aqui esta incorreto, na vdd.
-			# o break deve vir n quando terminamos de ler todos os processos,
-			# e sim quando terminamos de ler E n vai ter mais acessos por nenhum processo.
-			# vamos ter q guardar essa informacao sobre acessos em algum lugar
+		if i == num - 1 and t >= last_tf:
+			# Pelo que eu entendi, o processo nao acessara mais nenhuma posicao
+			# se ele ja tiver alcancado seu tf, entao o maior tf sera o momento
+			# que a simulacao deve acabar
 			break
 
 		t += 1
