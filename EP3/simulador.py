@@ -10,10 +10,12 @@ class Memoria:
 	tam = 0
 	arquivo = 0
 	bitmap = 0
+	bloco = 0 # unidade de alocacao na memoria virtual, tamanho da pagina na fisica
 
-	def __init__(self, nome, tamanho):
+	def __init__(self, nome, tamanho, bloco):
 		self.tam = tamanho
 		self.arquivo = nome
+		self.bloco = bloco
 
 		self.criaArquivo()
 		self.bitmap = tamanho * bitarray('0')
@@ -30,7 +32,7 @@ class Memoria:
 
 	def imprime(self):
 		l = self.read()
-		print ('Bloco\t|\tPID\t|\tBitmap')
+		print ('Indice\t|\tPID\t|\tBitmap')
 		for i in range(self.tam):
 			if l[i] == 128:
 				print (str(i) + '\t|\t' + str(-1) + '\t|\t' + str(int(self.bitmap[i])))
@@ -38,11 +40,11 @@ class Memoria:
 				print (str(i) + '\t|\t' + str(l[i]) + '\t|\t' + str(int(self.bitmap[i])))
 
 
-	# Insere processo de PID que ocupa b blocos de memoria, comecando na posicao pos
+	# Insere processo de PID que ocupa b blocos, comecando na posicao pos
 	def insere(self, pid, pos, b):
 		l = self.read()
 
-		for i in range(b):
+		for i in range(b * bloco):
 			l[pos + i] = pid
 			self.bitmap[pos + i] = True
 
@@ -53,7 +55,7 @@ class Memoria:
 	def remove(self, pos, b):
 		l = self.read()
 
-		for i in range(b):
+		for i in range(b * bloco):
 			l[pos + i] = 128
 			self.bitmap[pos + i] = False
 
@@ -91,7 +93,7 @@ class Memoria:
 		while not compactado:
 			# Procura o primeiro bloco livre
 			cheio = True
-			for i in range(self.tam):
+			for i in range(0, self.tam, bloco):
 				if mem[i] == 128:
 					cheio = False
 					livre = i
@@ -101,7 +103,7 @@ class Memoria:
 				break
 
 			# Procura o proximo bloco ocupado
-			for i in range(livre + 1, self.tam):
+			for i in range(livre + 1, self.tam, bloco):
 				if mem[i] != 128:
 					ocupado = i
 					break
@@ -119,7 +121,7 @@ class Memoria:
 
 			# Checa se compactou
 			fim = 0
-			for i in range(self.tam):
+			for i in range(0, self.tam, bloco):
 				compactado = True
 				if mem[i] == 128:
 					fim = 1
@@ -127,7 +129,7 @@ class Memoria:
 					compactado = False
 					break
 
-		for i in range(self.tam): # Atualiza o bitmap
+		for i in range(0, self.tam, bloco): # Atualiza o bitmap
 			if mem[i] == 128:
 				self.bitmap[i] = False
 			else:
@@ -160,8 +162,8 @@ def simula(arquivo, espaco, subst, intervalo):
 			tempos_finais.append(int(linha[1]))
 	last_tf = max(tempos_finais)
 
-	fis = Memoria('/tmp/ep3.mem', fis_total)
-	vir = Memoria('/tmp/ep3.vir', vir_total)
+	vir = Memoria('/tmp/ep3.vir', vir_total, s)
+	fis = Memoria('/tmp/ep3.mem', fis_total, p)
 
 	bestFit(vir, "ronaldo", int(math.ceil(8/s))) # TESTE
 
