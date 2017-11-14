@@ -3,7 +3,7 @@
 # Nome: Henrique Cerquinho                          NUSP: 9793700	#
 #####################################################################
 import math
-import listas
+import estruturas as es
 from bitarray import bitarray
 
 class Memoria:
