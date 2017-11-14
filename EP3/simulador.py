@@ -18,7 +18,8 @@ class Memoria:
 		self.bloco = bloco
 
 		self.criaArquivo()
-		self.bitmap = tamanho * bitarray('0')
+		self.bitmap = ((tamanho/bloco) + 1) * bitarray('0')
+		# Devemos completar a memoria ate que ela seja um multiplo de 'bloco'?
 
 
 	def criaArquivo(self):
@@ -35,29 +36,32 @@ class Memoria:
 		print ('Indice\t|\tPID\t|\tBitmap')
 		for i in range(self.tam):
 			if l[i] == 128:
-				print (str(i) + '\t|\t' + str(-1) + '\t|\t' + str(int(self.bitmap[i])))
+				print (str(i) + '\t|\t' + str(-1) + '\t|\t' + str(int(self.bitmap[int(i/self.bloco)])))
 			else:
-				print (str(i) + '\t|\t' + str(l[i]) + '\t|\t' + str(int(self.bitmap[i])))
+				print (str(i) + '\t|\t' + str(l[i]) + '\t|\t' + str(int(self.bitmap[int(i/self.bloco)])))
 
 
-	# Insere processo de PID que ocupa b blocos, comecando na posicao pos
-	def insere(self, pid, pos, b):
+	# Insere processo de PID que ocupa by bytes, comecando na posicao pos
+	def insere(self, pid, pos, by):
 		l = self.read()
 
-		for i in range(b * bloco):
-			l[pos + i] = pid
-			self.bitmap[pos + i] = True
+		for i in range(pos, by):
+			l[i] = pid
+			self.bitmap[int(i/self.bloco)] = True
 
 		self.write(l)
 
 
-	# Remove processo que ocuba b blocos, comecando na posicao pos
-	def remove(self, pos, b):
+	# Remove processo que comeca na posicao pos
+	def remove(self, pos):
 		l = self.read()
+		i = pos
+		pid = l[i]
 
-		for i in range(b * bloco):
-			l[pos + i] = 128
-			self.bitmap[pos + i] = False
+		while l[i] == pid:
+			l[i] = 128
+			self.bitmap[int(i/self.bloco)] = False
+			i += 1
 
 		self.write()
 
@@ -93,7 +97,7 @@ class Memoria:
 		while not compactado:
 			# Procura o primeiro bloco livre
 			cheio = True
-			for i in range(0, self.tam, bloco):
+			for i in range(0, self.tam, self.bloco):
 				if mem[i] == 128:
 					cheio = False
 					livre = i
@@ -103,7 +107,7 @@ class Memoria:
 				break
 
 			# Procura o proximo bloco ocupado
-			for i in range(livre + 1, self.tam, bloco):
+			for i in range(livre + 1, self.tam, self.bloco):
 				if mem[i] != 128:
 					ocupado = i
 					break
@@ -121,7 +125,7 @@ class Memoria:
 
 			# Checa se compactou
 			fim = 0
-			for i in range(0, self.tam, bloco):
+			for i in range(0, self.tam, self.bloco):
 				compactado = True
 				if mem[i] == 128:
 					fim = 1
@@ -129,11 +133,11 @@ class Memoria:
 					compactado = False
 					break
 
-		for i in range(0, self.tam, bloco): # Atualiza o bitmap
+		for i in range(0, self.tam, self.bloco): # Atualiza o bitmap
 			if mem[i] == 128:
-				self.bitmap[i] = False
+				self.bitmap[int(i/self.bloco)] = False
 			else:
-				self.bitmap[i] = True
+				self.bitmap[int(i/self.bloco)] = True
 
 		self.write(mem)
 
@@ -165,7 +169,8 @@ def simula(arquivo, espaco, subst, intervalo):
 	vir = Memoria('/tmp/ep3.vir', vir_total, s)
 	fis = Memoria('/tmp/ep3.mem', fis_total, p)
 
-	bestFit(vir, "ronaldo", int(math.ceil(8/s))) # TESTE
+	bestFit(vir, "ronaldo", int(math.ceil(8/s)), 2) # TESTE
+	bestFit(vir, "joesley", int(math.ceil(8/s)), 100)
 
 	t = 0
 	i = 1 # Linha 0 ja foi interpretada
@@ -202,7 +207,7 @@ def simula(arquivo, espaco, subst, intervalo):
 
 
 # Insere p com p_paginas na memoria especificada
-def bestFit(memoria, p_nome, p_paginas):
+def bestFit(memoria, p_nome, p_paginas, pid):
 	mem = memoria.read()
 	best_index = 0
 	best_tam = memoria.tam
@@ -216,4 +221,4 @@ def bestFit(memoria, p_nome, p_paginas):
 				best_index = ini
 			ini = i + 1
 
-	memoria.insere(3, best_index, p_paginas) # substituir 3 por PID
+	memoria.insere(pid, best_index, p_paginas) # substituir 3 por PID
