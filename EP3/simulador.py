@@ -264,3 +264,28 @@ def bestFit(memoria, p_nome, p_paginas, pid):
 			ini = i + 1
 
 	memoria.insere(pid, best_index, p_paginas) # substituir 3 por PID
+
+
+
+# SUBSTITUICAO DE PAGINAS #
+
+# Mantem uma fila dos processos em ordem de chegada e tira eles nessa ordem
+# Para inserir um processo na fila so usar append()
+def FIFO(memoria, pid, fila):
+	mem = memoria.read()
+	if fila != []:
+		rem = fila[0] # PID do processo a ser removido (primeiro da fila)
+		del(fila[0]) # Tira ele da fila
+		# Procura o processo na memoria e remove ele
+		for i in range(0, len(mem), memoria.bloco):
+			if mem[i] == rem:
+				memoria.remove(i)
+				break
+	else:
+		print("Mas a fila esta vazia D:")
+
+
+
+
+
+
