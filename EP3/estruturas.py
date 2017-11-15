@@ -5,11 +5,10 @@
 import heapq
 
 class listaLigada:
-    pos = 0 # Posicao da memoria que se refere
-    tam = 0 # Por quantas posicoes o espaco se repete
+    pos = -1 # Posicao da memoria que se refere
+    tam = -1 # Por quantas posicoes o espaco se repete
     prox = None # Proximo elemento da lista ligada
     ant = None # Elemento anterior da lista ligada
-    livre = True
 
     # Metodos de declaracao
     def setPos(self, val):
@@ -24,19 +23,20 @@ class listaLigada:
     def setAnt(self, ant):
         self.ant = ant
 
-    def setLivre(self, livre):
-        self.livre = livre
+    # Inicializa uma raiz
+    def iniRaiz(self, pos, tam):
+        self.setPos(pos)
+        self.setTam(tam)
 
     # Metodos de manipulacao
 
     # Insere uma nova celula como a proxima de 'celula'
-    def insere(self, celula, pos, tam, livre = True):
+    def insere(self, celula, pos, tam):
         new = listaLigada()
         new.setPos(pos)
         new.setTam(tam)
         new.setProx(celula.prox)
         new.setAnt(celula)
-        new.setLivre(livre)
 
         celula.setProx(new)
 
@@ -123,7 +123,7 @@ class FilaDeAcessos:
             s = self.proc.prox_acesso()
             o = other.proc.prox_acesso()
 
-            return s[1] == o[1]    
+            return s[1] == o[1]
 
 
     def push(self, proc):

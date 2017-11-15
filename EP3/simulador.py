@@ -87,12 +87,6 @@ class Memoria:
 		f.write(binarios)
 		f.close()
 
-		#for i in range(0, self.tam, self.bloco): # Atualiza o bitmap
-		#	if lista[i] == 128:
-		#		self.bitmap[int(i/self.bloco)] = False
-		#	else:
-		#		self.bitmap[int(i/self.bloco)] = True
-
 
 	# Compacta memoria
 	def compactar(self):
@@ -152,6 +146,32 @@ class Memoria:
 		return int(bytes.encode('hex'), 16)
 
 
+# "Atualiza" a lista ligada que representa o bitmap da memoria criando uma
+# nova lista do zero e retorna a sua raiz
+def atualizaLL(memoria):
+	raiz = es.listaLigada()
+	last = es.listaLigada() # Ultimo elemento da lista
+	ini, fim = 0, 0
+
+	while fim < len(memoria.bitmap):
+		# Procura um bloco livre
+		while ini < len(memoria.bitmap) and memoria.bitmap[ini]:
+			ini += 1
+		fim = ini + 1
+		# E define seu tamanho
+		while fim < len(memoria.bitmap) and not memoria.bitmap[fim]:
+			fim += 1
+
+		if raiz.pos == -1:
+			raiz.iniRaiz(ini, fim - ini)
+			last = raiz
+		else:
+			last.insere(last, ini, fim - ini)
+			last = last.prox
+
+	return raiz
+
+
 
 def simula(arquivo, espaco, subst, intervalo):
 	linhas = 0
@@ -176,7 +196,13 @@ def simula(arquivo, espaco, subst, intervalo):
 	vir = Memoria('/tmp/ep3.vir', vir_total, s)
 	fis = Memoria('/tmp/ep3.mem', fis_total, p)
 
-	bestFit(vir, "ronaldo", int(math.ceil(8/s)), 2) # TESTE
+
+	# TESTEs
+	bestFit(vir, "ronaldo", int(math.ceil(8/s)), 2)
+	raiz = atualizaLL(vir)
+	es.printLista(raiz)
+	print("RONALDO")
+
 
 	t = 0
 	i = 1 # Linha 0 ja foi interpretada
