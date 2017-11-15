@@ -11,6 +11,7 @@ class Memoria:
 	arquivo = 0
 	bitmap = 0
 	bloco = 0 # unidade de alocacao na memoria virtual, tamanho da pagina na fisica
+	ll = None # Lista ligada dos espacos livres
 
 	def __init__(self, nome, tamanho, bloco):
 		self.tam = tamanho
@@ -19,6 +20,8 @@ class Memoria:
 
 		self.criaArquivo()
 		self.bitmap = ((tamanho/bloco) + 1) * bitarray('0')
+		self.ll = es.listaLigada()
+		self.ll.iniRaiz(0, tamanho)
 		# Devemos completar a memoria ate que ela seja um multiplo de 'bloco'?
 
 
@@ -45,10 +48,11 @@ class Memoria:
 	def insere(self, pid, pos, by):
 		l = self.read()
 
-		for i in range(pos, by):
+		for i in range(pos, pos + by): # Atualiza bitmap
 			l[i] = pid
 			self.bitmap[int(i/self.bloco)] = True
 
+		self.atualizaLL()
 		self.write(l)
 
 
@@ -63,7 +67,8 @@ class Memoria:
 			self.bitmap[int(i/self.bloco)] = False
 			i += 1
 
-		self.write()
+		self.atualizaLL()
+		self.write(l)
 
 
 	# Devolve a memoria como uma lista de PIDs (int)
@@ -146,30 +151,30 @@ class Memoria:
 		return int(bytes.encode('hex'), 16)
 
 
-# "Atualiza" a lista ligada que representa o bitmap da memoria criando uma
-# nova lista do zero e retorna a sua raiz
-def atualizaLL(memoria):
-	raiz = es.listaLigada()
-	last = es.listaLigada() # Ultimo elemento da lista
-	ini, fim = 0, 0
+	# "Atualiza" a lista ligada que representa o bitmap da memoria criando uma
+	# nova lista do zero e retorna a sua raiz
+	def atualizaLL(self):
+		raiz = es.listaLigada()
+		last = es.listaLigada() # Ultimo elemento da lista
+		ini, fim = 0, 0
 
-	while fim < len(memoria.bitmap):
-		# Procura um bloco livre
-		while ini < len(memoria.bitmap) and memoria.bitmap[ini]:
-			ini += 1
-		fim = ini + 1
-		# E define seu tamanho
-		while fim < len(memoria.bitmap) and not memoria.bitmap[fim]:
-			fim += 1
+		while fim < len(self.bitmap):
+			# Procura um bloco livre
+			while ini < len(self.bitmap) and self.bitmap[ini]: # bitmap[ini] = 1
+				ini += 1
+			fim = ini + 1
+			# E define seu tamanho
+			while fim < len(self.bitmap) and not self.bitmap[fim]: # bitmap[fim] = 0
+				fim += 1
 
-		if raiz.pos == -1:
-			raiz.iniRaiz(ini, fim - ini)
-			last = raiz
-		else:
-			last.insere(last, ini, fim - ini)
-			last = last.prox
+			if raiz.pos == -1:
+				raiz.iniRaiz(ini * self.bloco, (fim - ini) * self.bloco)
+				last = raiz
+			else:
+				last.insere(last, ini * self.bloco, (fim - ini) * self.bloco)
+				last = last.prox
 
-	return raiz
+		self.ll = raiz
 
 
 
@@ -198,9 +203,9 @@ def simula(arquivo, espaco, subst, intervalo):
 
 
 	# TESTEs
-	bestFit(vir, "ronaldo", int(math.ceil(8/s)), 2)
-	raiz = atualizaLL(vir)
-	es.printLista(raiz)
+	bestFit(vir, es.Processo(linhas[1].split()))
+	bestFit(vir, es.Processo(linhas[2].split()))
+	es.printLista(vir.ll)
 	print("RONALDO")
 
 
@@ -247,23 +252,23 @@ def simula(arquivo, espaco, subst, intervalo):
 		t += 1
 
 
+# GERENCIAMENTO DE MEMORIA #
 
-# Insere p com p_paginas na memoria especificada
-def bestFit(memoria, p_nome, p_paginas, pid):
+# Insere processo na memoria especificada
+def bestFit(memoria, processo):
 	mem = memoria.read()
 	best_index = 0
 	best_tam = memoria.tam
-	ini = 0
+	p_tam = processo.b # tamanho do processo
+	ll = memoria.ll
 
-	for i in range(memoria.tam):
-		# Deve considerar o fim da memoria para n perder intervalos ao final
-		if mem[i] != 128 or i == memoria.tam - 1: # 128 = -1 em binario
-			if i - ini < best_tam and i - ini > p_paginas:
-				best_tam = i - ini
-				best_index = ini
-			ini = i + 1
+	while ll != None:
+		if ll.tam < best_tam and ll.tam > p_tam:
+				best_tam = ll.tam
+				best_index = ll.pos
+		ll = ll.prox
 
-	memoria.insere(pid, best_index, p_paginas) # substituir 3 por PID
+	memoria.insere(processo.pid, best_index, p_tam)
 
 
 
@@ -273,10 +278,8 @@ def bestFit(memoria, p_nome, p_paginas, pid):
 # Para inserir um processo na fila so usar append()
 def FIFO(memoria, pid, fila):
 	mem = memoria.read()
-	if fila != []:
-		rem = fila[0] # PID do processo a ser removido (primeiro da fila)
-		del(fila[0]) # Tira ele da fila
-		# Procura o processo na memoria e remove ele
+	if len(fila) > 0:
+		rem = pop(fila).pid # PID do processo mais antigo
 		for i in range(0, len(mem), memoria.bloco):
 			if mem[i] == rem:
 				memoria.remove(i)
