@@ -52,12 +52,14 @@ class Memoria:
 		self.write(l)
 
 
-	# Remove processo que comeca na posicao pos
-	def remove(self, pos):
+	# Remove processo com o PID dado
+	def remove(self, pid):
 		l = self.read()
-		i = pos
-		pid = l[i]
 
+		# Encontra a posicao em que o processo comeca
+		for i in range(0, len(l), self.bloco):
+			if l[i] == pid:
+				break
 		while l[i] == pid:
 			l[i] = 128
 			self.bitmap[int(i/self.bloco)] = False
@@ -229,8 +231,8 @@ def simula(arquivo, espaco, subst, intervalo):
 		for j in range(num):
 			temp = linhas[i].split()
 			if len(temp) > 2 and temp[1] == t: # tf = t
-				# remover o processo temp de ambas as memorias
-				pass
+				fis.remove(temp)
+				vir.remove(temp)
 
 
 		if t % intervalo == 0: # Imprime informacoess
@@ -283,6 +285,7 @@ def FIFO(memoria, pid, fila):
 				break
 	else:
 		print("Mas a fila esta vazia D:")
+	return fila
 
 
 
