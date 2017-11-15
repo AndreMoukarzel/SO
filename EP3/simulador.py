@@ -35,7 +35,7 @@ class Memoria:
 		if tipo == 'fisica':
 			if alg == "LRU.2":
 				# LRU 2: Inicia a matriz nxn com 0
-				n = self.tamanho/self.bloco
+				n = self.tam/self.bloco
 				for i in range(n):
 					temp = []
 					for j in range(n):
@@ -82,7 +82,7 @@ class Memoria:
 				for i in range(bloco): # Todos da coluna = 0
 					self.matrizLRU2[i][self.k] = 0
 
-				self.k = (self.k + 1) % self.tamanho/self.bloco
+				self.k = (self.k + 1) % self.tam/self.bloco
 
 			# Coloca o processo no fim da fila
 			elif self.alg == "FIFO":
