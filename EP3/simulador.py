@@ -254,7 +254,6 @@ def simula(arquivo, espaco, subst, intervalo):
 
 # GERENCIAMENTO DE MEMORIA #
 
-# Insere processo na memoria especificada
 def bestFit(memoria, processo):
 	mem = memoria.read()
 	best_index = 0
@@ -269,6 +268,25 @@ def bestFit(memoria, processo):
 		ll = ll.prox
 
 	memoria.insere(processo.pid, best_index, p_tam)
+
+
+def worstFit(memoria, processo):
+	mem = memoria.read()
+	worst_index = 0
+	worst_tam = 0
+	p_tam = processo.b # tamanho do processo
+	ll = memoria.ll
+
+	while ll != None:
+		if ll.tam > worst_tam:
+				worst_tam = ll.tam
+				worst_index = ll.pos
+		ll = ll.prox
+
+	if worst_tam < p_tam:
+		print ("NAO CABE NA MEMORIA AAAAAAAAAAA")
+
+	memoria.insere(processo.pid, worst_index, p_tam)
 
 
 
