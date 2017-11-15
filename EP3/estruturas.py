@@ -87,7 +87,7 @@ class Processo:
     i = 0 # indice do prox acesso
 
     def __init__(self, linha):
-        self.pid = g_pid
+        self.pid = Processo.g_pid
         self.t0 = int(linha[0])
         self.tf = int(linha[1]) # t0 tf b nome p1 t1 p2 t2... pn tn
         self.b = int(linha[2])
@@ -99,7 +99,7 @@ class Processo:
         Processo.g_pid += 1
 
     def prox_acesso(self):
-        return [self.acessos[0][i], self.acessos[1][i]]
+        return [self.acessos[0][self.i], self.acessos[1][self.i]]
 
 
 # Ordena os processos em relacao ao proximo acesso na memoria
@@ -114,19 +114,17 @@ class FilaDeAcessos:
             self.proc = proc
 
         def __lt__(self, other):
-            s = self.proc.prox_acesso
-            o = other.proc.prox_acesso
+            s = self.proc.prox_acesso()
+            o = other.proc.prox_acesso()
 
             return s[1] < o[1]
 
         def __eq__(self, other):
-            s = self.proc.prox_acesso
-            o = other.proc.prox_acesso
+            s = self.proc.prox_acesso()
+            o = other.proc.prox_acesso()
 
             return s[1] == o[1]    
-    
-    def get_size(self):
-        return self.size
+
 
     def push(self, proc):
         heapq.heappush (self.heap, self.Item(proc))

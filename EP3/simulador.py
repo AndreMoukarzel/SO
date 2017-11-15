@@ -87,6 +87,12 @@ class Memoria:
 		f.write(binarios)
 		f.close()
 
+		#for i in range(0, self.tam, self.bloco): # Atualiza o bitmap
+		#	if lista[i] == 128:
+		#		self.bitmap[int(i/self.bloco)] = False
+		#	else:
+		#		self.bitmap[int(i/self.bloco)] = True
+
 
 	# Compacta memoria
 	def compactar(self):
@@ -157,6 +163,7 @@ def simula(arquivo, espaco, subst, intervalo):
 	vir_total = int(linha[1]) # Memoria virtual total
 	s = int(linha[2]) # Tamanho da unidade de alocacao
 	p = int(linha[3]) # Tamanho da pagina
+	fila = es.FilaDeAcessos()
 
 	# Descobre quando que a simulacao acabara
 	tempos_finais = []
@@ -170,23 +177,35 @@ def simula(arquivo, espaco, subst, intervalo):
 	fis = Memoria('/tmp/ep3.mem', fis_total, p)
 
 	bestFit(vir, "ronaldo", int(math.ceil(8/s)), 2) # TESTE
-	bestFit(vir, "joesley", int(math.ceil(8/s)), 100)
 
 	t = 0
 	i = 1 # Linha 0 ja foi interpretada
 	while  True:
-
 		linha = linhas[i].split()
 		while i < num - 1 and int(linha[0]) == t:
-
 			if len(linha) == 2 and linha[1] == 'COMPACTAR': # Excecao para COMPACTAR
 				fis.compactar()
 				vir.compactar()
+			else: # adiciona processo na fila
+				fila.push(es.Processo(linha))
 
-			# tratar processo adequadamente aqui
-			if i < num - 1:
+			if i < num -1:
 				i += 1
 				linha = linhas[i].split()
+
+
+		while fila.size > 0 and fila.peak().prox_acesso()[1] == t: # Processo acessando memoria fisica
+			proc = fila.peak()
+			# enfiar proc na memoria fisica aqui
+			fila.pop()
+
+
+		for j in range(num):
+			temp = linhas[i].split()
+			if len(temp) > 2 and temp[1] == t: # tf = t
+				# remover o processo temp de ambas as memorias
+				pass
+
 
 		if t % intervalo == 0: # Imprime informacoess
 			print (30 * '-' + '\nTempo = ' + str(t) + '\n')
@@ -196,10 +215,7 @@ def simula(arquivo, espaco, subst, intervalo):
 			fis.imprime()
 			print ('\n' + 30 * '-' + '\n')
 
-		if i == num - 1 and t >= last_tf:
-			# Pelo que eu entendi, o processo nao acessara mais nenhuma posicao
-			# se ele ja tiver alcancado seu tf, entao o maior tf sera o momento
-			# que a simulacao deve acabar
+		if i >= num - 1 and t >= last_tf: # Todos os processos acabaram sua execucao
 			break
 
 		t += 1
