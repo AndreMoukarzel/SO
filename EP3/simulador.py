@@ -12,7 +12,6 @@ class Memoria:
 	bitmap = 0
 	bloco = 0 # unidade de alocacao na memoria virtual, tamanho da pagina na fisica
 	ll = None # Lista ligada dos espacos livres
-	tipo = None # Tipo de memoria (fis/vir)
 	alg = None # Algoritmo usado na memoria
 
 	filaFIFO = []
@@ -20,11 +19,10 @@ class Memoria:
 	matrizLRU2 = []
 	k = 0
 
-	def __init__(self, nome, tamanho, bloco, tipo, alg):
+	def __init__(self, nome, tamanho, bloco, alg = None):
 		self.tam = tamanho
 		self.arquivo = nome
 		self.bloco = bloco
-		self.tipo = tipo
 		self.alg = alg
 
 		self.criaArquivo()
@@ -32,17 +30,16 @@ class Memoria:
 		self.ll = es.listaLigada()
 		self.ll.iniRaiz(0, tamanho)
 		# Inicializa as estruturas caso seja a memoria fisica
-		if tipo == 'fisica':
-			if alg == "LRU.2":
-				# LRU 2: Inicia a matriz nxn com 0
-				n = self.tam/self.bloco
-				for i in range(n):
-					temp = []
-					for j in range(n):
-						temp.append(0)
-					self.matrizLRU2.append(temp)
-			# elif alg == outro algoritmo
-				# bip bop bup
+		if alg == "LRU.2":
+			# LRU 2: Inicia a matriz nxn com 0
+			n = self.tam/self.bloco
+			for i in range(n):
+				temp = []
+				for j in range(n):
+					temp.append(0)
+				self.matrizLRU2.append(temp)
+		# elif alg == outro algoritmo
+			# bip bop bup
 
 	def criaArquivo(self):
 		f = open(self.arquivo, 'w+b') # Constroi o arquivo
@@ -74,19 +71,18 @@ class Memoria:
 		self.atualizaLL()
 		self.write(l)
 
-		if self.tipo == 'fisica':
-			# Atualiza a matriz
-			if self.alg == "LRU.2":
-				for i in range(bloco): # Todos da linha = 1
-					self.matrizLRU2[pos][i] = 1
-				for i in range(bloco): # Todos da coluna = 0
-					self.matrizLRU2[i][self.k] = 0
+		# Atualiza a matriz
+		if self.alg == "LRU.2":
+			for i in range(bloco): # Todos da linha = 1
+				self.matrizLRU2[pos][i] = 1
+			for i in range(bloco): # Todos da coluna = 0
+				self.matrizLRU2[i][self.k] = 0
 
-				self.k = (self.k + 1) % self.tam/self.bloco
+			self.k = (self.k + 1) % self.tam/self.bloco
 
-			# Coloca o processo no fim da fila
-			elif self.alg == "FIFO":
-				self.filaFIFO.append(pid)
+		# Coloca o processo no fim da fila
+		elif self.alg == "FIFO":
+			self.filaFIFO.append(pid)
 
 	# Remove processo com o PID dado
 	def remove(self, pid):
@@ -258,8 +254,8 @@ def simula(arquivo, espaco, subst, intervalo):
 			tempos_finais.append(int(linha[1]))
 	last_tf = max(tempos_finais)
 
-	vir = Memoria('/tmp/ep3.vir', vir_total, s, 'virtual', espaco)
-	fis = Memoria('/tmp/ep3.mem', fis_total, p, 'fisica', subst)
+	vir = Memoria('/tmp/ep3.vir', vir_total, s)
+	fis = Memoria('/tmp/ep3.mem', fis_total, p, subst)
 
 
 	# TESTEs
