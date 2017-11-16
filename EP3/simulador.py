@@ -6,6 +6,23 @@ import math
 import estruturas as es
 from bitarray import bitarray
 
+ql = None
+
+class QuickList:
+	tams = [] # Tamanhos monitorados
+	espacos = [] # Vetor de vetores. espacos[i] contem as posicoes em q cabe um processo de tamanho tams[i]
+
+	def __init__(self, trace):
+		tam = len(trace)
+
+		for i in range(1, tam):
+			linha = trace[i].split()
+			if len(linha) > 2: # Ignora compactar
+				if not int(linha[2]) in self.tams:
+					self.tams.append(int(linha[2]))
+					self.espacos.append([]) 
+
+
 
 class Memoria:
 	tam = 0
@@ -31,8 +48,9 @@ class Memoria:
 
 		self.criaArquivo()
 		self.bitmap = ((tamanho/bloco) + 1) * bitarray('0')
-		self.ll = es.listaLigada()
-		self.ll.iniRaiz(0, tamanho)
+		self.atualizaLL()
+		#self.ll = es.listaLigada()
+		#self.ll.iniRaiz(0, tamanho)
 
 		# Inicializa as estruturas caso seja a memoria fisica
 		if alg == "LRU.2":
@@ -115,7 +133,6 @@ class Memoria:
 
 		self.atualizaLL()
 		self.write(l)
-		return ret # Retorna o endereco do processo removido
 
 
 	# Usado na memoria fisica. Substitui uma pagina com o processo, se necessario
@@ -233,6 +250,17 @@ class Memoria:
 					last = last.prox
 			ini = fim + 1
 
+		global ql
+		if self.alg == None and ql != None: # Memoria virtual e quickfit
+			l = es.listaLigada()
+			l = raiz
+			for i in range(len(ql.tams)): # Reseta espacos conhecidos
+				ql.espacos[i] = []
+			while l != None and l.pos != -1:
+				for i in range(len(ql.tams)):
+					if l.tam >= ql.tams[i]:
+						ql.espacos[i].append(l.pos)
+				l = l.prox
 		self.ll = raiz
 
 
@@ -309,6 +337,10 @@ def simula(arquivo, espaco, subst, intervalo):
 		if linha[1] != 'COMPACTAR':
 			tempos_finais.append(int(linha[1]))
 	last_tf = max(tempos_finais)
+
+	if espaco == 3: # Quick Fit (PS: esse trecho deve estar antes da inicializacao da memoria)
+		global ql 
+		ql = QuickList(linhas)
 
 	vir = Memoria('/tmp/ep3.vir', vir_total, s)
 	fis = Memoria('/tmp/ep3.mem', fis_total, p, subst)
@@ -411,10 +443,16 @@ def worstFit(memoria, processo):
 		ll = ll.prox
 
 	if worst_tam < p_tam:
-		print ("NAO CABE NA MEMORIA AAAAAAAAAAA")
+		print ("Nao ha espaco na memoria")
 
 	memoria.insere(processo.pid, worst_index, p_tam, True)
 
 
 def quickFit(memoria, processo):
-	pass
+	global ql
+	i = 0
+	for i in range(len(ql.tams)):
+		if processo.b == ql.tams[i]:
+			break
+
+	memoria.insere(processo.pid, ql.espacos[i].pop(), processo.b, True)

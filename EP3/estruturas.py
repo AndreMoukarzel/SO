@@ -96,7 +96,7 @@ class Processo:
             self.acessos[0].append(int(linha[j]))
             self.acessos[1].append(int(linha[j + 1]))
 
-        Processo.g_pid += 1
+        Processo.g_pid = (Processo.g_pid + 1) % 128
 
     def prox_acesso(self):
         return [self.acessos[0][self.i], self.acessos[1][self.i]]
