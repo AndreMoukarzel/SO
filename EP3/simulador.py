@@ -204,7 +204,7 @@ class Memoria:
 		ini, fim = 0, 0
 
 		print("Comecou")
-		while fim < len(self.bitmap):
+		while fim < len(self.bitmap) or ini < len(self.bitmap):
 			# Procura um bloco livre
 			while ini < len(self.bitmap) and self.bitmap[ini]: # bitmap[ini] = 1
 				ini += 1
@@ -213,12 +213,14 @@ class Memoria:
 			while fim < len(self.bitmap) and not self.bitmap[fim]: # bitmap[fim] = 0
 				fim += 1
 
-			if raiz.pos == -1:
-				raiz.iniRaiz(ini * self.bloco, (fim - ini) * self.bloco)
-				last = raiz
-			else:
-				last.insere(last, ini * self.bloco, (fim - ini) * self.bloco)
-				last = last.prox
+			if ini < len(self.bitmap) and fim < len(self.bitmap):
+				if raiz.pos == -1:
+					raiz.iniRaiz(ini * self.bloco, (fim - ini) * self.bloco)
+					last = raiz
+				else:
+					last.insere(last, ini * self.bloco, (fim - ini) * self.bloco)
+					last = last.prox
+				ini = fim + 1
 
 		print("Acabou")
 		self.ll = raiz
