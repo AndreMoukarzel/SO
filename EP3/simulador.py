@@ -61,10 +61,14 @@ class Memoria:
 
 
 	# Insere processo de PID que ocupa by bytes, comecando na posicao pos
-	def insere(self, pid, pos, by):
+	def insere(self, pid, pos, by, preenche = None):
 		l = self.read()
+		b = by
 
-		for i in range(pos, pos + by): # Atualiza bitmap
+		if preenche: # Para a memoria virtual. Preenche um bloco com o PID do processo
+			b = int(math.ceil(by/float(self.bloco)) * self.bloco)
+
+		for i in range(pos, pos + b): # Atualiza bitmap
 			l[i] = pid
 			self.bitmap[int(i/self.bloco)] = True
 
@@ -327,7 +331,7 @@ def bestFit(memoria, processo):
 				best_index = ll.pos
 		ll = ll.prox
 
-	memoria.insere(processo.pid, best_index, p_tam)
+	memoria.insere(processo.pid, best_index, p_tam, True)
 
 
 def worstFit(memoria, processo):
