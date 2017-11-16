@@ -20,6 +20,9 @@ class Memoria:
 	matrizLRU2 = []
 	k = 0
 
+	vetorLRU4 = []
+	vetorR = []
+
 	def __init__(self, nome, tamanho, bloco, alg = None):
 		self.tam = tamanho
 		self.arquivo = nome
@@ -30,6 +33,7 @@ class Memoria:
 		self.bitmap = ((tamanho/bloco) + 1) * bitarray('0')
 		self.ll = es.listaLigada()
 		self.ll.iniRaiz(0, tamanho)
+
 		# Inicializa as estruturas caso seja a memoria fisica
 		if alg == "LRU.2":
 			# LRU 2: Inicia a matriz nxn com 0
@@ -39,8 +43,12 @@ class Memoria:
 				for j in range(n):
 					temp.append(0)
 				self.matrizLRU2.append(temp)
-		# elif alg == outro algoritmo
-			# bip bop bup
+
+		elif alg == "LRU.4":
+			# LRU 4: Inicia o vetor de contadores com 0
+			for i in range(self.tam/self.bloco):
+				vetorLRU4.append(0)
+				vetorR.append(False)
 
 	def criaArquivo(self):
 		f = open(self.arquivo, 'w+b') # Constroi o arquivo
@@ -90,14 +98,6 @@ class Memoria:
 			self.filaFIFO.append(pid)
 
 
-	# Usado na memoria fisica. Substitui uma pagina com o processo, se necessario
-	def substitui(self, processo):
-		if self.alg == "FIFO":
-			self.FIFO(processo.pid)
-		elif self.alg == "LRU.2":
-			self.LRU2(1) # oq seria o argumento ??
-
-
 	# Remove processo com o PID dado
 	def remove(self, pid):
 		l = self.read()
@@ -106,6 +106,7 @@ class Memoria:
 		i = 0
 		for i in range(0, self.tam, self.bloco):
 			if l[i] == pid:
+				ret = i
 				break
 		while l[i] == pid and i < self.tam:
 			l[i] = 128
@@ -114,6 +115,17 @@ class Memoria:
 
 		self.atualizaLL()
 		self.write(l)
+		return ret # Retorna o endereco do processo removido
+
+
+	# Usado na memoria fisica. Substitui uma pagina com o processo, se necessario
+	def substitui(self, processo):
+		if self.alg == "FIFO":
+			self.FIFO(processo.pid)
+		elif self.alg == "LRU.2":
+			self.LRU2(1) # o argumento eh o quadro de pagina em que o processo se encontra
+		elif self.alg == "LRU.4":
+			self.LRU4(1) # same
 
 
 	# Devolve a memoria como uma lista de PIDs (int)
@@ -234,10 +246,10 @@ class Memoria:
 		mem = self.read()
 		if len(self.filaFIFO) > 0:
 			rem = pop(self.filaFIFO).pid # PID do processo mais antigo
-			self.remove(rem)
+			pos = self.remove(rem) # Posicao do processo removido
+			self.insere(pid, rem, pos, TAMANHO_DO_PROCESSO, wtf_is_preenche)
 		else:
 			print("Mas a fila esta vazia D:")
-		return fila
 
 
 	def LRU2(self, pos):
@@ -248,7 +260,33 @@ class Memoria:
 
 		# Posicao da menor soma, ou seja, pos do processo que sera removido
 		subst = somas.index(min(somas))
+		self.remove(mem[rem * self.bloco])
 
+
+	def LRU4(self):
+		# Se o processo foi acessado na ultima iteracao, soma no seu contador
+		# no bit mais significativo
+		for i in range(len(self.vetorR)):
+			# Esse vetor de R tem que ser pra cada pagina, e nao pra cada processo, aparentemente
+			if self.vetorR[i]:
+				# vetorLRU4 tem o mesmo tamanho do de bit R
+				self.vetorLRU4[i] += 100000000
+			self.vetorLRU4[i] /= 10 # Desloca 1 bit pra direita
+
+		# Remove o menos acessado
+		rem = self.vetorLRU4.index(min(self.vetorLRU4))
+		mem = self.read()
+		self.remove(mem[rem * self.bloco])
+		self.insere
+
+
+	# Recebe uma lista das paginas que foram acessadas nessa iteracao e atualiza
+	# o vetor de bit R
+	def atualizaVetorR(self, acessos):
+		for i in range(len(self.vetorR)):
+			self.vetorR[i] = False
+		for i in acessos:
+			self.vetorR[i] = True
 
 
 
