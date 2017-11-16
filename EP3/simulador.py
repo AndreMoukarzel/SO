@@ -12,18 +12,37 @@ class Memoria:
 	bitmap = 0
 	bloco = 0 # unidade de alocacao na memoria virtual, tamanho da pagina na fisica
 	ll = None # Lista ligada dos espacos livres
+	tipo = None # Tipo de memoria (fis/vir)
+	alg = None # Algoritmo usado na memoria
 
-	def __init__(self, nome, tamanho, bloco):
+	filaFIFO = []
+
+	matrizLRU2 = []
+	k = 0
+
+	def __init__(self, nome, tamanho, bloco, tipo, alg):
 		self.tam = tamanho
 		self.arquivo = nome
 		self.bloco = bloco
+		self.tipo = tipo
+		self.alg = alg
 
 		self.criaArquivo()
 		self.bitmap = ((tamanho/bloco) + 1) * bitarray('0')
 		self.ll = es.listaLigada()
 		self.ll.iniRaiz(0, tamanho)
-		# Devemos completar a memoria ate que ela seja um multiplo de 'bloco'?
-
+		# Inicializa as estruturas caso seja a memoria fisica
+		if tipo == 'fisica':
+			if alg == "LRU.2":
+				# LRU 2: Inicia a matriz nxn com 0
+				n = self.tam/self.bloco
+				for i in range(n):
+					temp = []
+					for j in range(n):
+						temp.append(0)
+					self.matrizLRU2.append(temp)
+			# elif alg == outro algoritmo
+				# bip bop bup
 
 	def criaArquivo(self):
 		f = open(self.arquivo, 'w+b') # Constroi o arquivo
@@ -55,6 +74,19 @@ class Memoria:
 		self.atualizaLL()
 		self.write(l)
 
+		if self.tipo == 'fisica':
+			# Atualiza a matriz
+			if self.alg == "LRU.2":
+				for i in range(bloco): # Todos da linha = 1
+					self.matrizLRU2[pos][i] = 1
+				for i in range(bloco): # Todos da coluna = 0
+					self.matrizLRU2[i][self.k] = 0
+
+				self.k = (self.k + 1) % self.tam/self.bloco
+
+			# Coloca o processo no fim da fila
+			elif self.alg == "FIFO":
+				self.filaFIFO.append(pid)
 
 	# Remove processo com o PID dado
 	def remove(self, pid):
@@ -179,6 +211,31 @@ class Memoria:
 		self.ll = raiz
 
 
+	# SUBSTITUICAO DE PAGINAS #
+
+	# Mantem uma fila dos processos em ordem de chegada e tira eles nessa ordem
+	# Para inserir um processo na fila so usar append()
+	def FIFO(self, pid):
+		mem = self.read()
+		if len(self.filaFIFO) > 0:
+			rem = pop(self.filaFIFO).pid # PID do processo mais antigo
+			self.remove(rem)
+		else:
+			print("Mas a fila esta vazia D:")
+		return fila
+
+
+	def LRU2(self, pos):
+		mem = self.read()
+		somas = []
+		for i in range(len(self.matrizLRU2)):
+			somas.append(sum(self.matrizLRU2[i]))
+
+		# Posicao da menor soma, ou seja, pos do processo que sera removido
+		subst = somas.index(min(somas))
+
+
+
 
 def simula(arquivo, espaco, subst, intervalo):
 	linhas = 0
@@ -201,8 +258,8 @@ def simula(arquivo, espaco, subst, intervalo):
 			tempos_finais.append(int(linha[1]))
 	last_tf = max(tempos_finais)
 
-	vir = Memoria('/tmp/ep3.vir', vir_total, s)
-	fis = Memoria('/tmp/ep3.mem', fis_total, p)
+	vir = Memoria('/tmp/ep3.vir', vir_total, s, 'virtual', espaco)
+	fis = Memoria('/tmp/ep3.mem', fis_total, p, 'fisica', subst)
 
 
 	# TESTEs
@@ -294,26 +351,6 @@ def worstFit(memoria, processo):
 		print ("NAO CABE NA MEMORIA AAAAAAAAAAA")
 
 	memoria.insere(processo.pid, worst_index, p_tam)
-
-
-
-# SUBSTITUICAO DE PAGINAS #
-
-# Mantem uma fila dos processos em ordem de chegada e tira eles nessa ordem
-# Para inserir um processo na fila so usar append()
-def FIFO(memoria, pid, fila):
-	mem = memoria.read()
-	if len(fila) > 0:
-		rem = pop(fila).pid # PID do processo mais antigo
-		for i in range(0, len(mem), memoria.bloco):
-			if mem[i] == rem:
-				memoria.remove(i)
-				break
-	else:
-		print("Mas a fila esta vazia D:")
-	return fila
-
-
 
 
 
