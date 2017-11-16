@@ -203,8 +203,7 @@ class Memoria:
 		last = es.listaLigada() # Ultimo elemento da lista
 		ini, fim = 0, 0
 
-		print("Comecou")
-		while fim < len(self.bitmap) or ini < len(self.bitmap):
+		while fim < len(self.bitmap) and ini < len(self.bitmap):
 			# Procura um bloco livre
 			while ini < len(self.bitmap) and self.bitmap[ini]: # bitmap[ini] = 1
 				ini += 1
@@ -222,7 +221,6 @@ class Memoria:
 					last = last.prox
 			ini = fim + 1
 
-		print("Acabou")
 		self.ll = raiz
 
 
