@@ -191,6 +191,7 @@ def simula(arquivo, espaco, subst, intervalo):
 	s = int(linha[2]) # Tamanho da unidade de alocacao
 	p = int(linha[3]) # Tamanho da pagina
 	fila = es.FilaDeAcessos()
+	pid_dict = {}
 
 	# Descobre quando que a simulacao acabara
 	tempos_finais = []
@@ -220,7 +221,10 @@ def simula(arquivo, espaco, subst, intervalo):
 				fis.compactar()
 				vir.compactar()
 			else: # adiciona processo na fila
-				fila.push(es.Processo(linha))
+				proc = es.Processo(linha)
+				fila.push(proc)
+				pid_dict[proc.nome] = proc.pid
+
 
 			if i < num -1:
 				i += 1
@@ -236,8 +240,9 @@ def simula(arquivo, espaco, subst, intervalo):
 		for j in range(num):
 			temp = linhas[i].split()
 			if len(temp) > 2 and temp[1] == t: # tf = t
-				fis.remove(temp)
-				vir.remove(temp)
+				pid = pid_dict[temp[3]]
+				fis.remove(pid)
+				vir.remove(pid)
 
 
 		if t % intervalo == 0: # Imprime informacoess
