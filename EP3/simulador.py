@@ -220,7 +220,7 @@ class Memoria:
 				else:
 					last.insere(last, ini * self.bloco, (fim - ini) * self.bloco)
 					last = last.prox
-				ini = fim + 1
+			ini = fim + 1
 
 		print("Acabou")
 		self.ll = raiz
