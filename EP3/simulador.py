@@ -103,10 +103,11 @@ class Memoria:
 		l = self.read()
 
 		# Encontra a posicao em que o processo comeca
-		for i in range(0, len(l), self.bloco):
+		i = 0
+		for i in range(0, self.tam, self.bloco):
 			if l[i] == pid:
 				break
-		while l[i] == pid:
+		while l[i] == pid and i < self.tam:
 			l[i] = 128
 			self.bitmap[int(i/self.bloco)] = False
 			i += 1
@@ -202,6 +203,7 @@ class Memoria:
 		last = es.listaLigada() # Ultimo elemento da lista
 		ini, fim = 0, 0
 
+		print("Comecou")
 		while fim < len(self.bitmap):
 			# Procura um bloco livre
 			while ini < len(self.bitmap) and self.bitmap[ini]: # bitmap[ini] = 1
@@ -218,6 +220,7 @@ class Memoria:
 				last.insere(last, ini * self.bloco, (fim - ini) * self.bloco)
 				last = last.prox
 
+		print("Acabou")
 		self.ll = raiz
 
 
@@ -307,11 +310,11 @@ def simula(arquivo, espaco, subst, intervalo):
 			fila.pop()
 
 
-		for j in range(num):
+		for j in range(1, num):
 			temp = linhas[j].split()
-			if len(temp) > 2 and temp[1] == t: # tf = t
-				pid = pid_dict[temp[3]]
-				fis.remove(pid)
+			if len(temp) > 2 and int(temp[1]) == t: # tf = t
+				pid = pid_dict.get(temp[3])
+				#fis.remove(pid)
 				vir.remove(pid)
 
 
