@@ -169,7 +169,7 @@ class Memoria:
 				break
 
 			# Procura o proximo bloco ocupado
-			for i in range(livre + 1, self.tam, self.bloco):
+			for i in range(livre, self.tam, self.bloco):
 				if mem[i] != 128:
 					ocupado = i
 					break
