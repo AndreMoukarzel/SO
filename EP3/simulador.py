@@ -224,7 +224,7 @@ class Memoria:
 			while fim < len(self.bitmap) and not self.bitmap[fim]: # bitmap[fim] = 0
 				fim += 1
 
-			if ini < len(self.bitmap) and fim < len(self.bitmap):
+			if ini < len(self.bitmap) and fim <= len(self.bitmap):
 				if raiz.pos == -1:
 					raiz.iniRaiz(ini * self.bloco, (fim - ini) * self.bloco)
 					last = raiz
@@ -388,7 +388,7 @@ def bestFit(memoria, processo):
 	p_tam = processo.b # tamanho do processo
 	ll = memoria.ll
 
-	while ll != None:
+	while ll != None and ll.pos != -1:
 		if ll.tam < best_tam and ll.tam > p_tam:
 				best_tam = ll.tam
 				best_index = ll.pos
