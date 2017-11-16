@@ -6,6 +6,7 @@ import math
 import estruturas as es
 from bitarray import bitarray
 
+
 class Memoria:
 	tam = 0
 	arquivo = 0
@@ -94,7 +95,7 @@ class Memoria:
 		if self.alg == "FIFO":
 			self.FIFO(processo.pid)
 		elif self.alg == "LRU.2":
-			self.LRU2(???)
+			self.LRU2(1) # oq seria o argumento ??
 
 
 	# Remove processo com o PID dado
@@ -258,6 +259,7 @@ def simula(arquivo, espaco, subst, intervalo):
 	p = int(linha[3]) # Tamanho da pagina
 	fila = es.FilaDeAcessos()
 	pid_dict = {}
+	esp_alg = espaco
 
 	# Descobre quando que a simulacao acabara
 	tempos_finais = []
@@ -272,29 +274,31 @@ def simula(arquivo, espaco, subst, intervalo):
 
 
 	# TESTEs
-	bestFit(vir, es.Processo(linhas[1].split()))
-	bestFit(vir, es.Processo(linhas[2].split()))
-	es.printLista(vir.ll)
-	print("RONALDO")
+	#bestFit(vir, es.Processo(linhas[1].split()))
+	#bestFit(vir, es.Processo(linhas[2].split()))
+	#es.printLista(vir.ll)
+	#print("RONALDO")
 
 
 	t = 0
 	i = 1 # Linha 0 ja foi interpretada
+	linha = linhas[i].split()
 	while  True:
-		linha = linhas[i].split()
-		while i < num - 1 and int(linha[0]) == t:
+		while i < num and int(linha[0]) == t:
 			if len(linha) == 2 and linha[1] == 'COMPACTAR': # Excecao para COMPACTAR
 				fis.compactar()
 				vir.compactar()
-			else: # adiciona processo na fila
+			else: # adiciona processo na fila e memoria virtual
 				proc = es.Processo(linha)
 				fila.push(proc)
 				pid_dict[proc.nome] = proc.pid
+				insereVir(proc, esp_alg, vir)
 
 
-			if i < num -1:
+			if i < num:
 				i += 1
-				linha = linhas[i].split()
+				if i < num:
+					linha = linhas[i].split()
 
 
 		while fila.size > 0 and fila.peak().prox_acesso()[1] == t: # Processo acessando memoria fisica
@@ -304,7 +308,7 @@ def simula(arquivo, espaco, subst, intervalo):
 
 
 		for j in range(num):
-			temp = linhas[i].split()
+			temp = linhas[j].split()
 			if len(temp) > 2 and temp[1] == t: # tf = t
 				pid = pid_dict[temp[3]]
 				fis.remove(pid)
@@ -319,13 +323,22 @@ def simula(arquivo, espaco, subst, intervalo):
 			fis.imprime()
 			print ('\n' + 30 * '-' + '\n')
 
-		if i >= num - 1 and t >= last_tf: # Todos os processos acabaram sua execucao
+		if i == num and t >= last_tf: # Todos os processos acabaram sua execucao
 			break
 
 		t += 1
 
 
 # GERENCIAMENTO DE MEMORIA #
+def insereVir(processo, alg, memoria):
+	if alg == 1:
+		bestFit(memoria, processo)
+	elif alg == 2:
+		worstFit(memoria, processo)
+	else:
+		quickFit(memoria, processo)
+
+
 
 def bestFit(memoria, processo):
 	mem = memoria.read()
@@ -359,8 +372,8 @@ def worstFit(memoria, processo):
 	if worst_tam < p_tam:
 		print ("NAO CABE NA MEMORIA AAAAAAAAAAA")
 
-	memoria.insere(processo.pid, worst_index, p_tam)
+	memoria.insere(processo.pid, worst_index, p_tam, True)
 
 
-
-
+def quickFit(memoria, processo):
+	pass
