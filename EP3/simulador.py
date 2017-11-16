@@ -88,6 +88,15 @@ class Memoria:
 		elif self.alg == "FIFO":
 			self.filaFIFO.append(pid)
 
+
+	# Usado na memoria fisica. Substitui uma pagina com o processo, se necessario
+	def substitui(self, processo):
+		if self.alg == "FIFO":
+			self.FIFO(processo.pid)
+		elif self.alg == "LRU.2":
+			self.LRU2(???)
+
+
 	# Remove processo com o PID dado
 	def remove(self, pid):
 		l = self.read()
