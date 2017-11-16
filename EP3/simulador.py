@@ -63,10 +63,17 @@ class Memoria:
 		l = self.read()
 		print ('Indice\t|\tPID\t|\tBitmap')
 		for i in range(self.tam):
+			bit = str(int(self.bitmap[int(i/self.bloco)]))
 			if l[i] == 128:
-				print (str(i) + '\t|\t' + str(-1) + '\t|\t' + str(int(self.bitmap[int(i/self.bloco)])))
+				if not i%self.bloco:
+					print (str(i) + '\t|\t' + str(-1) + '\t|\t' + bit)
+				else:
+					print (str(i) + '\t|\t' + str(-1) + '\t|')
 			else:
-				print (str(i) + '\t|\t' + str(l[i]) + '\t|\t' + str(int(self.bitmap[int(i/self.bloco)])))
+				if not i%self.bloco:
+					print (str(i) + '\t|\t' + str(l[i]) + '\t|\t' + bit)
+				else:
+					print (str(i) + '\t|\t' + str(l[i]) + '\t|')
 
 
 	# Insere processo de PID que ocupa by bytes, comecando na posicao pos
