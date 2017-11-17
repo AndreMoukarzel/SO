@@ -230,7 +230,7 @@ class Fisica:
 			self.pid = processo.pid
 			self.p = p
 			self.tam = pag
-			dif = processo.b - p
+			dif = processo.b - int(p/pag)
 			if dif > 0 and dif < pag: # p esta na ultima pagina, e a pagina n esta cheia
 				self.tam = pag - dif
 			self.ins = ins
