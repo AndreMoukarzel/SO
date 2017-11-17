@@ -297,7 +297,9 @@ class Fisica:
 
 		# Posicao da menor soma, ou seja, pos do processo que sera removido
 		subst = somas.index(min(somas))
-		self.remove(mem[rem * self.bloco])
+		pid = mem[subst * self.pag]
+		self.memoria.remove(pid)
+		self.insere(processo, pagina)
 
 
 	def iniciaLRU2(): # LRU 2: Inicia a matriz nxn com 0
