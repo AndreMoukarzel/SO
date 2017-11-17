@@ -204,7 +204,7 @@ class Memoria:
 class Fisica:
 	memoria = None
 	alg = 0
-	paginas = [] # Paginas locais dos processos presentes na memoria
+
 	filaFIFO = []
 	matrizLRU2 = []
 	k = 0
@@ -221,7 +221,7 @@ class Fisica:
 
 		def __init__(self, processo, p, ins, pag):
 			self.pid = processo.pid
-			self.pos = processo.p
+			self.p = p
 			self.tam = processo.b - (p * pag)
 			self.ins = ins
 
@@ -230,9 +230,6 @@ class Fisica:
 	def __init__(self, tamanho, ua, pag, alg):
 		self.memoria = Memoria('/tmp/ep3.mem', tamanho, ua, pag)
 		self.alg = alg
-
-		for i in range(tamanho/pag):
-			self.paginas.append(-1)
 
 		if alg == 3:
 			iniciaLRU2()
@@ -249,10 +246,9 @@ class Fisica:
 
 		while ll != None and ll.pos != -1:
 			if ll.tam > pag_tam: # Cabe uma nova pagina
-				pag = Pagina(processo, pagina, ll.pos, pag_tam)
+				pag = self.Pagina(processo, pagina, ll.pos, pag_tam)
 				self.memoria.insere(pag.pid, ll.pos, pag.tam)
 				processo.presente.append(pagina) # Atualiza a lista de paginas no processo
-				self.paginas[ll.pos / pag_tam] = pag # Atualiza o vetor de paginas da memoria
 
 				if self.alg == 2:
 					self.filaFIFO.append([processo, pag])
@@ -278,11 +274,9 @@ class Fisica:
 	def FIFO(self, processo, pagina):
 		if len(self.filaFIFO) > 0:
 			proc, pag = self.filaFIFO.pop() # [Processo, Pagina] mais antiga
-			self.memoria.remove(proc.pid, pag.ins)
-			i = self.paginas.index[pag]
-			del(self.paginas[pag])
+			self.memoria.remove(proc.pid, pag.ins) # Remove pagina na posicao pag.ins da memoria
 
-			i = proc.presente.index(pag)
+			i = proc.presente.index(pag.p)
 			del(proc.presente[i])
 
 			self.insere(processo, pagina)
@@ -390,7 +384,7 @@ class Virtual:
 		self.alg = alg
 
 		if alg == 3: # QuickFit
-			self.ql = QuickList(trace)
+			self.ql = self.QuickList(trace)
 			self.ql.atualiza(self.memoria.ll)
 
 
