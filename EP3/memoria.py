@@ -66,13 +66,13 @@ class Memoria:
 
 
 	# Remove processo com o PID dado
-	def remove(self, pid):
+	def remove(self, pid, pos = 0):
 		l = self.read()
 
 		# Encontra a posicao em que o processo comeca
 		ret = -1
 		i = 0
-		for i in range(0, self.tam, self.pag):
+		for i in range(pos, self.tam, self.pag):
 			if l[i] == pid:
 				ret = i
 				break
