@@ -52,13 +52,13 @@ class Memoria:
 					print (str(i) + '\t|\t' + str(l[i]) + '\t|')
 
 
-	# Insere processo de PID comecando na posicao pos
-	def insere(self, processo, pos):
+	# Insere processo de PID com by bytes comecando na posicao pos
+	def insere(self, pid, pos, by):
 		l = self.read()
-		b = int(math.ceil(processo.b/float(self.ua)) * self.ua) # Unidades de alocacao sao preenchidas
+		b = int(math.ceil(by/float(self.ua)) * self.ua) # Unidades de alocacao sao preenchidas
 
 		for i in range(pos, pos + b): # Atualiza bitmap
-			l[i] = processo.pid
+			l[i] = pid
 			self.bitmap[int(i/self.ua)] = True
 
 		self.atualizaLL()
@@ -232,7 +232,7 @@ class Fisica:
 
 		while ll != None and ll.pos != -1:
 			if ll.tam > self.memoria.pag: # Cabe uma nova pagina
-				self.memoria.insere(processo, ll.pos)
+				self.memoria.insere(processo.pid, ll.pos, self.memoria.pag)
 				processo.presente.append(pagina) # Atualiza a lista de paginas no processo
 				self.paginas[ll.pos / self.memoria.pag] = pagina # Atualiza o vetor de paginas da memoria
 
@@ -404,7 +404,7 @@ class Virtual:
 					best_index = ll.pos
 			ll = ll.prox
 
-		self.memoria.insere(processo, best_index)
+		self.memoria.insere(processo.pid, best_index, p_tam)
 
 
 	def worstFit(self, processo):
@@ -422,7 +422,7 @@ class Virtual:
 		if worst_tam < p_tam:
 			print ("Nao ha espaco na memoria")
 
-		self.memoria.insere(processo, worst_index)
+		self.memoria.insere(processo.pid, worst_index, p_tam)
 
 
 	def quickFit(self, processo):
@@ -432,4 +432,4 @@ class Virtual:
 			if processo.b == ql.tams[i]:
 				break
 
-		self.memoria.insere(processo, ql.espacos[i].pop())
+		self.memoria.insere(processo.pid, ql.espacos[i].pop(), p_tam)
