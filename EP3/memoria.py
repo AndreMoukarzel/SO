@@ -66,17 +66,23 @@ class Memoria:
 
 
 	# Remove processo com o PID dado
-	def remove(self, pid, pos = 0):
+	# Caso receba o argumento pos, remove apenas a pagina iniciada em pos
+	def remove(self, pid, pos = -1):
 		l = self.read()
+		ini = 0
+		fim = self.tam
+		if pos != -1:
+			ini = pos
+			fim = pos + self.pag
 
 		# Encontra a posicao em que o processo comeca
 		ret = -1
 		i = 0
-		for i in range(pos, self.tam, self.pag):
+		for i in range(ini, fim, self.pag):
 			if l[i] == pid:
 				ret = i
 				break
-		while i < self.tam and l[i] == pid:
+		while i < fim and l[i] == pid:
 			l[i] = 128
 			self.bitmap[int(i/self.ua)] = False
 			i += 1
