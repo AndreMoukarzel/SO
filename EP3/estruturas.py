@@ -94,6 +94,8 @@ class Processo:
         self.b = int(linha[2])
         self.nome = linha[3]
         self.presente = []
+        self.acessos[0] = []
+        self.acessos[1] = []
         for j in range(4, len(linha), 2):
             self.acessos[0].append(int(linha[j])) # pi
             self.acessos[1].append(int(linha[j + 1])) # ti
