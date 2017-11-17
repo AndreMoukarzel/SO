@@ -229,28 +229,21 @@ class Fisica:
 	# Tambem insere o endereco local (pagina) do processo no vetor de paginas
 	# da memoria
 	def insere(self, processo, pagina):
-		l = self.memoria.read()
+		ll = self.memoria.ll
 
-		# Procura espaco livre
-		for i in range(0, self.memoria.tam, self.memoria.pag):
-			if l[i] == 128 and i <= self.memoria.tam - self.memoria.pag:
-				# Coloca o processo na memoria
-				for j in range(i, i + self.memoria.pag):
-					l[j] = processo.pid
-					self.memoria.bitmap[j / self.memoria.pag] = True
+		while ll != None and ll.pos != -1:
+			if ll.tam < self.memoria.pag: # Cabe uma nova pagina
+				self.memoria.insere(processo, ll.pos)
+				processo.presente.append(pagina) # Atualiza a lista de paginas no processo
+				self.paginas[i / self.memoria.pag] = pagina # Atualiza o vetor de paginas da memoria
 
-				# Atualiza a lista do processo de paginas presente na memoria
-				processo.presente.append(pagina)
-				# Atualiza o vetor de paginas da memoria
-				self.paginas[i / self.memoria.pag] = pagina
-
-				# Atualiza a lista do FIFO, caso esse seja o algoritmo usado
 				if self.alg == 2:
 					self.filaFIFO.append(processo)
-				# atualiza estruturas dos outros algoritmos
 
-				self.memoria.write(l)
 				return 1
+
+			ll = ll.prox
+
 		return 0
 
 
