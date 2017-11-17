@@ -176,17 +176,19 @@ class Memoria:
 		raiz = es.listaLigada()
 		last = es.listaLigada() # Ultimo elemento da lista
 		ini, fim = 0, 0
+		dif = self.pag/float(self.ua)
 
 		while fim < len(self.bitmap) and ini < len(self.bitmap):
 			# Procura um bloco livre
-			while ini < len(self.bitmap) and self.bitmap[ini]: # bitmap[ini] = 1
-				ini += 1
-			fim = ini + 1
+			while ini < len(self.bitmap) and self.bitmap[int(ini)]: # bitmap[ini] = 1
+				ini += dif
+			fim = int(ini) + 1
 			# E define seu tamanho
 			while fim < len(self.bitmap) and not self.bitmap[fim]: # bitmap[fim] = 0
 				fim += 1
 
 			if ini < len(self.bitmap) and fim <= len(self.bitmap):
+				ini = int(ini)
 				if raiz.pos == -1:
 					raiz.iniRaiz(ini * self.ua, (fim - ini) * self.ua)
 					last = raiz
