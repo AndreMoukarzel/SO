@@ -42,6 +42,7 @@ def simula(arquivo, espaco, subst, intervalo):
 				proc = es.Processo(linha)
 				fila.push(proc)
 				proc_dict[proc.nome] = proc
+				fis.atualizaDict(proc_dict)
 				vir.insere(proc)
 
 

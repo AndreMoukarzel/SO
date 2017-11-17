@@ -203,6 +203,7 @@ class Fisica:
 	memoria = None
 	alg = 0
 	paginas = [] # Paginas locais dos processos presentes na memoria
+	proc_dic = {}
 	filaFIFO = []
 	matrizLRU2 = []
 	k = 0
@@ -231,13 +232,22 @@ class Fisica:
 		# Procura espaco livre
 		for i in range(0, self.memoria.tam, self.memoria.pag):
 			if l[i] == 128:
+				# Coloca o processo na memoria
 				for j in range(i, i + self.memoria.pag):
 					l[j] = processo.pid
+
+				# Atualiza a lista do processo de paginas presente na memoria
 				processo.presente.append(pagina)
+				# Atualiza o vetor de paginas da memoria
 				self.paginas[i / self.memoria.pag] = pagina
 
 				for bit in range(i, i + processo.b): # Atualiza bitmap
 					self.memoria.bitmap[int(bit/self.memoria.ua)] = True
+
+				# Atualiza a lista do FIFO, caso esse seja o algoritmo usado
+				if self.alg == 2:
+					self.filaFIFO.append(processo)
+				# atualiza estruturas dos outros algoritmos
 
 				return 1
 		return 0
@@ -246,6 +256,9 @@ class Fisica:
 	def compacta(self):
 		self.memoria.compacta()
 		# atualiza paginas
+
+	def atualizaDict(self, proc_dict):
+		self.proc_dict = proc_dict
 
 
 	def substitui(processo):
@@ -257,8 +270,16 @@ class Fisica:
 	def FIFO(self, processo, pagina):
 		mem = self.memoria.read()
 		if len(self.filaFIFO) > 0:
-			rem = pop(self.filaFIFO).pid # PID do processo mais antigo
-			pos = self.remove(rem) # Posicao do processo removido
+			rem = pop(self.filaFIFO) # Processo mais antigo
+			pos = self.remove(rem.pid) # Posicao do processo removido
+			pag_removida = self.paginas[pos] # Pagina local do processo removida
+
+			# Remove a pagina do vetor de paginas presentes do processo
+			del(rem.presente[rem.presente.index(pag_removida)])
+
+			if pos == -1:
+				print("oh no")
+
 			self.insere(processo, pagina)
 		else:
 			print("Mas a fila esta vazia D:")
