@@ -236,9 +236,9 @@ class Fisica:
 		self.alg = alg
 
 		if alg == 3:
-			iniciaLRU2()
+			self.iniciaLRU2()
 		elif alg == 4:
-			iniciaLRU4()
+			self.iniciaLRU4()
 
 
 	# Tenta inserir o processo na memoria fisica, substitui uma pagina caso nao consiga
@@ -256,7 +256,7 @@ class Fisica:
 				if self.alg == 2:
 					self.filaFIFO.append([processo, pag])
 				elif self.alg == 3:
-					self.atualizaLRU2(pag.ins)
+					self.atualizaLRU2(pag.ins / self.memoria.pag)
 
 				return 1
 			ll = ll.prox
@@ -303,8 +303,8 @@ class Fisica:
 		self.insere(processo, pagina)
 
 
-	def iniciaLRU2(): # LRU 2: Inicia a matriz nxn com 0
-		n = self.memoria.tam/self.memoria.pag
+	def iniciaLRU2(self): # LRU 2: Inicia a matriz nxn com 0
+		n = (self.memoria.tam/self.memoria.pag) + 1
 		for i in range(n):
 			temp = []
 			for j in range(n):
@@ -338,7 +338,7 @@ class Fisica:
 		self.memoria.insere
 
 
-	def iniciaLRU4(): # LRU 4: Inicia o vetor de contadores com 0
+	def iniciaLRU4(self): # LRU 4: Inicia o vetor de contadores com 0
 		for i in range(self.memoria.tam/self.memoria.pag):
 			vetorLRU4.append(0)
 			vetorR.append(False)

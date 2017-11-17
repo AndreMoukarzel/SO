@@ -59,7 +59,7 @@ def simula(arquivo, espaco, subst, intervalo):
 			#print (proc.nome)
 			#print (proc.p_acessos)
 			#print (proc.t_acessos)
-
+			print("acessando pos " + str(temp_pag) + " do processo " + str(proc.pid))
 			if not temp_pag in fis.proc_dict[proc.nome].presente: # Checa se a pagina ja esta na memoria
 				fis.insere(proc, temp_pag)
 
