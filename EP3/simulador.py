@@ -56,6 +56,9 @@ def simula(arquivo, espaco, subst, intervalo):
 		while fila.size > 0 and fila.peak().prox_acesso()[1] == t: # Processo acessando memoria fisica
 			proc = fila.peak()
 			temp_pag = proc.prox_acesso()[0] # Pagina local que sera acessada
+			#print (proc.nome)
+			#print (proc.p_acessos)
+			#print (proc.t_acessos)
 
 			if not temp_pag in fis.proc_dict[proc.nome].presente: # Checa se a pagina ja esta na memoria
 				fis.insere(proc, temp_pag)
