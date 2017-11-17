@@ -231,10 +231,10 @@ class Fisica:
 		ll = self.memoria.ll
 
 		while ll != None and ll.pos != -1:
-			if ll.tam < self.memoria.pag: # Cabe uma nova pagina
+			if ll.tam > self.memoria.pag: # Cabe uma nova pagina
 				self.memoria.insere(processo, ll.pos)
 				processo.presente.append(pagina) # Atualiza a lista de paginas no processo
-				self.paginas[i / self.memoria.pag] = pagina # Atualiza o vetor de paginas da memoria
+				self.paginas[ll.pos / self.memoria.pag] = pagina # Atualiza o vetor de paginas da memoria
 
 				if self.alg == 2:
 					self.filaFIFO.append(processo)
