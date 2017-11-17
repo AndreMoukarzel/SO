@@ -211,6 +211,20 @@ class Fisica:
 	vetorLRU4 = []
 	vetorR = []
 
+
+	class Pagina:
+		pid = -1
+		pos = -1 # posicao relativa do processo a qual corresponde
+		tam = -1
+		
+
+		def __init__(self, processo, pos, pag):
+			self.pid = processo.pid
+			self.pos = processo.pos
+			self.tam = processo.b - (pos * pag)
+
+
+
 	def __init__(self, tamanho, ua, pag, alg):
 		self.memoria = Memoria('/tmp/ep3.mem', tamanho, ua, pag)
 		self.alg = alg
@@ -229,15 +243,17 @@ class Fisica:
 	# da memoria
 	def insere(self, processo, pagina):
 		ll = self.memoria.ll
+		pag_tam = self.memoria.pag
 
 		while ll != None and ll.pos != -1:
-			if ll.tam > self.memoria.pag: # Cabe uma nova pagina
-				self.memoria.insere(processo.pid, ll.pos, self.memoria.pag)
+			if ll.tam > pag_tam: # Cabe uma nova pagina
+				pag = Pagina(processo, pagina, pag_tam)
+				self.memoria.insere(pag.pid, ll.pos, pag.tam)
 				processo.presente.append(pagina) # Atualiza a lista de paginas no processo
-				self.paginas[ll.pos / self.memoria.pag] = pagina # Atualiza o vetor de paginas da memoria
+				self.paginas[ll.pos / pag_tam] = pag # Atualiza o vetor de paginas da memoria
 
 				if self.alg == 2:
-					self.filaFIFO.append(processo)
+					self.filaFIFO.append([processo, pag])
 
 				return 1
 			ll = ll.prox
@@ -258,15 +274,11 @@ class Fisica:
 	# Para inserir um processo na fila so usar append()
 	def FIFO(self, processo, pagina):
 		if len(self.filaFIFO) > 0:
-			rem = self.filaFIFO.pop() # Processo mais antigo
-			pos = self.memoria.remove(rem.pid) # Posicao do processo removido
-			pag_removida = self.paginas[pos] # Pagina local do processo removida
+			rem = self.filaFIFO.pop() # [Processo, Pagina] mais antiga
+			pos = self.memoria.remove(rem[0].pid)
 
 			# Remove a pagina do vetor de paginas presentes do processo
-			del(rem.presente[rem.presente.index(pag_removida)])
-
-			if pos == -1:
-				print("oh no")
+			del(rem[0].presente[rem[1].pos])
 
 			self.insere(processo, pagina)
 		else:
