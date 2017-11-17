@@ -83,7 +83,8 @@ class Processo:
     tf = 0
     b = 0
     nome = ""
-    acessos = [ [], [] ] # acessos[0] sao posicoes e acessos[1] sao tempos
+    p_acessos = [] # pi
+    t_acessos = [] # ti
     presente = [] # Paginas locais do processo que estao presentes na memoria fisica
     i = 0 # indice do prox acesso
 
@@ -93,17 +94,16 @@ class Processo:
         self.tf = int(linha[1]) # t0 tf b nome p1 t1 p2 t2... pn tn
         self.b = int(linha[2])
         self.nome = linha[3]
-        self.presente = []
-        self.acessos[0] = []
-        self.acessos[1] = []
+        self.p_acessos = []
+        self.t_acessos = []
         for j in range(4, len(linha), 2):
-            self.acessos[0].append(int(linha[j])) # pi
-            self.acessos[1].append(int(linha[j + 1])) # ti
+            self.p_acessos.append(int(linha[j]))
+            self.t_acessos.append(int(linha[j + 1]))
 
         Processo.g_pid = (Processo.g_pid + 1) % 128
 
     def prox_acesso(self):
-        return [self.acessos[0][self.i], self.acessos[1][self.i]]
+        return [self.p_acessos[self.i], self.t_acessos[self.i]]
 
 
 # Ordena os processos em relacao ao proximo acesso na memoria
@@ -144,7 +144,7 @@ class FilaDeAcessos:
         proc.i += 1
         self.size -= 1
         temp = proc
-        if proc.i < len(proc.acessos[0]):
+        if proc.i < len(proc.p_acessos):
             self.push(proc)
 
         return temp
