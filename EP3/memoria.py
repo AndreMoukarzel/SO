@@ -253,7 +253,7 @@ class Fisica:
 		pag_tam = self.memoria.pag
 
 		while ll != None and ll.pos != -1:
-			if ll.tam > pag_tam: # Cabe uma nova pagina
+			if ll.tam >= pag_tam: # Cabe uma nova pagina
 				pag = self.Pagina(processo, pagina, ll.pos, pag_tam)
 				self.memoria.insere(pag.pid, ll.pos, pag.tam)
 				processo.presente.append(pagina) # Atualiza a lista de paginas no processo
@@ -266,7 +266,7 @@ class Fisica:
 
 				return 1
 			ll = ll.prox
-
+			
 		self.substitui(processo, pagina)
 
 
@@ -284,7 +284,7 @@ class Fisica:
 	# Para inserir um processo na fila so usar append()
 	def FIFO(self, processo, pagina):
 		if len(self.filaFIFO) > 0:
-			proc, pag = self.filaFIFO.pop() # [Processo, Pagina] mais antiga
+			proc, pag = self.filaFIFO.pop(0) # [Processo, Pagina] mais antiga
 			self.memoria.remove(proc.pid, pag.ins) # Remove pagina na posicao pag.ins da memoria
 
 			i = proc.presente.index(pag.p)
