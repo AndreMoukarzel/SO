@@ -223,9 +223,10 @@ class Fisica:
 		def __init__(self, processo, p, ins, pag):
 			self.pid = processo.pid
 			self.p = p
-			self.tam = processo.b - (p * pag) # Caso a ultima pagina do processo n esteja cheia
-			if self.tam > pag:
-				self.tam = pag
+			self.tam = pag
+			dif = processo.b - p
+			if dif > 0 and dif < pag: # p esta na ultima pagina, e a pagina n esta cheia
+				self.tam = pag - dif
 			self.ins = ins
 
 
