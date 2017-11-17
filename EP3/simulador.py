@@ -41,7 +41,7 @@ def simula(arquivo, espaco, subst, intervalo):
 			else: # adiciona processo na fila e memoria virtual
 				proc = es.Processo(linha)
 				fila.push(proc)
-				pid_dict[proc.nome] = proc.pid
+				pid_dict[proc.nome] = proc
 				vir.insere(proc)
 
 
@@ -53,7 +53,11 @@ def simula(arquivo, espaco, subst, intervalo):
 
 		while fila.size > 0 and fila.peak().prox_acesso()[1] == t: # Processo acessando memoria fisica
 			proc = fila.peak()
-			# enfiar proc na memoria fisica aqui
+			temp_pag = proc.prox_acesso()[0] # Pagina local que sera acessada
+			if not temp_pag in proc.presente: # Checa se a pagina ja esta na memoria
+				if not fis.insere(proc, temp_pag): # Tenta inserir, caso nao esteja
+					fis.substitui(proc) # Se nao tiver espaco, remove uma pagina
+
 			fila.pop()
 
 
