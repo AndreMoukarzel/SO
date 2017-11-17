@@ -214,14 +214,16 @@ class Fisica:
 
 	class Pagina:
 		pid = -1
-		pos = -1 # posicao relativa do processo a qual corresponde
+		p = -1 # posicao relativa do processo a qual corresponde
 		tam = -1
+		ins = -1 # posicao em q foi inserida na memoria fisica
 		
 
-		def __init__(self, processo, pos, pag):
+		def __init__(self, processo, p, ins, pag):
 			self.pid = processo.pid
-			self.pos = processo.pos
-			self.tam = processo.b - (pos * pag)
+			self.pos = processo.p
+			self.tam = processo.b - (p * pag)
+			self.ins = ins
 
 
 
@@ -247,7 +249,7 @@ class Fisica:
 
 		while ll != None and ll.pos != -1:
 			if ll.tam > pag_tam: # Cabe uma nova pagina
-				pag = Pagina(processo, pagina, pag_tam)
+				pag = Pagina(processo, pagina, ll.pos, pag_tam)
 				self.memoria.insere(pag.pid, ll.pos, pag.tam)
 				processo.presente.append(pagina) # Atualiza a lista de paginas no processo
 				self.paginas[ll.pos / pag_tam] = pag # Atualiza o vetor de paginas da memoria
@@ -270,19 +272,22 @@ class Fisica:
 		if self.alg == 2:
 			self.FIFO(processo, pagina)
 
+
 	# Mantem uma fila dos processos em ordem de chegada e tira eles nessa ordem
 	# Para inserir um processo na fila so usar append()
 	def FIFO(self, processo, pagina):
 		if len(self.filaFIFO) > 0:
-			rem = self.filaFIFO.pop() # [Processo, Pagina] mais antiga
-			pos = self.memoria.remove(rem[0].pid)
+			proc, pag = self.filaFIFO.pop() # [Processo, Pagina] mais antiga
+			self.memoria.remove(proc.pid, pag.ins)
+			i = self.paginas.index[pag]
+			del(self.paginas[pag])
 
-			# Remove a pagina do vetor de paginas presentes do processo
-			del(rem[0].presente[rem[1].pos])
+			i = proc.presente.index(pag)
+			del(proc.presente[i])
 
 			self.insere(processo, pagina)
 		else:
-			print("Mas a fila esta vazia D:")
+			print("FIFO vazia")
 
 
 	def LRU2(self, processo, pagina):
@@ -344,7 +349,6 @@ class Fisica:
 			self.vetorR[i] = False
 		for i in acessos:
 			self.vetorR[i] = True
-
 
 
 
