@@ -84,6 +84,7 @@ class Processo:
     b = 0
     nome = ""
     acessos = [ [], [] ] # acessos[0] sao posicoes e acessos[1] sao tempos
+    presente = [] # Paginas locais do processo que estao presentes na memoria fisica
     i = 0 # indice do prox acesso
 
     def __init__(self, linha):
@@ -92,9 +93,10 @@ class Processo:
         self.tf = int(linha[1]) # t0 tf b nome p1 t1 p2 t2... pn tn
         self.b = int(linha[2])
         self.nome = linha[3]
+        self.presente = []
         for j in range(4, len(linha), 2):
-            self.acessos[0].append(int(linha[j]))
-            self.acessos[1].append(int(linha[j + 1]))
+            self.acessos[0].append(int(linha[j])) # pi
+            self.acessos[1].append(int(linha[j + 1])) # ti
 
         Processo.g_pid = (Processo.g_pid + 1) % 128
 
