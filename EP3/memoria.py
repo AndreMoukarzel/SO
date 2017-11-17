@@ -205,6 +205,7 @@ class Fisica:
 	memoria = None
 	alg = 0
 
+	proc_dict = {}
 	filaFIFO = []
 	matrizLRU2 = []
 	k = 0
@@ -217,7 +218,7 @@ class Fisica:
 		p = -1 # posicao relativa do processo a qual corresponde
 		tam = -1
 		ins = -1 # posicao em q foi inserida na memoria fisica
-		
+
 
 		def __init__(self, processo, p, ins, pag):
 			self.pid = processo.pid
@@ -240,9 +241,7 @@ class Fisica:
 			iniciaLRU4()
 
 
-	# Tenta inserir o processo na memoria fisica, retorna 1 se conseguir, 0 cc
-	# Tambem insere o endereco local (pagina) do processo no vetor de paginas
-	# da memoria
+	# Tenta inserir o processo na memoria fisica, substitui uma pagina caso nao consiga
 	def insere(self, processo, pagina):
 		ll = self.memoria.ll
 		pag_tam = self.memoria.pag
@@ -252,9 +251,12 @@ class Fisica:
 				pag = self.Pagina(processo, pagina, ll.pos, pag_tam)
 				self.memoria.insere(pag.pid, ll.pos, pag.tam)
 				processo.presente.append(pagina) # Atualiza a lista de paginas no processo
+				self.proc_dict[processo.nome] = processo
 
 				if self.alg == 2:
 					self.filaFIFO.append([processo, pag])
+				elif self.alg == 3:
+					self.atualizaLRU2(pag.ins)
 
 				return 1
 			ll = ll.prox
@@ -281,6 +283,7 @@ class Fisica:
 
 			i = proc.presente.index(pag.p)
 			del(proc.presente[i])
+			self.proc_dict[proc.nome] = proc
 
 			self.insere(processo, pagina)
 		else:
@@ -307,7 +310,7 @@ class Fisica:
 			self.matrizLRU2.append(temp)
 
 
-	def atualizaLRU2():
+	def atualizaLRU2(self, pos):
 		for i in range(self.memoria.pag): # Todos da linha = 1
 			self.matrizLRU2[pos][i] = 1
 		for i in range(self.memoria.pag): # Todos da coluna = 0
