@@ -43,6 +43,7 @@ def simula(arquivo, espaco, subst, intervalo):
 				proc = es.Processo(linha)
 				fila.push(proc)
 				proc_dict[proc.nome] = proc
+				fis.proc_dict[proc.nome] = proc
 				vir.insere(proc)
 
 
@@ -56,7 +57,7 @@ def simula(arquivo, espaco, subst, intervalo):
 			proc = fila.peak()
 			temp_pag = proc.prox_acesso()[0] # Pagina local que sera acessada
 
-			if not temp_pag in proc.presente: # Checa se a pagina ja esta na memoria
+			if not temp_pag in fis.proc_dict[proc.nome].presente: # Checa se a pagina ja esta na memoria
 				fis.insere(proc, temp_pag)
 
 			fila.pop()
