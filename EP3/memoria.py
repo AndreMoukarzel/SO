@@ -205,7 +205,6 @@ class Fisica:
 	memoria = None
 	alg = 0
 	paginas = [] # Paginas locais dos processos presentes na memoria
-	proc_dic = {}
 	filaFIFO = []
 	matrizLRU2 = []
 	k = 0
@@ -241,7 +240,6 @@ class Fisica:
 					self.filaFIFO.append(processo)
 
 				return 1
-
 			ll = ll.prox
 
 		return 0
@@ -251,9 +249,6 @@ class Fisica:
 		self.memoria.compacta()
 		# atualiza paginas
 
-	def atualizaDict(self, proc_dict):
-		self.proc_dict = proc_dict
-
 
 	def substitui(self, processo, pagina):
 		if self.alg == 2:
@@ -262,10 +257,8 @@ class Fisica:
 	# Mantem uma fila dos processos em ordem de chegada e tira eles nessa ordem
 	# Para inserir um processo na fila so usar append()
 	def FIFO(self, processo, pagina):
-		mem = self.memoria.read()
 		if len(self.filaFIFO) > 0:
-			rem = self.filaFIFO[0] # Processo mais antigo
-			del(self.filaFIFO[0])
+			rem = self.filaFIFO.pop() # Processo mais antigo
 			pos = self.memoria.remove(rem.pid) # Posicao do processo removido
 			pag_removida = self.paginas[pos] # Pagina local do processo removida
 
@@ -400,7 +393,6 @@ class Virtual:
 
 
 	def bestFit(self, processo):
-		mem = self.memoria.read()
 		best_index = 0
 		best_tam = self.memoria.tam
 		p_tam = processo.b # tamanho do processo
@@ -416,7 +408,6 @@ class Virtual:
 
 
 	def worstFit(self, processo):
-		mem = self.memoria.read()
 		worst_index = 0
 		worst_tam = 0
 		p_tam = processo.b # tamanho do processo
