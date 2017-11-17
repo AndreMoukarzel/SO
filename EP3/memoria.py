@@ -109,7 +109,7 @@ class Memoria:
 
 
 	# Compacta memoria
-	def compactar(self):
+	def compacta(self):
 		mem = self.read()
 		compactado = False
 		ocupado = self.tam
@@ -117,17 +117,20 @@ class Memoria:
 		while not compactado:
 			# Procura a primeiro pagina livre
 			cheio = True
-			for i in range(0, self.tam, self.pag):
+			for i in range(0, self.tam, self.ua):
 				if mem[i] == 128:
 					cheio = False
 					livre = i
 					break
+				else:
+					i += self.pag
+					continue
 			# Ja esta compactado se esta cheio
 			if cheio:
 				break
 
 			# Procura a proxima pagina ocupada
-			for i in range(livre, self.tam, self.pag):
+			for i in range(livre, self.tam, self.ua):
 				if mem[i] != 128:
 					ocupado = i
 					break
@@ -152,6 +155,7 @@ class Memoria:
 				if fim == 1 and mem[i] != 128:
 					compactado = False
 					break
+			# Essa checagem n deve mais funcionar 100%. Eh melhor usarmos outra condicao de parada
 
 		for i in range(0, self.tam, self.ua): # Atualiza o bitmap
 			if mem[i] == 128:
@@ -237,6 +241,11 @@ class Fisica:
 
 				return 1
 		return 0
+
+
+	def compacta(self):
+		self.memoria.compacta()
+		# atualiza paginas
 
 
 	def substitui(processo):
@@ -368,6 +377,10 @@ class Virtual:
 		elif self.alg == 3:
 			self.quickFit(processo)
 			self.ql.atualiza(self.memoria.ll)
+
+
+	def compacta(self):
+		self.memoria.compacta()
 
 
 	def bestFit(self, processo):

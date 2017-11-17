@@ -15,7 +15,7 @@ def simula(arquivo, espaco, subst, intervalo):
 	s = int(linha[2]) # Tamanho da unidade de alocacao
 	p = int(linha[3]) # Tamanho da pagina
 	fila = es.FilaDeAcessos()
-	pid_dict = {}
+	proc_dict = {}
 
 	# Instancia as memorias
 	vir = mem.Virtual(int(linha[1]), s, p, espaco, linhas)
@@ -36,12 +36,12 @@ def simula(arquivo, espaco, subst, intervalo):
 	while  True:
 		while i < num and int(linha[0]) == t:
 			if len(linha) == 2 and linha[1] == 'COMPACTAR': # Excecao para COMPACTAR
-				fis.memoria.compactar()
-				vir.memoria.compactar()
+				fis.compacta()
+				vir.compacta()
 			else: # adiciona processo na fila e memoria virtual
 				proc = es.Processo(linha)
 				fila.push(proc)
-				pid_dict[proc.nome] = proc
+				proc_dict[proc.nome] = proc
 				vir.insere(proc)
 
 
@@ -57,14 +57,13 @@ def simula(arquivo, espaco, subst, intervalo):
 			if not temp_pag in proc.presente: # Checa se a pagina ja esta na memoria
 				if not fis.insere(proc, temp_pag): # Tenta inserir, caso nao esteja
 					fis.substitui(proc) # Se nao tiver espaco, remove uma pagina
-
 			fila.pop()
 
 
 		for j in range(1, num):
 			temp = linhas[j].split()
 			if len(temp) > 2 and int(temp[1]) == t: # tf = t
-				pid = pid_dict.get(temp[3])
+				pid = proc_dict.get(temp[3]).pid
 				#fis.remove(pid)
 				vir.memoria.remove(pid)
 

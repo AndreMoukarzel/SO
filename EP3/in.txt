@@ -1,5 +1,5 @@
 10 30 3 8
 0 3 7 joesley 20 2 30 3
 1 10 5 joesley2 20 2 30 4
-2 10 2 joesley3 20 2 30 400000
-8 COMPACTAR
+4 COMPACTAR
+4 10 2 joesley3 20 2 30 400000
