@@ -52,13 +52,13 @@ class Memoria:
 					print (str(i) + '\t|\t' + str(l[i]) + '\t|')
 
 
-	# Insere processo de PID que ocupa by bytes, comecando na posicao pos
-	def insere(self, pid, pos, by):
+	# Insere processo de PID comecando na posicao pos
+	def insere(self, processo, pos):
 		l = self.read()
-		b = int(math.ceil(by/float(self.ua)) * self.ua) # Unidades de alocacao sao preenchidas
+		b = int(math.ceil(processo.b/float(self.ua)) * self.ua) # Unidades de alocacao sao preenchidas
 
 		for i in range(pos, pos + b): # Atualiza bitmap
-			l[i] = pid
+			l[i] = processo.pid
 			self.bitmap[int(i/self.ua)] = True
 
 		self.atualizaLL()
@@ -198,6 +198,7 @@ class Memoria:
 class Fisica:
 	memoria = None
 	alg = 0
+	paginas = [] # Paginas locais dos processos presentes na memoria
 	filaFIFO = []
 	matrizLRU2 = []
 	k = 0
@@ -208,10 +209,34 @@ class Fisica:
 		self.memoria = Memoria('/tmp/ep3.mem', tamanho, ua, pag)
 		self.alg = alg
 
+		for i in range(tamanho/pag):
+			self.paginas.append(-1)
+
 		if alg == 3:
 			iniciaLRU2()
 		elif alg == 4:
 			iniciaLRU4()
+
+
+	# Tenta inserir o processo na memoria fisica, retorna 1 se conseguir, 0 cc
+	# Tambem insere o endereco local (pagina) do processo no vetor de paginas
+	# da memoria
+	def insere(self, processo, pagina):
+		l = self.memoria.read()
+
+		# Procura espaco livre
+		for i in range(0, self.memoria.tam, self.memoria.pag):
+			if l[i] == 128:
+				for j in range(i, i + self.memoria.pag):
+					l[j] = processo.pid
+				processo.presente.append(pagina)
+				self.paginas[i / self.memoria.pag] = pagina
+
+				for bit in range(i, i + processo.b): # Atualiza bitmap
+					self.memoria.bitmap[int(bit/self.memoria.ua)] = True
+
+				return 1
+		return 0
 
 
 	def substitui(processo):
@@ -220,17 +245,17 @@ class Fisica:
 
 	# Mantem uma fila dos processos em ordem de chegada e tira eles nessa ordem
 	# Para inserir um processo na fila so usar append()
-	def FIFO(self, processo):
+	def FIFO(self, processo, pagina):
 		mem = self.memoria.read()
 		if len(self.filaFIFO) > 0:
 			rem = pop(self.filaFIFO).pid # PID do processo mais antigo
 			pos = self.remove(rem) # Posicao do processo removido
-			self.memoria.insere(processo.pid, rem, pos, processo.b)
+			self.insere(processo, pagina)
 		else:
 			print("Mas a fila esta vazia D:")
 
 
-	def LRU2(self, pos):
+	def LRU2(self, processo, pagina):
 		mem = self.memoria.read()
 		somas = []
 		for i in range(len(self.matrizLRU2)):
@@ -259,7 +284,7 @@ class Fisica:
 		self.k = (self.k + 1) % self.memoria.tam/self.memoria.pag
 
 
-	def LRU4(self):
+	def LRU4(self, processo):
 		# Se o processo foi acessado na ultima iteracao, soma no seu contador
 		# no bit mais significativo
 		for i in range(len(self.vetorR)):
@@ -324,7 +349,7 @@ class Virtual:
 					if l.tam >= self.tams[i]:
 						self.espacos[i].append(l.pos)
 				l = l.prox
-	
+
 
 	def __init__(self, tamanho, ua, pag, alg, trace):
 		self.memoria = Memoria('/tmp/ep3.vir', tamanho, ua, pag)
@@ -358,7 +383,7 @@ class Virtual:
 					best_index = ll.pos
 			ll = ll.prox
 
-		self.memoria.insere(processo.pid, best_index, p_tam)
+		self.memoria.insere(processo, best_index)
 
 
 	def worstFit(self, processo):
@@ -377,7 +402,7 @@ class Virtual:
 		if worst_tam < p_tam:
 			print ("Nao ha espaco na memoria")
 
-		self.memoria.insere(processo.pid, worst_index, p_tam)
+		self.memoria.insere(processo, worst_index)
 
 
 	def quickFit(self, processo):
@@ -387,4 +412,4 @@ class Virtual:
 			if processo.b == ql.tams[i]:
 				break
 
-		self.memoria.insere(processo.pid, ql.espacos[i].pop(), processo.b)
+		self.memoria.insere(processo, ql.espacos[i].pop())
