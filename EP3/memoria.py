@@ -249,6 +249,7 @@ class Fisica:
 					self.filaFIFO.append(processo)
 				# atualiza estruturas dos outros algoritmos
 
+				self.memoria.write(l)
 				return 1
 		return 0
 
