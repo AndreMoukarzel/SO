@@ -57,7 +57,7 @@ def simula(arquivo, espaco, subst, intervalo):
 			temp_pag = proc.prox_acesso()[0] # Pagina local que sera acessada
 			if not temp_pag in proc.presente: # Checa se a pagina ja esta na memoria
 				if not fis.insere(proc, temp_pag): # Tenta inserir, caso nao esteja
-					fis.substitui(proc) # Se nao tiver espaco, remove uma pagina
+					fis.substitui(proc, temp_pag) # Se nao tiver espaco, remove uma pagina
 			fila.pop()
 
 		# Remove os processos que acabaram

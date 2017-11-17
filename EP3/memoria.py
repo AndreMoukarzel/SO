@@ -76,7 +76,7 @@ class Memoria:
 			if l[i] == pid:
 				ret = i
 				break
-		while l[i] == pid and i < self.tam:
+		while i < self.tam and l[i] == pid:
 			l[i] = 128
 			self.bitmap[int(i/self.ua)] = False
 			i += 1
@@ -231,7 +231,7 @@ class Fisica:
 
 		# Procura espaco livre
 		for i in range(0, self.memoria.tam, self.memoria.pag):
-			if l[i] == 128:
+			if l[i] == 128 and i <= self.memoria.tam - self.memoria.pag:
 				# Coloca o processo na memoria
 				for j in range(i, i + self.memoria.pag):
 					l[j] = processo.pid
@@ -260,17 +260,18 @@ class Fisica:
 		self.proc_dict = proc_dict
 
 
-	def substitui(processo):
+	def substitui(self, processo, pagina):
 		if self.alg == 2:
-			self.FIFO(processo)
+			self.FIFO(processo, pagina)
 
 	# Mantem uma fila dos processos em ordem de chegada e tira eles nessa ordem
 	# Para inserir um processo na fila so usar append()
 	def FIFO(self, processo, pagina):
 		mem = self.memoria.read()
 		if len(self.filaFIFO) > 0:
-			rem = pop(self.filaFIFO) # Processo mais antigo
-			pos = self.remove(rem.pid) # Posicao do processo removido
+			rem = self.filaFIFO[0] # Processo mais antigo
+			del(self.filaFIFO[0])
+			pos = self.memoria.remove(rem.pid) # Posicao do processo removido
 			pag_removida = self.paginas[pos] # Pagina local do processo removida
 
 			# Remove a pagina do vetor de paginas presentes do processo
