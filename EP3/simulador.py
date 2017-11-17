@@ -60,12 +60,12 @@ def simula(arquivo, espaco, subst, intervalo):
 					fis.substitui(proc) # Se nao tiver espaco, remove uma pagina
 			fila.pop()
 
-
+		# Remove os processos que acabaram
 		for j in range(1, num):
 			temp = linhas[j].split()
 			if len(temp) > 2 and int(temp[1]) == t: # tf = t
 				pid = proc_dict.get(temp[3]).pid
-				#fis.remove(pid)
+				fis.memoria.remove(pid)
 				vir.memoria.remove(pid)
 
 

@@ -235,14 +235,12 @@ class Fisica:
 				# Coloca o processo na memoria
 				for j in range(i, i + self.memoria.pag):
 					l[j] = processo.pid
+					self.memoria.bitmap[j / self.memoria.pag] = True
 
 				# Atualiza a lista do processo de paginas presente na memoria
 				processo.presente.append(pagina)
 				# Atualiza o vetor de paginas da memoria
 				self.paginas[i / self.memoria.pag] = pagina
-
-				for bit in range(i, i + processo.b): # Atualiza bitmap
-					self.memoria.bitmap[int(bit/self.memoria.ua)] = True
 
 				# Atualiza a lista do FIFO, caso esse seja o algoritmo usado
 				if self.alg == 2:

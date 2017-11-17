@@ -28,13 +28,13 @@ def get_time():
 def main():
 	# Descomenta e roda so 'executa n' no prompt pra ir mais rapido:
 	esp = 1
-	sub = 1
+	sub = 2
 	arquivo = "in.txt"
 
 	while True:
 		linha = raw_input("[ep3]: ")
 		linha = linha.split()
-		
+
 		if linha[0] == "carrega":
 			arquivo = linha[1]
 			print ("Carregando arquivo " + arquivo)
