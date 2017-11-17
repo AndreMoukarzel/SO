@@ -242,7 +242,7 @@ class Fisica:
 				return 1
 			ll = ll.prox
 
-		return 0
+		self.substitui(processo, pagina)
 
 
 	def compacta(self):

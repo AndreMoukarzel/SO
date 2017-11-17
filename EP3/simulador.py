@@ -35,6 +35,7 @@ def simula(arquivo, espaco, subst, intervalo):
 	linha = linhas[i].split()
 	while  True:
 		while i < num and int(linha[0]) == t:
+
 			if len(linha) == 2 and linha[1] == 'COMPACTAR': # Excecao para COMPACTAR
 				fis.compacta()
 				vir.compacta()
@@ -54,13 +55,14 @@ def simula(arquivo, espaco, subst, intervalo):
 		while fila.size > 0 and fila.peak().prox_acesso()[1] == t: # Processo acessando memoria fisica
 			proc = fila.peak()
 			temp_pag = proc.prox_acesso()[0] # Pagina local que sera acessada
+
 			if not temp_pag in proc.presente: # Checa se a pagina ja esta na memoria
-				if not fis.insere(proc, temp_pag): # Tenta inserir, caso nao esteja
-					fis.substitui(proc, temp_pag) # Se nao tiver espaco, remove uma pagina
+				fis.insere(proc, temp_pag)
+
 			fila.pop()
 
-		# Remove os processos que acabaram
-		for j in range(1, num):
+
+		for j in range(1, num): # Remove os processos que acabaram
 			temp = linhas[j].split()
 			if len(temp) > 2 and int(temp[1]) == t: # tf = t
 				pid = proc_dict.get(temp[3]).pid
@@ -75,6 +77,7 @@ def simula(arquivo, espaco, subst, intervalo):
 			print ('\nMemoria Fisica')
 			fis.memoria.imprime()
 			print ('\n' + 30 * '-' + '\n')
+
 
 		if i == num and t >= last_tf: # Todos os processos acabaram sua execucao
 			break

@@ -30,9 +30,8 @@ def main():
 	esp = 1
 	sub = 2
 	arquivo = "in.txt"
-	ok = 1
 
-	while ok:
+	while True:
 		linha = raw_input("[ep3]: ")
 		linha = linha.split()
 
@@ -54,7 +53,7 @@ def main():
 			# print ("Executando " + arquivo + " " + ger[esp] + " " + subst[sub])
 
 			sim.simula(arquivo, esp, sub, intervalo)
-			ok = 0
+			break
 
 		elif linha[0] == "sai":
 			break
