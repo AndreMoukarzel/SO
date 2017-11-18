@@ -137,16 +137,13 @@ class Memoria:
 		ocupado = self.tam
 
 		while not compactado:
-			# Procura a primeiro pagina livre
+			# Procura a primeira pagina livre
 			cheio = True
-			for i in range(0, self.tam, self.ua):
+			for i in range(0, self.tam, self.pag):
 				if mem[i] == 128:
 					cheio = False
 					livre = i
 					break
-				else:
-					i += self.pag
-					continue
 			# Ja esta compactado se esta cheio
 			if cheio:
 				break
@@ -177,7 +174,6 @@ class Memoria:
 				if fim == 1 and mem[i] != 128:
 					compactado = False
 					break
-			# Essa checagem n deve mais funcionar 100%. Eh melhor usarmos outra condicao de parada
 
 		for i in range(0, self.tam, self.ua): # Atualiza o bitmap
 			if mem[i] == 128:
@@ -294,6 +290,7 @@ class Fisica:
 
 	def compacta(self):
 		self.memoria.compacta()
+		# atualizar vetores de presentes nos processos
 
 
 	def substitui(self, processo, pagina):
@@ -396,6 +393,10 @@ class Fisica:
 						break
 
 		i = tempos.index(max(tempos))
+		print ('Pagina a ser removida')
+		print (pags[i][1], pags[i][2]) # pid, pos
+		print ('Pagina a entrar no seu lugar')
+		print (processo.pid)
 		self.proc_dict = self.memoria.remove(pags[i][1], pags[i][2], self.proc_dict)
 		self.insere(processo, pagina)
 
