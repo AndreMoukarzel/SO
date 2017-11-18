@@ -393,14 +393,6 @@ class Fisica:
 						break
 
 		i = tempos.index(max(tempos))
-		#print (pags)
-		#print (tempos)
-		#print ('Index = ', str(i))
-		#print ('pags[index] = ', str(pags[i]))
-		#print ('Pagina a ser removida')
-		#print (pags[i][1], pags[i][2]) # pid, pos
-		#print ('Pagina a entrar no seu lugar')
-		#print (processo.pid)
 		self.proc_dict = self.memoria.remove(pags[i][1], pags[i][2], self.proc_dict)
 		self.insere(processo, pagina)
 
@@ -419,15 +411,6 @@ class Fisica:
 	# Remove o acesso atual da lista de acessos futuros
 	def atualizaOptimal(self, processo, pagina):
 		self.optimal.pop(0)
-
-		#alvo = [processo.nome, pagina]
-		#for i in range(len(self.optimal)):
-		#	atual = self.optimal[i]
-		#	if atual[0] == alvo[0] and atual[1] == alvo[1]:
-		#		print (atual)
-		#		del(self.optimal[i])
-		#		break
-
 
 
 

@@ -26,11 +26,6 @@ def get_time():
 
 
 def main():
-	# Descomenta e roda so 'executa n' no prompt pra ir mais rapido:
-	esp = 1
-	sub = 1
-	arquivo = "in.txt"
-
 	while True:
 		linha = raw_input("[ep3]: ")
 		linha = linha.split()
