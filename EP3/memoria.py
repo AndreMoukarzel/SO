@@ -236,10 +236,10 @@ class Fisica:
 
 
 	class Pagina:
-		pid = -1
-		p = -1 # posicao relativa do processo a qual corresponde
-		tam = -1
-		ins = -1 # posicao em q foi inserida na memoria fisica
+		#pid = -1
+		#p = -1 # posicao relativa do processo a qual corresponde
+		#tam = -1
+		#ins = -1 # posicao em q foi inserida na memoria fisica
 
 
 		def __init__(self, processo, p, ins, pag):
@@ -387,6 +387,10 @@ class Fisica:
 	def divideLRU4(self):
 		for i in range(len(self.vetorLRU4)):
 			self.vetorLRU4[i] /= 10 # Desloca o contador 1 bit pra direita
+
+
+	def Optimal(self, processo, pagina):
+		pass
 
 
 	def iniciaOptimal(self, linhas):
