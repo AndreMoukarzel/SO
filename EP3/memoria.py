@@ -385,7 +385,7 @@ class Fisica:
 		for proc in vals:
 			for pag in proc.presente:
 				pags.append([pag, proc.pid, proc.presente_pos[proc.presente.index(pag)]])
-				tempos.append(-1) # Se pagina nunca mais for ser acessada, mantem esse valor absurdo de tempo
+				tempos.append(float('inf')) # Se pagina nunca mais for ser acessada, mantem esse valor absurdo de tempo
 				for n, p, t in self.optimal: # n = nome, p = pagina, t = tempo
 					if n == proc.nome and p == pag: # Proximo acesso da pagina encontrado
 						tempos.pop() # remove valor absurdo
@@ -393,10 +393,14 @@ class Fisica:
 						break
 
 		i = tempos.index(max(tempos))
-		print ('Pagina a ser removida')
-		print (pags[i][1], pags[i][2]) # pid, pos
-		print ('Pagina a entrar no seu lugar')
-		print (processo.pid)
+		#print (pags)
+		#print (tempos)
+		#print ('Index = ', str(i))
+		#print ('pags[index] = ', str(pags[i]))
+		#print ('Pagina a ser removida')
+		#print (pags[i][1], pags[i][2]) # pid, pos
+		#print ('Pagina a entrar no seu lugar')
+		#print (processo.pid)
 		self.proc_dict = self.memoria.remove(pags[i][1], pags[i][2], self.proc_dict)
 		self.insere(processo, pagina)
 
@@ -409,17 +413,20 @@ class Fisica:
 					novo = [linha[3], int(linha[j]), int(linha[j + 1])] # [nome, pagina, tempo do acesso]
 					self.optimal.append(novo)
 		self.optimal.sort(key=lambda tup: tup[2]) # ordena pelos tempos
+		print (self.optimal)
 
 
-	# Remove [processo, pagina, tempo] da lista de acessos futuros
+	# Remove o acesso atual da lista de acessos futuros
 	def atualizaOptimal(self, processo, pagina):
-		# teoricamente um pop(0) funcionaria, mas vamos fazer funcionar antes, neh?
-		alvo = [processo.nome, pagina]
-		for i in range(len(self.optimal)):
-			atual = self.optimal[i]
-			if atual[0] == alvo[0] and atual[1] == alvo[1]:
-				del(self.optimal[i])
-				break
+		self.optimal.pop(0)
+
+		#alvo = [processo.nome, pagina]
+		#for i in range(len(self.optimal)):
+		#	atual = self.optimal[i]
+		#	if atual[0] == alvo[0] and atual[1] == alvo[1]:
+		#		print (atual)
+		#		del(self.optimal[i])
+		#		break
 
 
 
