@@ -216,7 +216,6 @@ class Fisica:
 	matrizLRU2 = []
 	k = 0
 	vetorLRU4 = []
-	vetorR = []
 
 
 	class Pagina:
@@ -268,7 +267,8 @@ class Fisica:
 				elif self.alg == 3:
 					self.atualizaLRU2(pag.ins / self.memoria.pag)
 				elif self.alg == 4:
-					pass # Atualiza o contador
+					# Reseta o contador dessa pagina, ja que foi removida
+					self.somaLRU4(pag.ins / self.memoria.pag, 1)
 
 				return 1
 			ll = ll.prox
@@ -343,36 +343,36 @@ class Fisica:
 		self.k %= len(self.matrizLRU2)
 
 
-	def LRU4(self, processo):
-		# Se o processo foi acessado na ultima iteracao, soma no seu contador
-		# no bit mais significativo
-		for i in range(len(self.vetorR)):
-			# Esse vetor de R tem que ser pra cada pagina, e nao pra cada processo, aparentemente
-			if self.vetorR[i]:
-				# vetorLRU4 tem o mesmo tamanho do de bit R
-				self.vetorLRU4[i] += 100000000
-			self.vetorLRU4[i] /= 10 # Desloca 1 bit pra direita
-
-		# Remove o menos acessado
-		rem = self.vetorLRU4.index(min(self.vetorLRU4))
+	def LRU4(self, processo, pagina):
 		mem = self.memoria.read()
-		self.memoria.remove(mem[rem * self.bloco])
-		self.memoria.insere
+		print(self.vetorLRU4)
+
+		# Pos da pagina que sera removida
+		pos = self.vetorLRU4.index(min(self.vetorLRU4)) * self.memoria.pag
+		pid = mem[pos]
+		self.memoria.remove(pid, pos)
+		self.insere(processo, pagina)
 
 
 	def iniciaLRU4(self): # LRU 4: Inicia o vetor de contadores com 0
 		for i in range(self.memoria.tam/self.memoria.pag):
-			vetorLRU4.append(0)
-			vetorR.append(False)
+			self.vetorLRU4.append(0)
 
 
-	# Recebe uma lista das paginas que foram acessadas nessa iteracao e atualiza
-	# o vetor de bit R
-	def atualizaVetorR(self, acessos):
-		for i in range(len(self.vetorR)):
-			self.vetorR[i] = False
-		for i in acessos:
-			self.vetorR[i] = True
+	# Soma no bit mais significativo do contador, e reseta ele se zera for 1
+	def somaLRU4(self, pos, zera):
+		if zera:
+			self.vetorLRU4[pos] = 10000000
+		else:
+			self.vetorLRU4[pos] += 10000000
+
+
+	# Atualiza os contadores
+	def divideLRU4(self):
+		for i in range(len(self.vetorLRU4)):
+			self.vetorLRU4[i] /= 10 # Desloca o contador 1 bit pra direita
+
+
 
 
 

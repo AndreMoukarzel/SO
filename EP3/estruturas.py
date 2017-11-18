@@ -58,23 +58,6 @@ def printLista(raiz):
         print(temp.pos, temp.tam)
         temp = temp.prox
 
-# Testes
-
-#raiz = listaLigada()
-#raiz.setTam(3)
-#raiz.setPos(0)
-
-#for i in range(4):
-#    temp = listaLigada()
-#    temp.insere(raiz, i*3, i + 1)
-
-#printLista(raiz)
-#print("----")
-#temp = listaLigada()
-#temp = raiz.prox.prox.prox
-#temp.removeProx()
-#printLista(raiz)
-
 
 class Processo:
     g_pid = 0

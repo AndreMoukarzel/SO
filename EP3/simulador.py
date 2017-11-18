@@ -67,7 +67,8 @@ def simula(arquivo, espaco, subst, intervalo):
 				if subst == 3:
 					fis.atualizaLRU2(pos)
 				else: # subst = 4
-					pass # Atualiza o vetor de contadores
+					# Foi acessado, soma no bit mais significativo do contador
+					fis.somaLRU4(pos, 0)
 
 			fila.pop()
 
@@ -92,5 +93,8 @@ def simula(arquivo, espaco, subst, intervalo):
 
 		if i == num and t >= last_tf: # Todos os processos acabaram sua execucao
 			break
+
+		if subst == 4:# Atualiza os contadores
+			fis.divideLRU4()
 
 		t += 1

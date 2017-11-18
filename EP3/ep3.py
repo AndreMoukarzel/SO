@@ -28,7 +28,7 @@ def get_time():
 def main():
 	# Descomenta e roda so 'executa n' no prompt pra ir mais rapido:
 	esp = 1
-	sub = 3
+	sub = 4
 	arquivo = "in.txt"
 
 	while True:
