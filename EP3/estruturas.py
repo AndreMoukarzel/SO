@@ -62,16 +62,6 @@ def printLista(raiz):
 
 class Processo:
     g_pid = 0
-    #pid = 0
-    #t0 = 0
-    #tf = 0
-    #b = 0
-    #nome = ""
-    #p_acessos = [] # pi
-    #t_acessos = [] # ti
-    #presente = [] # Paginas locais do processo que estao presentes na memoria fisica
-    #presente_pos = []
-    #i = 0 # indice do prox acesso
 
     def __init__(self, linha):
         self.pid = Processo.g_pid
@@ -79,14 +69,14 @@ class Processo:
         self.tf = int(linha[1]) # t0 tf b nome p1 t1 p2 t2... pn tn
         self.b = int(linha[2])
         self.nome = linha[3]
-        self.p_acessos = []
-        self.t_acessos = []
+        self.p_acessos = [] # pi
+        self.t_acessos = [] # ti
         for j in range(4, len(linha), 2):
             self.p_acessos.append(int(linha[j]))
             self.t_acessos.append(int(linha[j + 1]))
-        self.presente = []
-        self.presente_pos = []
-        self.i = 0
+        self.presente = [] # Paginas locais do processo que estao presentes na memoria fisica
+        self.presente_pos = [] # Posicao dessas paginas na memoria
+        self.i = 0 # indice do prox acesso
 
         Processo.g_pid = (Processo.g_pid + 1) % 128
 
