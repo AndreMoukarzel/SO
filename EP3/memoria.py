@@ -67,13 +67,26 @@ class Memoria:
 
 	# Remove processo com o PID dado
 	# Caso receba o argumento pos, remove apenas a pagina iniciada em pos
-	def remove(self, pid, pos = -1):
+	# Caso receba um dicionario, atualiza o processo que foi removido
+	def remove(self, pid, pos = -1, proc_dict = None):
 		l = self.read()
 		ini = 0
 		fim = self.tam
 		if pos != -1:
 			ini = pos
 			fim = pos + self.pag
+
+			if proc_dict != None:
+				for nome in proc_dict:
+					if proc_dict[nome].pid == pid:
+						proc = proc_dict[nome]
+						break
+				# Remove a pagina da lista de paginas presentes do processo
+				i = proc.presente_pos.index(pos)
+				del(proc.presente[i])
+				del(proc.presente_pos[i])
+				# Atualiza o dicionario
+				proc_dict[proc.nome] = proc
 
 		# Encontra a posicao em que o processo comeca
 		ret = -1
@@ -89,7 +102,10 @@ class Memoria:
 
 		self.atualizaLL()
 		self.write(l)
-		return ret # -1 eh erro
+		if pos != -1:
+			return proc_dict
+		else:
+			return ret # -1 eh erro
 
 
 	# Devolve a memoria como uma lista de PIDs (int)
@@ -265,10 +281,10 @@ class Fisica:
 				if self.alg == 2:
 					self.filaFIFO.append([processo, pag])
 				elif self.alg == 3:
-					self.atualizaLRU2(pag.ins / self.memoria.pag)
+					self.atualizaLRU2(pag.ins)
 				elif self.alg == 4:
 					# Reseta o contador dessa pagina, ja que foi removida
-					self.somaLRU4(pag.ins / self.memoria.pag, 1)
+					self.somaLRU4(pag.ins, 1)
 
 				return 1
 			ll = ll.prox
@@ -295,13 +311,8 @@ class Fisica:
 	def FIFO(self, processo, pagina):
 		if len(self.filaFIFO) > 0:
 			proc, pag = self.filaFIFO.pop(0) # [Processo, Pagina] mais antiga
-			self.memoria.remove(proc.pid, pag.ins) # Remove pagina na posicao pag.ins da memoria
-
-			i = proc.presente.index(pag.p)
-			del(proc.presente[i])
-			del(proc.presente_pos[i])
-			self.proc_dict[proc.nome] = proc
-
+			# Remove pagina na posicao pag.ins da memoria
+			self.proc_dict = self.memoria.remove(proc.pid, pag.ins, self.proc_dict)
 			self.insere(processo, pagina)
 		else:
 			print("FIFO vazia")
@@ -315,12 +326,12 @@ class Fisica:
 
 		# Posicao da menor soma, ou seja, pos da pagina que sera removida
 		subst = somas.index(min(somas)) * self.memoria.pag
-		for p in self.matrizLRU2:
-			print(p)
-		print("k = "+str(self.k))
-		print("substituira: " + str(subst / self.memoria.pag))
+		# for p in self.matrizLRU2:
+		# 	print(p)
+		# print("k = "+str(self.k))
+		# print("substituira: " + str(subst / self.memoria.pag))
 		pid = mem[subst]
-		self.memoria.remove(pid, subst)
+		self.proc_dict = self.memoria.remove(pid, subst, self.proc_dict)
 		self.insere(processo, pagina)
 
 
@@ -335,7 +346,7 @@ class Fisica:
 
 	def atualizaLRU2(self, pos):
 		for i in range(self.memoria.pag - 1): # Todos da linha pos vao pra 1
-			self.matrizLRU2[pos][i] = 1
+			self.matrizLRU2[pos / self.memoria.pag][i] = 1
 		for i in range(self.memoria.pag - 1): # Todos da coluna k vao pra 0
 			self.matrizLRU2[i][self.k] = 0
 
@@ -345,12 +356,11 @@ class Fisica:
 
 	def LRU4(self, processo, pagina):
 		mem = self.memoria.read()
-		print(self.vetorLRU4)
 
 		# Pos da pagina que sera removida
 		pos = self.vetorLRU4.index(min(self.vetorLRU4)) * self.memoria.pag
 		pid = mem[pos]
-		self.memoria.remove(pid, pos)
+		self.proc_dict = self.memoria.remove(pid, pos, self.proc_dict)
 		self.insere(processo, pagina)
 
 
@@ -362,9 +372,9 @@ class Fisica:
 	# Soma no bit mais significativo do contador, e reseta ele se zera for 1
 	def somaLRU4(self, pos, zera):
 		if zera:
-			self.vetorLRU4[pos] = 10000000
+			self.vetorLRU4[pos / self.memoria.pag] = 10000000
 		else:
-			self.vetorLRU4[pos] += 10000000
+			self.vetorLRU4[pos / self.memoria.pag] += 10000000
 
 
 	# Atualiza os contadores

@@ -58,15 +58,23 @@ def simula(arquivo, espaco, subst, intervalo):
 			temp_pag = proc.prox_acesso()[0] # Pagina local que sera acessada
 
 			if not temp_pag in fis.proc_dict[proc.nome].presente: # Checa se a pagina ja esta na memoria
+				print("inserindo proc " + str(proc.pid) + "pag" + str(temp_pag))
 				fis.insere(proc, temp_pag)
+				print(temp_pag)
+				print(proc.presente)
+				print(proc.presente_pos)
 
 			elif subst == 3 or subst == 4: # Se ja estiver na memoria, grava seu acesso
 				proc = fis.proc_dict[proc.nome]
 				index = proc.presente.index(temp_pag)
 				pos = proc.presente_pos[index]
+				print("acessando proc " + str(proc.pid) + " pag " + str(pos))
 				if subst == 3:
 					fis.atualizaLRU2(pos)
-				else: # subst = 4
+				else: # subst = 4pos / fis.memoria.pag
+					print(temp_pag)
+					print(proc.presente)
+					print(proc.presente_pos)
 					# Foi acessado, soma no bit mais significativo do contador
 					fis.somaLRU4(pos, 0)
 
