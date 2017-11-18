@@ -86,6 +86,7 @@ class Processo:
     p_acessos = [] # pi
     t_acessos = [] # ti
     presente = [] # Paginas locais do processo que estao presentes na memoria fisica
+    presente_pos = []
     i = 0 # indice do prox acesso
 
     def __init__(self, linha):

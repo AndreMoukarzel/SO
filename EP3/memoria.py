@@ -256,17 +256,23 @@ class Fisica:
 			if ll.tam >= pag_tam: # Cabe uma nova pagina
 				pag = self.Pagina(processo, pagina, ll.pos, pag_tam)
 				self.memoria.insere(pag.pid, ll.pos, pag.tam)
-				processo.presente.append(pagina) # Atualiza a lista de paginas no processo
+				# Atualiza a lista de paginas no processo
+				# Grava a posicao da memoria que a pagina foi inserida
+				processo.presente.append(pagina)
+				processo.presente_pos.append(ll.pos)
+				# Atualiza o dicionario da memoria
 				self.proc_dict[processo.nome] = processo
 
 				if self.alg == 2:
 					self.filaFIFO.append([processo, pag])
 				elif self.alg == 3:
 					self.atualizaLRU2(pag.ins / self.memoria.pag)
+				elif self.alg == 4:
+					pass # Atualiza o contador
 
 				return 1
 			ll = ll.prox
-			
+
 		self.substitui(processo, pagina)
 
 
@@ -278,6 +284,10 @@ class Fisica:
 	def substitui(self, processo, pagina):
 		if self.alg == 2:
 			self.FIFO(processo, pagina)
+		elif self.alg == 3:
+			self.LRU2(processo, pagina)
+		elif self.alg == 4:
+			self.LRU4(processo, pagina)
 
 
 	# Mantem uma fila dos processos em ordem de chegada e tira eles nessa ordem
@@ -289,6 +299,7 @@ class Fisica:
 
 			i = proc.presente.index(pag.p)
 			del(proc.presente[i])
+			del(proc.presente_pos[i])
 			self.proc_dict[proc.nome] = proc
 
 			self.insere(processo, pagina)
@@ -302,15 +313,19 @@ class Fisica:
 		for i in range(len(self.matrizLRU2)):
 			somas.append(sum(self.matrizLRU2[i]))
 
-		# Posicao da menor soma, ou seja, pos do processo que sera removido
-		subst = somas.index(min(somas))
-		pid = mem[subst * self.pag]
-		self.memoria.remove(pid)
+		# Posicao da menor soma, ou seja, pos da pagina que sera removida
+		subst = somas.index(min(somas)) * self.memoria.pag
+		for p in self.matrizLRU2:
+			print(p)
+		print("k = "+str(self.k))
+		print("substituira: " + str(subst / self.memoria.pag))
+		pid = mem[subst]
+		self.memoria.remove(pid, subst)
 		self.insere(processo, pagina)
 
 
 	def iniciaLRU2(self): # LRU 2: Inicia a matriz nxn com 0
-		n = (self.memoria.tam/self.memoria.pag) + 1
+		n = (self.memoria.tam/self.memoria.pag)
 		for i in range(n):
 			temp = []
 			for j in range(n):
@@ -319,12 +334,13 @@ class Fisica:
 
 
 	def atualizaLRU2(self, pos):
-		for i in range(self.memoria.pag): # Todos da linha = 1
+		for i in range(self.memoria.pag - 1): # Todos da linha pos vao pra 1
 			self.matrizLRU2[pos][i] = 1
-		for i in range(self.memoria.pag): # Todos da coluna = 0
+		for i in range(self.memoria.pag - 1): # Todos da coluna k vao pra 0
 			self.matrizLRU2[i][self.k] = 0
 
-		self.k = (self.k + 1) % self.memoria.tam/self.memoria.pag
+		self.k += 1
+		self.k %= len(self.matrizLRU2)
 
 
 	def LRU4(self, processo):

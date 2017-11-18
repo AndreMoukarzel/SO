@@ -56,9 +56,19 @@ def simula(arquivo, espaco, subst, intervalo):
 		while fila.size > 0 and fila.peak().prox_acesso()[1] == t: # Processo acessando memoria fisica
 			proc = fila.peak()
 			temp_pag = proc.prox_acesso()[0] # Pagina local que sera acessada
-			if not temp_pag in proc_dict[proc.nome].presente: # Checa se a pagina ja esta na memoria
+
+			if not temp_pag in fis.proc_dict[proc.nome].presente: # Checa se a pagina ja esta na memoria
 				fis.insere(proc, temp_pag)
-				
+
+			elif subst == 3 or subst == 4: # Se ja estiver na memoria, grava seu acesso
+				proc = fis.proc_dict[proc.nome]
+				index = proc.presente.index(temp_pag)
+				pos = proc.presente_pos[index]
+				if subst == 3:
+					fis.atualizaLRU2(pos)
+				else: # subst = 4
+					pass # Atualiza o vetor de contadores
+
 			fila.pop()
 
 
