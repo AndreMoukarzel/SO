@@ -390,7 +390,23 @@ class Fisica:
 
 
 	def Optimal(self, processo, pagina):
-		pass
+		# Ve todas as paginas na memoria, e remove a que sera acessada em um futuro mais distante
+		vals = self.proc_dict.values()
+		pags = [] # (pagina, pid, pos) de todas as paginas presentes
+		tempos = [] # tempos dos proximos acessos das paginas atualmente na memoria
+		for proc in vals:
+			for pag in proc.presente:
+				pags.append([pag, proc.pid, proc.presente_pos[proc.presente.index(pag)]])
+				tempos.append(-1) # Se pagina nunca mais for ser acessada, mantem esse valor absurdo de tempo
+				for n, p, t in self.optimal: # n = nome, p = pagina, t = tempo
+					if n == proc.nome and p == pag: # Proximo acesso da pagina encontrado
+						tempos.pop() # remove valor absurdo
+						tempos.append(t)
+						break
+
+		i = tempos.index(max(tempos))
+		self.proc_dict = self.memoria.remove(pags[i][1], pags[i][2], self.proc_dict)
+		self.insere(processo, pagina)
 
 
 	def iniciaOptimal(self, linhas):
@@ -405,11 +421,12 @@ class Fisica:
 
 	# Remove [processo, pagina, tempo] da lista de acessos futuros
 	def atualizaOptimal(self, processo, pagina):
+		# teoricamente um pop(0) funcionaria, mas vamos fazer funcionar antes, neh?
 		alvo = [processo.nome, pagina]
-		for i in range(len(optimal)):
-			atual = optimal[i]
+		for i in range(len(self.optimal)):
+			atual = self.optimal[i]
 			if atual[0] == alvo[0] and atual[1] == alvo[1]:
-				del(optimal[i])
+				del(self.optimal[i])
 				break
 
 

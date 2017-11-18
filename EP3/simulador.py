@@ -19,7 +19,7 @@ def simula(arquivo, espaco, subst, intervalo):
 
 	# Instancia as memorias
 	vir = mem.Virtual(int(linha[1]), s, p, espaco, linhas)
-	fis = mem.Fisica(int(linha[0]), s, p, subst)
+	fis = mem.Fisica(int(linha[0]), s, p, subst, linhas)
 
 	# Descobre quando que a simulacao vai acabar
 	tempos_finais = []
