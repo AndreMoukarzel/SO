@@ -232,6 +232,7 @@ class Fisica:
 	matrizLRU2 = []
 	k = 0
 	vetorLRU4 = []
+	optimal = []
 
 
 	class Pagina:
@@ -252,7 +253,7 @@ class Fisica:
 
 
 
-	def __init__(self, tamanho, ua, pag, alg):
+	def __init__(self, tamanho, ua, pag, alg, linhas = None):
 		self.memoria = Memoria('/tmp/ep3.mem', tamanho, ua, pag)
 		self.alg = alg
 
@@ -260,6 +261,8 @@ class Fisica:
 			self.iniciaLRU2()
 		elif alg == 4:
 			self.iniciaLRU4()
+		elif alg == 1:
+			self.iniciaOptimal(linhas)
 
 
 	# Tenta inserir o processo na memoria fisica, substitui uma pagina caso nao consiga
@@ -283,8 +286,10 @@ class Fisica:
 				elif self.alg == 3:
 					self.atualizaLRU2(pag.ins)
 				elif self.alg == 4:
-					# Reseta o contador dessa pagina, ja que foi removida
-					self.somaLRU4(pag.ins, 1)
+					self.somaLRU4(pag.ins, 1) # Reseta o contador dessa pagina, ja que foi removida
+				elif self.alg == 1:
+					self.atualizaOptimal(processo, pagina)
+
 
 				return 1
 			ll = ll.prox
@@ -294,7 +299,6 @@ class Fisica:
 
 	def compacta(self):
 		self.memoria.compacta()
-		# atualiza paginas
 
 
 	def substitui(self, processo, pagina):
@@ -304,6 +308,8 @@ class Fisica:
 			self.LRU2(processo, pagina)
 		elif self.alg == 4:
 			self.LRU4(processo, pagina)
+		elif self.alg == 1:
+			self.Optimal(processo, pagina)
 
 
 	# Mantem uma fila dos processos em ordem de chegada e tira eles nessa ordem
@@ -382,6 +388,25 @@ class Fisica:
 		for i in range(len(self.vetorLRU4)):
 			self.vetorLRU4[i] /= 10 # Desloca o contador 1 bit pra direita
 
+
+	def iniciaOptimal(self, linhas):
+		for i in range(1, len(linhas)):
+			linha = linhas[i].split()
+			if len(linha) > 2: # ignora compactar
+				for j in range(4, len(linha), 2):
+					novo = [linha[3], int(linha[j]), int(linha[j + 1])] # [nome, pagina, tempo do acesso]
+					self.optimal.append(novo)
+		self.optimal.sort(key=lambda tup: tup[2]) # ordena pelos tempos
+
+
+	# Remove [processo, pagina, tempo] da lista de acessos futuros
+	def atualizaOptimal(self, processo, pagina):
+		alvo = [processo.nome, pagina]
+		for i in range(len(optimal)):
+			atual = optimal[i]
+			if atual[0] == alvo[0] and atual[1] == alvo[1]:
+				del(optimal[i])
+				break
 
 
 
