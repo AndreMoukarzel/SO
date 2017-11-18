@@ -236,20 +236,15 @@ class Fisica:
 
 
 	class Pagina:
-		#pid = -1
-		#p = -1 # posicao relativa do processo a qual corresponde
-		#tam = -1
-		#ins = -1 # posicao em q foi inserida na memoria fisica
-
-
+	
 		def __init__(self, processo, p, ins, pag):
 			self.pid = processo.pid
-			self.p = p
+			self.p = p # posicao relativa do processo a qual corresponde
 			self.tam = pag
 			dif = processo.b - int(p/pag)
 			if dif > 0 and dif < pag: # p esta na ultima pagina, e a pagina n esta cheia
 				self.tam = pag - dif
-			self.ins = ins
+			self.ins = ins # posicao em que foi inserida na memoria fisica
 
 
 
@@ -332,10 +327,6 @@ class Fisica:
 
 		# Posicao da menor soma, ou seja, pos da pagina que sera removida
 		subst = somas.index(min(somas)) * self.memoria.pag
-		# for p in self.matrizLRU2:
-		# 	print(p)
-		# print("k = "+str(self.k))
-		# print("substituira: " + str(subst / self.memoria.pag))
 		pid = mem[subst]
 		self.proc_dict = self.memoria.remove(pid, subst, self.proc_dict)
 		self.insere(processo, pagina)
