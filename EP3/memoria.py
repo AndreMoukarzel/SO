@@ -509,4 +509,4 @@ class Virtual:
 			if processo.b == ql.tams[i]:
 				break
 
-		self.memoria.insere(processo.pid, ql.espacos[i].pop(), p_tam)
+		self.memoria.insere(processo.pid, ql.espacos[i].pop(), processo.b)

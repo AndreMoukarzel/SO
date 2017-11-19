@@ -106,5 +106,12 @@ def simula(arquivo, espaco, subst, intervalo):
 
 		t += 1
 
-	print (results_tempos)
+	f = open("tempos.txt", 'w')
+	for r in results_tempos:
+		f.write(str(r))
+		f.write('\n')
+	media = sum(results_tempos)/len(results_tempos)
+	f.write('Media\n')
+	f.write(str(media))
+	f.close()
 	print (page_faults)
