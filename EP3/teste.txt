@@ -1,0 +1,15 @@
+30 100 1 2
+0 10 25 proc1
+0 10 25 proc1
+0 10 25 proc1
+0 10 25 proc1
+0 10 25 proc1
+0 10 25 proc1
+0 COMPACTAR
+0 10 25 proc1
+0 10 25 proc1
+0 10 25 proc1
+0 10 25 proc1
+0 10 25 proc1
+0 10 25 proc1
+0 10 25 proc1

@@ -4,6 +4,7 @@
 #####################################################################
 import memoria as mem
 import estruturas as es
+import time # RESULTADOS
 
 
 def simula(arquivo, espaco, subst, intervalo):
@@ -29,7 +30,10 @@ def simula(arquivo, espaco, subst, intervalo):
 			tempos_finais.append(int(linha[1]))
 	last_tf = max(tempos_finais)
 
-
+	# RESULTADOS #
+	results_tempos = []
+	page_faults = 0
+	##############
 	t = 0
 	i = 1 # Linha 0 ja foi interpretada
 	linha = linhas[i].split()
@@ -44,7 +48,9 @@ def simula(arquivo, espaco, subst, intervalo):
 				fila.push(proc)
 				proc_dict[proc.nome] = proc
 				fis.proc_dict[proc.nome] = proc
+				tempo_res = time.time()
 				vir.insere(proc)
+				results_tempos.append(time.time() - tempo_res)
 
 
 			if i < num:
@@ -57,6 +63,7 @@ def simula(arquivo, espaco, subst, intervalo):
 			proc = fila.peak()
 			temp_pag = proc.prox_acesso()[0] # Pagina local que sera acessada
 			if not temp_pag in fis.proc_dict[proc.nome].presente: # Checa se a pagina ja esta na memoria
+				page_faults += 1 # RESULTADOS
 				fis.insere(proc, temp_pag)
 
 			elif subst == 3 or subst == 4: # Se ja estiver na memoria, grava seu acesso
@@ -98,3 +105,6 @@ def simula(arquivo, espaco, subst, intervalo):
 			fis.divideLRU4()
 
 		t += 1
+
+	print (results_tempos)
+	print (page_faults)

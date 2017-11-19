@@ -405,7 +405,6 @@ class Fisica:
 					novo = [linha[3], int(linha[j]), int(linha[j + 1])] # [nome, pagina, tempo do acesso]
 					self.optimal.append(novo)
 		self.optimal.sort(key=lambda tup: tup[2]) # ordena pelos tempos
-		print (self.optimal)
 
 
 	# Remove o acesso atual da lista de acessos futuros
@@ -433,7 +432,7 @@ class Virtual:
 						self.tams.append(int(linha[2]))
 						self.espacos.append([])
 
-		def atualiza(listaligada):
+		def atualiza(self, listaligada):
 			l = es.listaLigada()
 			l = listaligada
 			tamanho = len(self.tams)
